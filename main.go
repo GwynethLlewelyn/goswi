@@ -15,7 +15,7 @@ func (s FastCGIServer) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 func main() {
         fmt.Println("Starting server...")
-        l, _ := net.Listen("tcp", "127.0.0.1:9000")
+        l, _ := net.Listen("unix", "/var/run/fcgiwrap.socket")
         b := new(FastCGIServer)
         fcgi.Serve(l, b)
 }
