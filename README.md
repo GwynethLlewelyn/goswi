@@ -1,4 +1,4 @@
-![gOSWI logo](images/gOSWI%20logo%20and%20txt.png)
+![gOSWI logo](images/logos/gOSWI%20logo%20and%20txt.png)
 
 # gOSWI
 ## Go (lang) OpenSimulator Web Interface
