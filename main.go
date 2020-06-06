@@ -4,13 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"html/template"
-	"io"
-	"log"
-	"net"
+//	"html/template"
+//	"io"
+//	"log"
+//	"net"
 	"net/http"
-	"net/http"
-	"net/http/fcgi"
+//	"net/http/fcgi"
 //	"runtime"
 	"time"
 	syslog "github.com/RackSec/srslog"
@@ -19,29 +18,68 @@ import (
 var local	= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
 var wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 
+// formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
 	year, month, day := t.Date()
-	return fmt.Sprintf("%d%02d/%02d", year, month, day)
+	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
 }
 
+// formatAsYear is another function for the templating system, which will be registered below.
+func formatAsYear(t time.Time) string {
+	year, _, _ := t.Date()
+	return fmt.Sprintf("%d", year)
+}
+
+
+// main starts here.
 func main() {
 	router := gin.Default()
-	router.Delims("{[{", "}]}")
-	router.SetFuncMap(template.FuncMap{
-		"formatAsDate": formatAsDate,
-	})
-	router.LoadHTMLFiles("./templates/index.html")
+	router.Delims("{{", "}}") // stick to default delims for Go templates
+/*	router.SetFuncMap(template.FuncMap{
+		"formatAsYear": formatAsYear,
+	})*/
+	//router.LoadHTMLGlob("./templates/*.tpl")
+	router.HTMLRender = createMyRender()
 
-	router.GET("/raw", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index.html", map[string]interface{}{
-			"now": time.Date(2017, 07, 01, 0, 0, 0, 0, time.UTC),
+	// Static stuff (will probably do it via nginx)
+	router.Static("/lib", "./lib")
+	router.Static("/images", "./images")
+	router.StaticFile("/favicon.ico", "./images/favicons/favicon.ico")
+
+	router.GET("/", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "index", gin.H{
+			"now": formatAsYear(time.Now()),
 		})
 	})
 
-	if *local == nil
+	router.GET("/welcome", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "welcome", gin.H{})
+	})
+	// the following are not implemented yet
+	router.GET("/economy", func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{})
+	})
+	router.GET("/about", func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{})
+	})
+	router.GET("/help", func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{})
+	})
+	router.GET("/register", func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{})
+	})
+	router.GET("/password", func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{})
+	})
+	router.NoRoute(func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404", gin.H{})
+	})
+
+	if *local == "" {
 		router.Run(":8033")
-	else
+	} else {
 		router.Run(*local)
+	}
 }
 
 /*

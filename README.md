@@ -12,7 +12,7 @@ Another area that is underdeveloped is the management of local grid users. Altho
 
 Thus, since OpenSimulator's inception, several 'grid management solutions' have been around, many of which free and open-source. Some are merely plugins for larger content management systems (such as jOpensim for Joomla, Xoopensim for XOOPS, d4os for Drupal); others are standalone (see a 'complete' list on http://opensimulator.org/wiki/Webinterface); most, unfortunately, have stopped their development ages ago. This is especially true of PHP administration tools which relied on pre-PHP PDO functions to connect to the database; unfortunately, such functions have been deprecated and require a lot of time to rewrite... I tried to do that with Xoopensim, but after two weeks of making change after change, and stumbling over and over again on deprecated usage of old PHP functions, I gave up.
 
-Thus this project was born — not in PHP, not in C# (which I hate with passion), but in Go — because it's easy to compile in pretty much everything out there (and I revere the creators of Go with passion!). If you're not really willing to learn how to do Go programming, 
+Thus this project was born — not in PHP, not in C# (which I hate with passion), but in Go — because it's easy to compile in pretty much everything out there (and I revere the creators of Go with passion!). If you're not really willing to learn how to do Go programming, no worries, you will just need to get the appropriate binaries (once I compile them, of course).
 
 ## Disclaimers and Licenses
 
