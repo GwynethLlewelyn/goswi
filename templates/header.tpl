@@ -1,4 +1,4 @@
-{{ define "header" }}
+{{ define "header.tpl" }}
 <!DOCTYPE html>
 <html lang="en">
 

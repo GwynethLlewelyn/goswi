@@ -1,13 +1,13 @@
-{{ define "index" }}
-{{ template "header" .}}
-{{ template "navigation" .}}
+{{ define "index.tpl" }}
+{{ template "header.tpl" .}}
+{{ template "navigation.tpl" .}}
     <!-- Content Wrapper -->
     <div id="content-wrapper" class="d-flex flex-column">
 
       <!-- Main Content -->
       <div id="content">
 
-{{ template "topbar" .}}
+{{ template "topbar.tpl" .}}
         <!-- Begin Page Content -->
         <div class="container-fluid">
 
@@ -310,5 +310,5 @@
 
       </div>
       <!-- End of Main Content -->
-{{ template "footer" .}}
+{{ template "footer.tpl" .}}
 {{ end }}

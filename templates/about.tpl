@@ -1,4 +1,4 @@
-{{ define "welcome.tpl" }}
+{{ define "about.tpl" }}
 {{ template "header.tpl" .}}
 {{ template "navigation.tpl" .}}
     <!-- Content Wrapper -->
@@ -14,9 +14,9 @@
 
           <!-- 404 Error Text -->
           <div class="text-center">
-		  	<h1>Welcome to Beta Technologies OpenSimulator Grid!</h1>
+		  	<h1>About the Beta Technologies OpenSimulator Grid</h1>
 		  	<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo"></a>
-		  	<p>We still don't have much to show here... it's all under construction!</p>
+		  	<p>Sorry about (pun intended) that, but we still don't have a lot of content around here...</p>
             <a href="/">&larr; Back to Dashboard</a>
           </div>
 

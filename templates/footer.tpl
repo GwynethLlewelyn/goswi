@@ -1,4 +1,4 @@
-{{ define "footer" }}
+{{ define "footer.tpl" }}
       <!-- Footer -->
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">

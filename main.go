@@ -38,8 +38,8 @@ func main() {
 /*	router.SetFuncMap(template.FuncMap{
 		"formatAsYear": formatAsYear,
 	})*/
-	//router.LoadHTMLGlob("./templates/*.tpl")
-	router.HTMLRender = createMyRender()
+	router.LoadHTMLGlob("./templates/*.tpl")
+	//router.HTMLRender = createMyRender()
 
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", "./lib")
@@ -47,32 +47,32 @@ func main() {
 	router.StaticFile("/favicon.ico", "./images/favicons/favicon.ico")
 
 	router.GET("/", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "index", gin.H{
+		c.HTML(http.StatusOK, "index.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
 		})
 	})
 
 	router.GET("/welcome", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "welcome", gin.H{})
+		c.HTML(http.StatusOK, "welcome.tpl", gin.H{})
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
 	})
 	router.GET("/about", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{})
+		c.HTML(http.StatusNotFound, "about.tpl", gin.H{})
 	})
 	router.GET("/help", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
 	})
 	router.GET("/register", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
 	})
 	router.GET("/password", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
 	})
 	router.NoRoute(func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
 	})
 
 	if *local == "" {
