@@ -60,7 +60,7 @@ func main() {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
 	})
 	router.GET("/about", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "about.tpl", gin.H{})
+		c.HTML(http.StatusOK, "about.tpl", gin.H{})
 	})
 	router.GET("/help", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
