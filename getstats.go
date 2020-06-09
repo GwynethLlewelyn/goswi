@@ -8,7 +8,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-func GetStats() {
+type SimpleRegion struct { 
+	regionName string
+	locX int
+	locY int
+}
+
+func GetStats(c *gin.Context) {
 	// open database connection
 	if *DSN == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
@@ -18,12 +24,22 @@ func GetStats() {
 	
 	defer db.Close()
 	
-	rows, err := db.Query("SELECT regionName, locX, lock FROM regions ORDER BY regionName ASC LIMIT 50")
+	rows, err := db.Query("SELECT regionName, locX, locY FROM regions ORDER BY regionName ASC LIMIT 50")
 	checkErr(err)
 	
 	defer rows.Close()
 	
-	while rows.Next() {
-		
+	for rows.Next() {
+			err = rows.Scan(
+				&SimpleRegion.regionName,
+				&SimpleRegion.locX,
+				&SimpleRegion.locY,
+				
+			)
+		// Log.Debug("Row extracted:", Object)
+		rowArr = append(rowArr, SimpleRegion)
+	}
+	checkErr(err)
+	defer rows.Close()	
 	}
 }
