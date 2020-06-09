@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/vharitonsky/iniflags"
 //	"html/template"
 //	"io"
 //	"log"
@@ -15,9 +16,11 @@ import (
 	syslog "github.com/RackSec/srslog"
 )
 
-var local	= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
-var wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
-
+var (
+	local	= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
+	DSN		= flag.String("dsn", "", "DSN for calling MySQL database")
+	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
+)
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
 	year, month, day := t.Date()
@@ -33,6 +36,10 @@ func formatAsYear(t time.Time) string {
 
 // main starts here.
 func main() {
+	// start parsing configuration
+	iniflags.SetConfigFile("./config.ini")
+	iniflags.Parse()
+	
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
 /*	router.SetFuncMap(template.FuncMap{
