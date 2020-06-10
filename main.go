@@ -7,7 +7,7 @@ import (
 	"github.com/vharitonsky/iniflags"
 //	"html/template"
 //	"io"
-//	"log"
+	"log"
 //	"net"
 	"net/http"
 //	"net/http/fcgi"
@@ -25,6 +25,8 @@ var (
 	DSN		= flag.String("dsn", "", "DSN for calling MySQL database")
 	templatePath = flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect")
 	ginMode	= flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
+	tlsCRT	= flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP")
+	tlsKEY	= flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")	
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 )
@@ -47,9 +49,10 @@ func main() {
 	_, callerFile, _, _ := runtime.Caller(0)
 	PathToStaticFiles := filepath.Dir(callerFile)
 	fmt.Fprintln(os.Stderr, "[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
-	
-	// start parsing configuration
+
+	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to	
 	iniflags.SetConfigFile(path.Join(PathToStaticFiles, "/config.ini"))
+	// start parsing configuration
 	iniflags.Parse()
 
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
@@ -118,12 +121,30 @@ func main() {
 			"now": formatAsYear(time.Now()),
 		})
 	})
+	router.NoMethod(func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
+	})
 
 	if *local == "" {
-		router.Run(":8033")
+		if (*tlsCRT != "" && *tlsKEY != "") {
+			err := router.RunTLS(":8033", *tlsCRT, *tlsKEY) // if it works, it will never return
+			if (err != nil) {
+				log.Println("Could not run with TLS; either the certificate", *tlsCRT, "was not found, or the private key",
+					*tlsKEY, "was not found, or either [maybe even both] are invalid.")
+				log.Println("Running _without_ TLS on the usual port")
+				router.Run(":8033")
+			}
+		} else {
+			log.Println("[INFO] Running with standard HTTP on the usual port, no TLS configuration detected")
+			router.Run(":8033")
+		}
 	} else {
 		router.Run(*local)
 	}
+	// if we are here, router.Run() failed with an error
+	log.Println("Boom, something went wrong! (or maybe this was merely stopped, I don't know")
 }
 
 /*
