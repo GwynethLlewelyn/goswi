@@ -12,6 +12,7 @@ import (
 	"net/http"
 //	"net/http/fcgi"
 //	"runtime"
+	"strings"
 	"time"
 	syslog "github.com/RackSec/srslog"
 )
@@ -19,6 +20,7 @@ import (
 var (
 	local	= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
 	DSN		= flag.String("dsn", "", "DSN for calling MySQL database")
+	templatePath = flag.String("templatepath", "./templates/", "Path to where the templates are stored (with trailing slash)")
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 )
 // formatAsDate is a function for the templating system, which will be registered below.
@@ -45,7 +47,8 @@ func main() {
 /*	router.SetFuncMap(template.FuncMap{
 		"formatAsYear": formatAsYear,
 	})*/
-	router.LoadHTMLGlob("./templates/*.tpl")
+	if !strings.HasSuffix(*templatePath, "/") { *templatePath += "/" }
+	router.LoadHTMLGlob(*templatePath + "*.tpl")
 	//router.HTMLRender = createMyRender()
 
 	// Static stuff (will probably do it via nginx)
