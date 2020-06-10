@@ -11,7 +11,10 @@ import (
 //	"net"
 	"net/http"
 //	"net/http/fcgi"
-//	"runtime"
+	"os"
+	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 	syslog "github.com/RackSec/srslog"
@@ -20,8 +23,10 @@ import (
 var (
 	local	= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
 	DSN		= flag.String("dsn", "", "DSN for calling MySQL database")
-	templatePath = flag.String("templatepath", "./templates/", "Path to where the templates are stored (with trailing slash)")
+	templatePath = flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect")
+	ginMode	= flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
+	PathToStaticFiles string
 )
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
@@ -38,23 +43,38 @@ func formatAsYear(t time.Time) string {
 
 // main starts here.
 func main() {
+	// figure out where the configuration is
+	_, callerFile, _, _ := runtime.Caller(0)
+	PathToStaticFiles := filepath.Dir(callerFile)
+	fmt.Fprintln(os.Stderr, "[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
+	
 	// start parsing configuration
-	iniflags.SetConfigFile("./config.ini")
+	iniflags.SetConfigFile(path.Join(PathToStaticFiles, "/config.ini"))
 	iniflags.Parse()
+
+	// prepare Gin router/render — first, set it to debug or release (debug is default)
+	if (*ginMode == "release") { gin.SetMode(gin.ReleaseMode) }
 	
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
 /*	router.SetFuncMap(template.FuncMap{
 		"formatAsYear": formatAsYear,
 	})*/
-	if !strings.HasSuffix(*templatePath, "/") { *templatePath += "/" }
-	router.LoadHTMLGlob(*templatePath + "*.tpl")
+	// figure out where the templates are
+	if (*templatePath != "") {
+		if (!strings.HasSuffix(*templatePath, "/")) { 
+			*templatePath += "/"
+		}
+	} else {
+		*templatePath = "/templates/"
+	}
+	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *templatePath, "*.tpl"))
 	//router.HTMLRender = createMyRender()
 
 	// Static stuff (will probably do it via nginx)
-	router.Static("/lib", "./lib")
-	router.Static("/images", "./images")
-	router.StaticFile("/favicon.ico", "./images/favicons/favicon.ico")
+	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
+	router.Static("/images", path.Join(PathToStaticFiles, "/images"))
+	router.StaticFile("/favicon.ico", path.Join(PathToStaticFiles, "/images/favicons/favicon.ico"))
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
@@ -63,26 +83,40 @@ func main() {
 	})
 
 	router.GET("/welcome", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "welcome.tpl", gin.H{})
+		c.HTML(http.StatusOK, "welcome.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 	router.GET("/about", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "about.tpl", gin.H{})
+		c.HTML(http.StatusOK, "about.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 	router.GET("/help", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 	router.GET("/register", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 	router.GET("/password", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 	router.NoRoute(func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{})
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
 	})
 
 	if *local == "" {
