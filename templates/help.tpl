@@ -13,7 +13,7 @@
 		<div class="container-fluid">
 			<!-- Content Row -->
 			<div class="row">
-				<div class="col mb-4">
+				<div class="col">
 					<!-- Help -->
 					<div class="text-center">
 						<h1><i class="fas fa-fw fa-question-circle"></i>Help</h1>
