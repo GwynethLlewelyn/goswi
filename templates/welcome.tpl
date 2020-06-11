@@ -30,6 +30,21 @@
 				</div>
 			</div> <!-- /.row -->
 			{{ template "back.tpl"}}
+			<!-- Content Row -->
+			<div class="row">
+				<div class="col mb-4">
+					<div class="text-center">
+						<h2>List of Regions</h2>
+					</div>
+					{{.regionsTable }}
+				</div>
+				<div class="col mb-4">
+					<div class="text-center">
+						<h2>Users online</h2>
+					</div>
+					{{.usersOnline }}		
+				</div>
+			</div>
 		</div>
 		<!-- /.container-fluid -->
 

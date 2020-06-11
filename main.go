@@ -85,11 +85,7 @@ func main() {
 		})
 	})
 
-	router.GET("/welcome", func(c *gin.Context) {
-		c.HTML(http.StatusOK, "welcome.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-		})
-	})
+	router.GET("/welcome", GetStats)
 	router.GET("/about", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "about.tpl", gin.H{
 			"now": formatAsYear(time.Now()),

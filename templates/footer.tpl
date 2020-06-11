@@ -3,7 +3,7 @@
       <footer class="sticky-footer bg-white">
         <div class="container my-auto">
           <div class="copyright text-center my-auto">
-            <span>Copyright &copy; gOSWI {{.now }}. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
+            <span><i class="fas fa-fw fa-creative-commons-by"></i> {{.now }} by gOSWI. Some rights reserved. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
           </div>
         </div>
       </footer>
