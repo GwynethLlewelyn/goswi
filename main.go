@@ -90,18 +90,18 @@ func main() {
 			"now": formatAsYear(time.Now()),
 		})
 	})
-	// the following are not implemented yet
-	router.GET("/economy", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-		})
-	})
 	router.GET("/about", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "about.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
 		})
 	})
+	// the following are not implemented yet
 	router.GET("/help", func(c *gin.Context) {
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now": formatAsYear(time.Now()),
+		})
+	})
+	router.GET("/economy", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
 		})
