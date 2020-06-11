@@ -14,8 +14,8 @@
 
           <!-- 404 Error Text -->
           <div class="text-center">
-		  	<h1>Welcome to Beta Technologies OpenSimulator Grid!</h1>
-		  	<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo" height="250"></a>
+		  	<h1><i class="fas fa-fw fa-door-open"></i>Welcome to Beta Technologies OpenSimulator Grid!</h1>
+		  	<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo"  align="left" width="250"></a>
 		  	<p>We still don't have much to show here... it's all under construction!</p>
             <a href="/">&larr; Back to Dashboard</a>
           </div>
