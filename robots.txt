@@ -1,3 +1,4 @@
 User-agent: *
-Allow: /
+Disallow: /lib
+Disallow: /templates
 Crawl-delay: 10
