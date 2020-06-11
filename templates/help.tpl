@@ -1,4 +1,4 @@
-{{ define "about.tpl" }}
+{{ define "help.tpl" }}
 {{ template "header.tpl" .}}
 {{ template "navigation.tpl" .}}
     <!-- Content Wrapper -->
