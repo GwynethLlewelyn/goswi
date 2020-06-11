@@ -17,7 +17,7 @@
 		  	<h1><i class="fas fa-fw fa-question-circle"></i>Help</h1>
 		  	<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo" width="250" align="left"></a>
 		  	<p>We understand that you need help, but we're not finished with writing the content of this page yet.</p>
-            <a href="/">&larr; Back to Dashboard</a>
+		  	{{ template "back.tpl"}}
           </div>
 
         </div>
