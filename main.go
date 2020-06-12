@@ -21,13 +21,15 @@ import (
 )
 
 var (
-	local	= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
-	DSN		= flag.String("dsn", "", "DSN for calling MySQL database")
+	local		= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
+	DSN			= flag.String("dsn", "", "DSN for calling MySQL database")
 	templatePath = flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect")
-	ginMode	= flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
-	tlsCRT	= flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP")
-	tlsKEY	= flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")	
-	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
+	ginMode		= flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
+	tlsCRT		= flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP")
+	tlsKEY		= flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")
+	author		= flag.String("author", "--nobody--", "Author name")
+	description	= flag.String("description", "gOSWI", "Description for each page")
+	wLog, _		= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 )
 // formatAsDate is a function for the templating system, which will be registered below.
@@ -82,6 +84,8 @@ func main() {
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 
@@ -89,37 +93,52 @@ func main() {
 	router.GET("/about", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "about.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
+			"needsTables": true,
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "help.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 	router.GET("/register", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 	router.GET("/password", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 	router.NoMethod(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
+			"author": author,
+			"description": description,
 		})
 	})
 

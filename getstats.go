@@ -7,10 +7,15 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+//	jsoniter "github.com/json-iterator/go"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
+
+// We need to pass JSON to templates, because it won't work otherwise.
+// var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // SimpleRegion is a very simple struct just to get a region's name and location.
 // In the future, it might have extra fields for linking to the grid map.
@@ -18,10 +23,6 @@ type SimpleRegion struct {
 	regionName string	`json:"regionName"`	// we'll JSONify this later
 	locX int			`json:"locX"`
 	locY int			`json:"locY"`
-}
-
-func testFunc(s string) string {
-	return fmt.Sprintln("This is a string:", s)
 }
 
 // GetStats will be used on the Welcome template (and possibly elsewhere) to display some in-world stats.
@@ -40,10 +41,9 @@ func GetStats(c *gin.Context) {
 
 	defer rows.Close()
 
-	var (
-		rowArr []interface{}
-		simpleRegion SimpleRegion
-	)
+	var simpleRegion SimpleRegion
+	
+	regionsTable := `"data": [`
 	
 	for rows.Next() {
 			err = rows.Scan(
@@ -53,20 +53,26 @@ func GetStats(c *gin.Context) {
 
 			)
 		// Log.Debug("Row extracted:", Object)
-		rowArr = append(rowArr, simpleRegion)
+		regionsTable += fmt.Sprintf(`{ "Region" : "%s", "locX" : "%d", "locY" : "%d"} ,`, 
+								simpleRegion.regionName, simpleRegion.locX, simpleRegion.locY)
 	}
 	checkErr(err)
 	defer rows.Close()
+	regionsTable = strings.TrimSuffix(regionsTable, ",")
+	regionsTable += "]"
 	
-	// Prepare a simple table. For now, we'll just print stuff out. This will probably get JSONified at some point and loaded in a 'real' table.
-	regionsTable := fmt.Sprintf("<pre>%#v</pre>\n", rowArr)
 	
 	// Online users is TBD.
-	usersOnline := "<pre>(nothing yet)</pre>\n"
+	usersOnline := `"data": [ { "Avatar Name": "--(not implemented yet)--" } ]`
 	
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"regionsTable"	: regionsTable,
-			"usersOnline"	: usersOnline,
+			"needsTables"	: true,
+			"author"		: author,
+			"description"	: description,
+			"jsCallDataTable"	: `$('#regionsTable').DataTable(` + regionsTable +
+`	);
+	$('#usersOnline').DataTable(` + usersOnline +
+`	);`,
 	})
 }
