@@ -4,11 +4,11 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
+//	"encoding/json"
 //	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-//	jsoniter "github.com/json-iterator/go"
+	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
 	"net/http"
@@ -48,7 +48,7 @@ func GetStats(c *gin.Context) {
 	// Declare some variables used to JSONify everything. (gwyneth 20200612)
 	var (
 		viewer Viewer
-		viewerDataJSON, /* usersOnlineJSON, */ regionsTableJSON []byte
+		viewerDataJSON, usersOnlineJSON, regionsTableJSON []byte
 		regionsTable []interface{}
 		err error
 		simpleRegion SimpleRegion
@@ -56,7 +56,7 @@ func GetStats(c *gin.Context) {
 		
 	// TODO(gwyneth): deal with channel=Firestorm-Releasex64&grid=btgrid&lang=en&login_content_version=2&os=Mac%20OS%20X%2010.15.6&sourceid=&version=6.3.9%20%2858205%29"
 	if c.Bind(&viewer) == nil { // nil means no errors
-		if viewerDataJSON, err = json.Marshal(viewer); err != nil {
+		if viewerDataJSON, err = jsoniter.Marshal(viewer); err != nil {
 			checkErr(err)
 		}
 	}
@@ -91,14 +91,17 @@ func GetStats(c *gin.Context) {
 	checkErr(err)
 	defer rows.Close()
 
-	if regionsTableJSON, err = json.Marshal(regionsTable); err != nil {
+	if regionsTableJSON, err = jsoniter.Marshal(regionsTable); err != nil {
 		checkErr(err)
 	}
 	log.Printf("[DEBUG] Data from regionsTable: '%s'\n", regionsTableJSON)
 	
 	// Online users is TBD.
 //	usersOnline := [ ("Avatar Name"), ("Nobody IsOnline") ], [("Avatar Name"), ("Me Neither")] ]
-	usersOnline := json.RawMessage(`{"Avatar Name": "Nobody IsOnline"}`)
+	var oneUserOnline = SimpleUser{avatarName: "Nobody IsOnline"}
+	if usersOnlineJSON, err = jsoniter.Marshal(&oneUserOnline); err != nil {
+		checkErr(err)
+	}
 
 /*
 	if usersOnlineJSON, err = json.Marshal(usersOnline); err != nil {
@@ -106,7 +109,7 @@ func GetStats(c *gin.Context) {
 	}
 */
 
-	log.Printf("[DEBUG] Data from usersOnline: '%v'\n", usersOnline)
+	log.Printf("[DEBUG] Data from usersOnline: '%s'\n", usersOnlineJSON)
 	
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
@@ -115,6 +118,6 @@ func GetStats(c *gin.Context) {
 			"description"	: description,
 			"viewerData"	: viewerDataJSON,
 			"regionsTable"	: regionsTableJSON,
-			"usersOnline"	: usersOnline,
+			"usersOnline"	: usersOnlineJSON,
 	})
 }

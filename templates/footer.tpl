@@ -68,7 +68,7 @@
 */
 		$(document).ready(function() {
 			$('#usersOnline').dataTable( {
-				"data": {{ .usersOnline }}
+				"data": JSON.parse({{ .usersOnline }})
 			});
 		});
 	</script>
