@@ -3,7 +3,7 @@
 		<footer class="sticky-footer bg-white">
 			<div class="container my-auto">
 				<div class="copyright text-center my-auto">
-					<span><i class="fas fa-creative-commons"></i> {{.now }} by gOSWI and {{.author}}. Some rights reserved. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
+					<span><span style="font-family:CCSymbols;">&#x1f16d;</span> {{.now }} by gOSWI and {{.author}}. Some rights reserved. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
 				</div>
 			</div>
 		</footer>
@@ -51,11 +51,26 @@
 {{ if .needsTables }}
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js"></script>
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js"></script>
-	<script type="text/javascript">	
-		// Call the dataTables jQuery plugin
+	<script type="text/javascript">
+	// Call the dataTables jQuery plugin
+/*
 		$(document).ready(function() {
-			{{ .jsCallDataTable }}
+			$('#viewerInfo').dataTable( {
+				"data": {{ .viewerData }}
 			});
+		});
+
+		$(document).ready(function() {
+			$('#regionsTable').dataTable( {
+				"data": {{ .regionsTable }}
+			});
+		});
+*/
+		$(document).ready(function() {
+			$('#usersOnline').dataTable( {
+				"data": {{ .usersOnline }}
+			});
+		});
 	</script>
 {{ end }}
 </body>

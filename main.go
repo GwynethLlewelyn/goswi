@@ -58,7 +58,7 @@ func main() {
 	iniflags.Parse()
 
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
-	if (*ginMode == "release") { gin.SetMode(gin.ReleaseMode) }
+	if *ginMode == "release" { gin.SetMode(gin.ReleaseMode) }
 	
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
@@ -95,7 +95,7 @@ func main() {
 			"now": formatAsYear(time.Now()),
 			"author": author,
 			"description": description,
-			"needsTables": true,
+//			"needsTables": true,	// not really needed? (gwyneth 20200612)
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {

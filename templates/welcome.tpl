@@ -27,6 +27,30 @@
 				</div>
 				<div class="col-lg-8 mb-4">
 					<p>We still don't have much to show here... it's all under construction!</p>
+					<!-- DataTables for Viewer Info -->
+					<div class="card shadow mb-4">
+						<div class="card-header py-3">
+							<h6 class="m-0 font-weight-bold text-primary">Viewer Info</h6>
+						</div>
+						<div class="card-body">
+							<div class="table-responsive">
+								<table class="table table-bordered" id="viewerInfo" width="100%" cellspacing="0"
+									data-order='[[ 1, "asc" ]]' data-page-length='25'>
+									<thead>
+										<tr>
+											<th>ViewerName</th>
+											<th>Grid</th>
+											<th>Language</th>
+											<th>LoginContentVersion</th>
+											<th>OS</th>
+											<th>SourceID</th>
+											<th>Version</th>
+										</tr>
+									</thead>
+								</table>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div> <!-- /.row -->
 			<!-- Content Row -->

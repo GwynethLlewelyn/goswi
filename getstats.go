@@ -4,18 +4,20 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+	"encoding/json"
+//	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 //	jsoniter "github.com/json-iterator/go"
+//	"html/template"
 	"log"
 	"net/http"
-	"strings"
+//	"strings"
 	"time"
 )
 
 // We need to pass JSON to templates, because it won't work otherwise.
-// var json = jsoniter.ConfigCompatibleWithStandardLibrary
+//var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
 // SimpleRegion is a very simple struct just to get a region's name and location.
 // In the future, it might have extra fields for linking to the grid map.
@@ -25,8 +27,41 @@ type SimpleRegion struct {
 	locY int			`json:"locY"`
 }
 
+// Apparently this is what we get with /welcome — some information from the viewer! (gwyneth 20200612)
+type Viewer struct {
+	ViewerName	string `form:"channel" json:"channel"`
+	Grid		string `form:"grid" json:"grid"`
+	Language	string `form:"lang" json:"lang"`
+	LoginContentVersion	string `form:"login_content_version" json:"login_content_version"`
+	OS			string `form:"os" json:"os"`
+	SourceID	string `form:"sourceid" json:"sourceid"`
+	Version		string `form:"version" json:"version"`
+}
+
+type SimpleUser struct {
+	avatarName	string `json:"Avatar Name"`
+}
+
+
 // GetStats will be used on the Welcome template (and possibly elsewhere) to display some in-world stats.
 func GetStats(c *gin.Context) {
+	// Declare some variables used to JSONify everything. (gwyneth 20200612)
+	var (
+		viewer Viewer
+		viewerDataJSON, /* usersOnlineJSON, */ regionsTableJSON []byte
+		regionsTable []interface{}
+		err error
+		simpleRegion SimpleRegion
+	)
+		
+	// TODO(gwyneth): deal with channel=Firestorm-Releasex64&grid=btgrid&lang=en&login_content_version=2&os=Mac%20OS%20X%2010.15.6&sourceid=&version=6.3.9%20%2858205%29"
+	if c.Bind(&viewer) == nil { // nil means no errors
+		if viewerDataJSON, err = json.Marshal(viewer); err != nil {
+			checkErr(err)
+		}
+	}
+	log.Printf("[DEBUG] Data from viewer: '%s'\n", viewerDataJSON)
+	
 	// open database connection
 	if *DSN == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
@@ -40,11 +75,7 @@ func GetStats(c *gin.Context) {
 	checkErr(err)
 
 	defer rows.Close()
-
-	var simpleRegion SimpleRegion
-	
-	regionsTable := `"data": [`
-	
+		
 	for rows.Next() {
 			err = rows.Scan(
 				&simpleRegion.regionName,
@@ -53,26 +84,37 @@ func GetStats(c *gin.Context) {
 
 			)
 		// Log.Debug("Row extracted:", Object)
-		regionsTable += fmt.Sprintf(`{ "Region" : "%s", "locX" : "%d", "locY" : "%d"} ,`, 
-								simpleRegion.regionName, simpleRegion.locX, simpleRegion.locY)
+		simpleRegion.locX /= 256
+		simpleRegion.locY /= 256
+		regionsTable = append(regionsTable, simpleRegion)
 	}
 	checkErr(err)
 	defer rows.Close()
-	regionsTable = strings.TrimSuffix(regionsTable, ",")
-	regionsTable += "]"
-	
+
+	if regionsTableJSON, err = json.Marshal(regionsTable); err != nil {
+		checkErr(err)
+	}
+	log.Printf("[DEBUG] Data from regionsTable: '%s'\n", regionsTableJSON)
 	
 	// Online users is TBD.
-	usersOnline := `"data": [ { "Avatar Name": "--(not implemented yet)--" } ]`
+//	usersOnline := [ ("Avatar Name"), ("Nobody IsOnline") ], [("Avatar Name"), ("Me Neither")] ]
+	usersOnline := json.RawMessage(`{"Avatar Name": "Nobody IsOnline"}`)
+
+/*
+	if usersOnlineJSON, err = json.Marshal(usersOnline); err != nil {
+		checkErr(err)
+	}
+*/
+
+	log.Printf("[DEBUG] Data from usersOnline: '%v'\n", usersOnline)
 	
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
+			"now"			: formatAsYear(time.Now()),
 			"needsTables"	: true,
 			"author"		: author,
 			"description"	: description,
-			"jsCallDataTable"	: `$('#regionsTable').DataTable(` + regionsTable +
-`	);
-	$('#usersOnline').DataTable(` + usersOnline +
-`	);`,
+			"viewerData"	: viewerDataJSON,
+			"regionsTable"	: regionsTableJSON,
+			"usersOnline"	: usersOnline,
 	})
 }

@@ -22,6 +22,15 @@
 		.sidebar .sidebar-brand .sidebar-brand-icon img {
 			height: 2rem;
 		}
+		@font-face {
+			font-display: swap;
+			font-family: CCSymbols;
+			font-synthesis: none;
+			src: url(../images/fonts/CCSymbols.woff2) format(woff2),
+				 url(../images/fonts/CCSymbols.woff)  format(woff);
+			unicode-range: u+a9, u+229c,
+			               u+1f10d-f, u+1f16d-f;
+		}
 	</style>
 	{{ if .needsTables }}
 	<!-- Custom styles for this page -->
