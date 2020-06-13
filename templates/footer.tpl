@@ -53,25 +53,25 @@
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 	<script type="text/javascript">
 	// Call the dataTables jQuery plugin
-/*
+
 		$(document).ready(function() {
 			$('#viewerInfo').dataTable( {
 				"data": {{ .viewerData }}
 			});
 		});
-
+/*
 		$(document).ready(function() {
 			$('#regionsTable').dataTable( {
 				"data": {{ .regionsTable }}
 			});
 		});
-*/
+
 		$(document).ready(function() {
 			$('#usersOnline').dataTable( {
-				"data": JSON.parse({{ .usersOnline }})
+				"data": {{ .usersOnline }}
 			});
 		});
-	</script>
+*/	</script>
 {{ end }}
 </body>
 

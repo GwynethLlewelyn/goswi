@@ -49,7 +49,7 @@ func GetStats(c *gin.Context) {
 	var (
 		viewer Viewer
 		viewerDataJSON, usersOnlineJSON, regionsTableJSON []byte
-		regionsTable []interface{}
+		regionsTable []SimpleRegion
 		err error
 		simpleRegion SimpleRegion
 	)
@@ -83,7 +83,7 @@ func GetStats(c *gin.Context) {
 				&simpleRegion.locY,
 
 			)
-		// Log.Debug("Row extracted:", Object)
+		log.Println("[DEBUG] Row extracted:", simpleRegion)
 		simpleRegion.locX /= 256
 		simpleRegion.locY /= 256
 		regionsTable = append(regionsTable, simpleRegion)
@@ -94,12 +94,13 @@ func GetStats(c *gin.Context) {
 	if regionsTableJSON, err = jsoniter.Marshal(regionsTable); err != nil {
 		checkErr(err)
 	}
-	log.Printf("[DEBUG] Data from regionsTable: '%s'\n", regionsTableJSON)
+	log.Printf("[DEBUG] Original data for regionsTable: >>%v<<\n", regionsTable)
+	log.Printf("[DEBUG] Data from regionsTable: >>%s<<\n", regionsTableJSON)
 	
 	// Online users is TBD.
 //	usersOnline := [ ("Avatar Name"), ("Nobody IsOnline") ], [("Avatar Name"), ("Me Neither")] ]
 	var oneUserOnline = SimpleUser{avatarName: "Nobody IsOnline"}
-	if usersOnlineJSON, err = jsoniter.Marshal(&oneUserOnline); err != nil {
+	if usersOnlineJSON, err = jsoniter.Marshal(oneUserOnline); err != nil {
 		checkErr(err)
 	}
 
@@ -116,8 +117,8 @@ func GetStats(c *gin.Context) {
 			"needsTables"	: true,
 			"author"		: author,
 			"description"	: description,
-			"viewerData"	: viewerDataJSON,
-			"regionsTable"	: regionsTableJSON,
-			"usersOnline"	: usersOnlineJSON,
+			"viewerData"	: string(viewerDataJSON),
+			"regionsTable"	: string(regionsTableJSON),
+			"usersOnline"	: `{"Avatar Name" : "Nobody IsOnline"}`,
 	})
 }
