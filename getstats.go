@@ -8,7 +8,7 @@ import (
 //	"fmt"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	jsoniter "github.com/json-iterator/go"
+//	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
 	"net/http"
@@ -47,20 +47,26 @@ type SimpleUser struct {
 func GetStats(c *gin.Context) {
 	// Declare some variables used to JSONify everything. (gwyneth 20200612)
 	var (
-		viewer Viewer
-		viewerDataJSON, usersOnlineJSON, regionsTableJSON []byte
-		regionsTable []SimpleRegion
-		err error
+		oneViewer Viewer
+		viewerTable []Viewer
 		simpleRegion SimpleRegion
+		regionsTable []SimpleRegion
+		oneOnlineUser SimpleUser
+		userTable []SimpleUser
+		err error
+//		viewerDataJSON, usersOnlineJSON, regionsTableJSON []byte
 	)
 		
 	// TODO(gwyneth): deal with channel=Firestorm-Releasex64&grid=btgrid&lang=en&login_content_version=2&os=Mac%20OS%20X%2010.15.6&sourceid=&version=6.3.9%20%2858205%29"
-	if c.Bind(&viewer) == nil { // nil means no errors
-		if viewerDataJSON, err = jsoniter.Marshal(viewer); err != nil {
-			checkErr(err)
-		}
+	if c.Bind(&oneViewer) == nil { // nil means no errors
+//		if viewerDataJSON, err = jsoniter.Marshal(viewer); err != nil {
+//			checkErr(err)
+//		}
+		viewerTable = append(viewerTable, oneViewer)
+	} else {
+		checkErr(err)
 	}
-	log.Printf("[DEBUG] Data from viewer: '%s'\n", viewerDataJSON)
+	log.Println("[DEBUG] Data from viewer:", viewerTable)
 	
 	// open database connection
 	if *DSN == "" {
@@ -83,7 +89,7 @@ func GetStats(c *gin.Context) {
 				&simpleRegion.locY,
 
 			)
-		log.Println("[DEBUG] Row extracted:", simpleRegion)
+//		log.Println("[DEBUG] Row extracted:", simpleRegion)
 		simpleRegion.locX /= 256
 		simpleRegion.locY /= 256
 		regionsTable = append(regionsTable, simpleRegion)
@@ -91,18 +97,24 @@ func GetStats(c *gin.Context) {
 	checkErr(err)
 	defer rows.Close()
 
+/*
 	if regionsTableJSON, err = jsoniter.Marshal(regionsTable); err != nil {
 		checkErr(err)
 	}
 	log.Printf("[DEBUG] Original data for regionsTable: >>%v<<\n", regionsTable)
-	log.Printf("[DEBUG] Data from regionsTable: >>%s<<\n", regionsTableJSON)
+*/
+	log.Println("[DEBUG] Data from regionsTable:", regionsTable)
+
 	
 	// Online users is TBD.
 //	usersOnline := [ ("Avatar Name"), ("Nobody IsOnline") ], [("Avatar Name"), ("Me Neither")] ]
-	var oneUserOnline = SimpleUser{avatarName: "Nobody IsOnline"}
+//	var oneUserOnline = SimpleUser{avatarName: "Nobody IsOnline"}
+/*
 	if usersOnlineJSON, err = jsoniter.Marshal(oneUserOnline); err != nil {
 		checkErr(err)
 	}
+*/
+
 
 /*
 	if usersOnlineJSON, err = json.Marshal(usersOnline); err != nil {
@@ -110,15 +122,18 @@ func GetStats(c *gin.Context) {
 	}
 */
 
-	log.Printf("[DEBUG] Data from usersOnline: '%s'\n", usersOnlineJSON)
+	oneOnlineUser = SimpleUser{avatarName: "Nobody IsOnline"}
+	userTable = append(userTable, oneOnlineUser)
+
+	log.Println("[DEBUG] One online user:", oneOnlineUser, "; table for usersOnline:", userTable)
 	
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"needsTables"	: true,
 			"author"		: author,
 			"description"	: description,
-			"viewerData"	: string(viewerDataJSON),
-			"regionsTable"	: string(regionsTableJSON),
-			"usersOnline"	: `{"Avatar Name" : "Nobody IsOnline"}`,
+			"viewerData"	: viewerTable,
+			"regionsTable"	: regionsTable,
+			"usersOnline"	: userTable,
 	})
 }

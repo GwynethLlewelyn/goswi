@@ -53,25 +53,36 @@
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js"></script>
 	<script type="text/javascript">
 	// Call the dataTables jQuery plugin
-
 		$(document).ready(function() {
 			$('#viewerInfo').dataTable( {
-				"data": {{ .viewerData }}
+				"data": {{ .viewerData -}},
+				"columns": [
+					{ "data": "channel" },
+					{ "data": "grid" },
+					{ "data": "lang" },
+					{ "data": "login_content_version" },
+					{ "data": "os" },
+					{ "data": "sourceid" },
+					{ "data": "version" }
+				]						
 			});
-		});
-/*
-		$(document).ready(function() {
 			$('#regionsTable').dataTable( {
-				"data": {{ .regionsTable }}
+				"data": {{ .regionsTable -}},
+				"columns": [
+					{ "data": "regionName" },
+					{ "data": "locX" },
+					{ "data": "locY" }
+				]
 			});
-		});
-
-		$(document).ready(function() {
 			$('#usersOnline').dataTable( {
-				"data": {{ .usersOnline }}
+				paging: false,
+				"data": {{ .usersOnline -}},
+				"columns": [
+					{ "data": "Avatar Name" }
+				]
 			});
 		});
-*/	</script>
+	</script>
 {{ end }}
 </body>
 
