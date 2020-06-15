@@ -31,7 +31,7 @@
 					{{ if .viewerInfo }}
 					<div class="card shadow mb-4">
 						<div class="card-header py-3">
-							<h6 class="m-0 font-weight-bold text-primary">Viewer Info</h6>
+							<h6 class="m-0 font-weight-bold text-primary">Your Viewer Info</h6>
 						</div>
 						<div class="card-body">
 							<div class="table-responsive">
