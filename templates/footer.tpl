@@ -55,7 +55,12 @@
 	// Call the dataTables jQuery plugin
 		$(document).ready(function() {
 			$('#viewerInfo').dataTable( {
-				"data": {{ .viewerData -}},
+					searching:	false,
+					ordering:	false,
+					paging:		false,
+					scrollCollapse: true,
+					info:		false,
+				"data": {{ .viewerInfo -}},
 				"columns": [
 					{ "data": "channel" },
 					{ "data": "grid" },
@@ -75,7 +80,6 @@
 				]
 			});
 			$('#usersOnline').dataTable( {
-				paging: false,
 				"data": {{ .usersOnline -}},
 				"columns": [
 					{ "data": "Avatar Name" }
