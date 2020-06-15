@@ -57,7 +57,9 @@ func GetStats(c *gin.Context) {
 		
 	// TODO(gwyneth): deal with *empty* channel=Firestorm-Releasex64&grid=btgrid&lang=en&login_content_version=2&os=Mac%20OS%20X%2010.15.6&sourceid=&version=6.3.9%20%2858205%29"
 	if c.Bind(&oneViewer) == nil { // nil means no errors
-		viewerInfo = append(viewerInfo, oneViewer)
+		if oneViewer.ViewerName != "" {	// apparently, it binds even if there is nothing to bind to; so we check this first before appending to the table; it means the table will be nil, and commented out on the template (gwyneth 20200616)
+			viewerInfo = append(viewerInfo, oneViewer)
+		}
 	} else {
 		checkErr(err)
 	}
@@ -78,7 +80,7 @@ func GetStats(c *gin.Context) {
 	defer rows.Close()
 		
 	for rows.Next() {
-			err = rows.Scan(
+		err = rows.Scan(
 			&simpleRegion.RegionName,
 			&simpleRegion.LocX,
 			&simpleRegion.LocY,
