@@ -78,8 +78,8 @@ func main() {
 
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
-	router.Static("/images", path.Join(PathToStaticFiles, "/images"))
-	router.StaticFile("/favicon.ico", path.Join(PathToStaticFiles, "/images/favicons/favicon.ico"))
+	router.Static("/assets", path.Join(PathToStaticFiles, "/assets"))
+	router.StaticFile("/favicon.ico", path.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
@@ -127,6 +127,7 @@ func main() {
 			"description": description,
 		})
 	})
+	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),

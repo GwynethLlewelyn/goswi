@@ -5,7 +5,7 @@
 	  <!-- Sidebar - Brand -->
 	  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
 		<div class="sidebar-brand-icon">
-			<img src="/images/logos/gOSWI%20logo.svg">
+			<img src="/assets/logos/gOSWI%20logo.svg">
 		</div>
 		<div class="sidebar-brand-text mx-3">gOSWI</sup></div>
 	  </a>

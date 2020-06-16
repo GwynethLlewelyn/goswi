@@ -102,7 +102,6 @@
 				</div>
 				{{ end }}
 			</div> <!-- /.row -->
-			{{ template "back.tpl"}}
 			{{ if .Debug }}
 			<div class="row">
 				<div class="col">
@@ -113,6 +112,8 @@
 				</div>
 			</div>
 			{{ end }}
+			{{ template "map.tpl" }}
+			{{ template "back.tpl"}}
 		</div>
 		<!-- /.container-fluid -->
 

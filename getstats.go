@@ -107,6 +107,7 @@ func GetStats(c *gin.Context) {
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"needsTables"	: true,
+			"needsMap"		: true,
 			"author"		: author,
 			"description"	: description,
 			"viewerInfo"	: viewerInfo,
