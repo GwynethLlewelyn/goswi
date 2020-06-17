@@ -1,0 +1,17 @@
+[Unit]
+Description=GoBot
+After=syslog.target
+After=network.target
+After=mariadb.service mysqld.service postgresql.service memcached.service redis.service nginx.service
+
+[Service]
+Type=simple
+User=
+Group=
+WorkingDirectory=
+ExecStart=
+Restart=always
+Environment=USER= HOME=
+
+[Install]
+WantedBy=multi-user.target
