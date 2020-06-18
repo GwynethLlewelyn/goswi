@@ -89,7 +89,5 @@
 	</script>
 {{ end }}
 </body>
-{{ if .needsGrid }}
-{{ end }}
 </html>
 {{ end }}

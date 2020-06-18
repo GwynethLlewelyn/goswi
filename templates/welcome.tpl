@@ -30,27 +30,31 @@
 					<!-- DataTables for Viewer Info -->
 					{{ if .viewerInfo }}
 					<div class="card shadow mb-4">
-						<div class="card-header py-3">
+						<a href="#viewerInfo" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="viewerInfo">
 							<h6 class="m-0 font-weight-bold text-primary">Your Viewer Info</h6>
-						</div>
-						<div class="card-body">
-							<div class="table-responsive">
-								<table class="table table-bordered" id="viewerInfo" width="100%" cellspacing="0"
-									data-order='[]' data-page-length='25'>
-									<thead>
-										<tr>
-											<th>ViewerName</th>
-											<th>Grid</th>
-											<th>Language</th>
-											<th>LoginContentVersion</th>
-											<th>OS</th>
-											<th>SourceID</th>
-											<th>Version</th>
-										</tr>
-									</thead>
-								</table>
+						</a>
+						<div class="collapse show" id="vieweInfo">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table class="table table-bordered" id="viewerInfo" width="100%" cellspacing="0"
+										data-order='[]' data-page-length='25'>
+										<thead>
+											<tr>
+												<th>ViewerName</th>
+												<th>Grid</th>
+												<th>Language</th>
+												<th>LoginContentVersion</th>
+												<th>OS</th>
+												<th>SourceID</th>
+												<th>Version</th>
+											</tr>
+										</thead>
+									</table>
+								</div>
 							</div>
+							<!-- ./card-body -->
 						</div>
+						<!-- ./collapse -->
 					</div>
 					{{ end }}
 				</div>
@@ -60,44 +64,52 @@
 				<div class="col mb-4">
 					<!-- DataTables for Region list -->
 					<div class="card shadow mb-4">
-						<div class="card-header py-3">
+						<a href="#regionList" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="regionList">
 							<h6 class="m-0 font-weight-bold text-primary">List of Regions</h6>
-						</div>
-						<div class="card-body">
-							<div class="table-responsive">
-								<table class="table table-bordered" id="regionsTable" width="100%" cellspacing="0"
-									data-order='[]' data-page-length='25'>
-									<thead>
-										<tr>
-											<th>regionName</th>
-											<th>locX</th>
-											<th>locY</th>
-										</tr>
-									</thead>
-								</table>
+						</a>
+						<div class="collapse show" id="regionList">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table class="table table-bordered" id="regionsTable" width="100%" cellspacing="0"
+										data-order='[]' data-page-length='25'>
+										<thead>
+											<tr>
+												<th>regionName</th>
+												<th>locX</th>
+												<th>locY</th>
+											</tr>
+										</thead>
+									</table>
+								</div>
 							</div>
+							<!-- ./card-body -->
 						</div>
+						<!-- ./collapse -->
 					</div>
 				</div>
 				{{ if .usersOnline }}
 				<div class="col mb-4">
 					<!-- DataTables for online Users -->
 					<div class="card shadow mb-4">
-						<div class="card-header py-3">
+						<a href="#onlineUsersCard" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="onlineUsersCard">
 							<h6 class="m-0 font-weight-bold text-primary">Users online</h6>
-						</div>
-						<div class="card-body">
-							<div class="table-responsive">
-								<table class="table table-bordered" id="usersOnline" width="100%" cellspacing="0"
-									data-order='[]' data-page-length='25'>
-									<thead>
-										<tr>
-											<th>Avatar Name</th>
-										</tr>
-									</thead>								
-								</table>
+						</a>
+						<div class="collapse show" id="onlineUsersCard">
+							<div class="card-body">
+								<div class="table-responsive">
+									<table class="table table-bordered" id="usersOnline" width="100%" cellspacing="0"
+										data-order='[]' data-page-length='25'>
+										<thead>
+											<tr>
+												<th>Avatar Name</th>
+											</tr>
+										</thead>								
+									</table>
+								</div>
 							</div>
+							<!-- ./card-body -->
 						</div>
+						<!-- ./collapse -->
 					</div>
 				</div>
 				{{ end }}
