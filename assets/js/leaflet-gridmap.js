@@ -30,62 +30,45 @@ const mapMaxZoom = 8;
 *		this would be WAY more efficient for large grids!
 */
 var __items;	// this includes the grid data, namely, a way to get region names from coordinates
-var request = new XMLHttpRequest();
-
-if (request) {
-	request.onreadystatechange = function() {
-		if (request.readyState === 4) {
-			if (request.status === 200 || request.status === 304) {
-				var xmlGridData = request.responseXML;
-				console.log("Full Grid Data:", xmlGridData);	// For debugging purposes
-				var root = xmlGridData.getElementsByTagName('Map')[0];
-				if (root === null) { return; }
-				__items = root.getElementsByTagName("Grid");
-			}
-		}
-		request.open("GET", "/data", false);
-		request.send(null);
-	};
-}
-
+				// it will be populated once the map loads (hopefully!)
+				
 // #### Function to return information for infoWindow ####
 function getRegionInfo(x, y, xjump, yjump) {
-	if (__items === null) { return; }
-	console.log("Items are:", __items);
+	if (__items == null) { 
+		console.log("No data yet!");
+		return "[No data yet]"; 
+	}
+// 	console.log("Items are:", __items, "x is:", x, "y is:", y);
 	var response = "";
 	var i;
 	var xmllocX;
 	var xmllocY;
 	var xmluuid;
 	var xmlregionname;
-	for (i = 0; i < __items.length; i+=1) {
+	for (i = 0; i < __items.length; i++/* += 1*/) {
 		if (__items[i].nodeType === 1) {
 			xmllocX = __items[i].getElementsByTagName("LocX")[0].firstChild.nodeValue;
 			xmllocY = __items[i].getElementsByTagName("LocY")[0].firstChild.nodeValue;
-			if (xmllocX === x && xmllocY === y) {
+			if (xmllocX == x && xmllocY == y) {
 				xmluuid = __items[i].getElementsByTagName("Uuid")[0].firstChild.nodeValue;
 				xmlregionname = __items[i].getElementsByTagName("RegionName")[0].firstChild.nodeValue;
-				// #### These two lines from the old code visually remove dashes from UUIDs: seems unnecessary. ####
-				//var rx=new RegExp("(-)", "g");
-				//xmluuid = xmluuid.replace(rx,"");
 				response = "<table>";
-				response += "<tr><td><span id='name'><strong>" + xmlregionname + "</strong></span></td></tr>";
+				response += "<tr><td colspan='3'><span id='name'><strong>" + xmlregionname + "</strong></span>" 
+					+ "&nbsp;<span id='loc'>(" + xmllocX + ", " + xmllocY + ")</span></td></tr>";
 				if (showUUID === true) {
-					response += "<tr><td>Region UUID:\n" + xmluuid +"\nLocation: " + xmlregionname + "/" + xjump + "/" + yjump+"/</td></tr>";
-				} else {
-					response += "<tr><td>Location: " + xmlregionname + "/" + xjump + "/" + yjump + "/</tr></td>";
+					response += "<tr><td>Region UUID:\n" + xmluuid + "</td></tr>";
 				}
-				response += "<tr><td><span id='loc'>" + "(" + xmllocX + ", " + xmllocY + ")</span></td></tr>";
-				response += "<tr><td><a class=\"add\" href=\"secondlife://" + GRID_URL + GRID_PORT + "/" + xmlregionname
-					+ "/" + xjump + "/" + yjump + "/\">Hypergrid</a>&nbsp;&nbsp;</td>";
+				response += "<tr><td colspan='3'></td></tr>";
+				response += "<tr><td><a class='add' href='secondlife://" + GRID_URL + GRID_PORT + "/" + xmlregionname
+					+ "/" + xjump + "/" + yjump + "/'>Hypergrid</a>&nbsp;&nbsp;</td>";
 				xmlregionname = xmlregionname.replace(" ", "+"); // fix for V3 HG URL
-				response += "<td><a class=\"add\" href=\"secondlife://http|!!" + GRID_URL + GRID_PORT + "/+" + xmlregionname
-					+ "\">V3 HG</a>&nbsp;&nbsp;</td>";
+				response += "<td><a class='add' href='secondlife://http|!!" + GRID_URL + GRID_PORT + "/+" + xmlregionname
+					+ "'>V3 HG</a>&nbsp;&nbsp;</td>";
 				xmlregionname = xmlregionname.replace("+"," "); // change back for local URL
-				response += "<td><a class=\"add\" href=\"secondlife://" + xmlregionname + "/" + xjump + "/" + yjump
-					+ "/\">Local</a></td></tr>";
+				response += "<td><a class='add' href='secondlife://" + xmlregionname + "/" + xjump + "/" + yjump
+					+ "/'>Local</a></td></tr>";
 				if (xjump > 255 || yjump > 255) {
-					response += "</table><table><tr><td>Viewer may restrict login within SE 256x256 corner </td></tr><tr><td>of larger regions in OpenSim/WhiteCore/Aurora</td></tr>";	
+					response += "</table><table><tr><td colspan='3'>Viewer may restrict login within SE 256x256 corner </td></tr><tr><td>of larger regions in OpenSim/WhiteCore/Aurora</td></tr>";	
 				}
 				response += "</table>";
 			}
@@ -142,10 +125,34 @@ var map = L.map('gridMap', {
 	layers: [tiles],
 	attributionControl: true
 })
+.on('load', function(event) {
+// 	console.log('inside on map event load, trying to call', MAP_PROTOCOL + GRID_URL + "/mapdata");
+	var request = new XMLHttpRequest();
+	
+	if (request) {
+		console.log('XML request succeeded, inside handler');
+		request.onreadystatechange = function() {
+			if (request.readyState == 4) {
+				if (request.status == 200 || request.status == 304) {
+					var xmlGridData = request.responseXML;
+					console.log("Full Grid Data:", xmlGridData);	// For debugging purposes
+					var root = xmlGridData.getElementsByTagName('Map')[0];
+					if (root == null) { return; }
+					__items = root.getElementsByTagName("Grid");
+				}
+			}
+		};
+// 		console.log('Trying to GET', MAP_PROTOCOL + GRID_URL + "/mapdata");
+		request.open("GET", MAP_PROTOCOL + GRID_URL + "/mapdata", true);
+		request.send(null);
+	} else {
+		console.log("Getting a new XMLHttpRequest failed!");
+	}	
+})
 .on('click', function(event) {
 	// calculations to get the grid coords & region coords
 	// Note: varregions not supported for now, only 256x256 ones
-	var popLocation= event.latlng;
+	var popLocation = event.latlng;
 
 	var x = event.latlng.lng;
 	var y = event.latlng.lat;
