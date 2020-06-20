@@ -88,6 +88,7 @@ function getRegionName(x, y) {
 //		console.log(LOADING);
 		return LOADING;
 	}
+
 	var xmllocX;
 	var xmllocY;
 	for (var i = 0; i < __items.length; i++) {
