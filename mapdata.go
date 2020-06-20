@@ -107,5 +107,6 @@ func GetMapData(c *gin.Context) {
 	checkErr(err)	
 //	log.Println("[DEBUG] XML response from mapdata.go:", oneMap)
 
+	c.Header("Access-Control-Allow-Origin", "*")	// because of CORS
 	c.XML(http.StatusOK, oneMap)
 }

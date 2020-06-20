@@ -1,5 +1,4 @@
-{{ define "header.tpl" }}
-<!DOCTYPE html>
+{{- define "header.tpl" -}}<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -82,6 +81,15 @@
 				font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 				background-color: #1e465f; 
 			}
+			.regionNameTile {display: flex;}
+			.regionNameTile span {
+				font-size: small;
+				text-align: left;
+				color: white;
+				margin: auto;
+				margin-bottom: 0em;
+				margin-left: 0em;
+    		}
 		</style>
 	{{ end }}
 </head>

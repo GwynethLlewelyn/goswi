@@ -15,7 +15,10 @@ const GRID_PORT = ':8002';
 const MAP_PROTOCOL = 'https://';
 const MAP_URL = MAP_PROTOCOL + GRID_URL + '/maptiles/00000000-0000-0000-0000-000000000000';
 const ATTRIBUTION_LINE = 'Map data © 2020 by Beta Technologies';
-const showUUID = false;	// if true, this will also show region UUIDs on the popups 
+const showUUID = false;	// if true, this will also show region UUIDs on the popups
+const LOADING = "(Loading...)";
+const NO_DATA_YET = "[No data yet]";
+
 
 // Leave those min and max zoom levels as they are, since these are the default zoom levels for OpenSimulator grids.
 const mapMinZoom = 1;
@@ -31,29 +34,28 @@ const mapMaxZoom = 8;
 */
 var __items;	// this includes the grid data, namely, a way to get region names from coordinates
 				// it will be populated once the map loads (hopefully!)
-				
-// #### Function to return information for infoWindow ####
+
+/**
+*	getRegionInfo will return a properly formatted table with a region's name, coords, and links (SLURLs).
+*	Mostly inspired by https://github.com/hawddamor/opensimmaps/blob/master/url.js (lines 502 ff.)
+*/
 function getRegionInfo(x, y, xjump, yjump) {
-	if (__items == null) { 
-		console.log("No data yet!");
-		return "[No data yet]"; 
+	if (__items == null) {
+//		console.log(NO_DATA_YET);
+		return NO_DATA_YET;
 	}
 // 	console.log("Items are:", __items, "x is:", x, "y is:", y);
-	var response = "";
-	var i;
 	var xmllocX;
 	var xmllocY;
-	var xmluuid;
-	var xmlregionname;
-	for (i = 0; i < __items.length; i++/* += 1*/) {
+	for (var i = 0; i < __items.length; i++) {
 		if (__items[i].nodeType === 1) {
 			xmllocX = __items[i].getElementsByTagName("LocX")[0].firstChild.nodeValue;
 			xmllocY = __items[i].getElementsByTagName("LocY")[0].firstChild.nodeValue;
 			if (xmllocX == x && xmllocY == y) {
-				xmluuid = __items[i].getElementsByTagName("Uuid")[0].firstChild.nodeValue;
-				xmlregionname = __items[i].getElementsByTagName("RegionName")[0].firstChild.nodeValue;
-				response = "<table>";
-				response += "<tr><td colspan='3'><span id='name'><strong>" + xmlregionname + "</strong></span>" 
+				var xmluuid = __items[i].getElementsByTagName("Uuid")[0].firstChild.nodeValue;
+				var xmlregionname = __items[i].getElementsByTagName("RegionName")[0].firstChild.nodeValue;
+				var response = "<table>";
+				response += "<tr><td colspan='3'><span id='name'><strong>" + xmlregionname + "</strong></span>"
 					+ "&nbsp;<span id='loc'>(" + xmllocX + ", " + xmllocY + ")</span></td></tr>";
 				if (showUUID === true) {
 					response += "<tr><td>Region UUID:\n" + xmluuid + "</td></tr>";
@@ -68,13 +70,36 @@ function getRegionInfo(x, y, xjump, yjump) {
 				response += "<td><a class='add' href='secondlife://" + xmlregionname + "/" + xjump + "/" + yjump
 					+ "/'>Local</a></td></tr>";
 				if (xjump > 255 || yjump > 255) {
-					response += "</table><table><tr><td colspan='3'>Viewer may restrict login within SE 256x256 corner </td></tr><tr><td>of larger regions in OpenSim/WhiteCore/Aurora</td></tr>";	
+					response += "</table><table><tr><td colspan='3'>Viewer may restrict login within SE 256x256 corner </td></tr><tr><td>of larger regions in OpenSim/WhiteCore/Aurora</td></tr>";
 				}
 				response += "</table>";
+				return response;
 			}
 		}
 	}
-	return response;
+	return "";	// if we got here, that region is _not_ in our grid...
+}
+
+/**
+*	Same code as above, but just for getting the region name and nothing else
+**/
+function getRegionName(x, y) {
+	if (__items == null) {
+//		console.log(LOADING);
+		return LOADING;
+	}
+	var xmllocX;
+	var xmllocY;
+	for (var i = 0; i < __items.length; i++) {
+		if (__items[i].nodeType === 1) {
+			xmllocX = __items[i].getElementsByTagName("LocX")[0].firstChild.nodeValue;
+			xmllocY = __items[i].getElementsByTagName("LocY")[0].firstChild.nodeValue;
+			if (xmllocX == x && xmllocY == y) {
+				return __items[i].getElementsByTagName("RegionName")[0].firstChild.nodeValue;
+			}
+		}
+	}
+	return "";
 }
 
 /**
@@ -97,6 +122,51 @@ var OSTileLayer = L.TileLayer.extend({
 		return L.Util.template(this._url, L.extend(data, this.options));
 	}
 });
+
+/**
+*	And this is a new layer just to place the tile names (i. e. the region names)
+*	See https://stackoverflow.com/a/48080981/1035977
+*/
+var GridInfo = L.GridLayer.extend({
+	// called for each tile
+	// returns a DOM node containing whatver you want
+	createTile: function (coords) {
+		// create a div
+		var tile = document.createElement('div');
+		tile.className = "regionNameTile";
+		// tile.style.outline = '1px solid black';
+
+		// make sure we have this right
+		var osX = Math.abs(coords.x);
+		var osY = Math.abs(coords.y) - 1;
+
+		// lookup the piece of data you want
+		var regionName = getRegionName(osX, osY);
+		if (regionName == "" || regionName == LOADING) {
+			tile.className += " water";
+		} else {
+			tile.className += " " + encodeURI(regionName);	// this is to avoid class names with spaces... bug: what about 2 regions with the same name??
+		}
+//		console.log("Tile overlay at coords ", osX, ",", osY, "regionName:", regionName);
+
+		// let's add the lat/lng of the center of the tile
+		var tileBounds = this._tileCoordsToBounds(coords);
+		var center = tileBounds.getCenter();
+
+
+		// If we _know_ that the region does not exist, don't print anything (it won't be clickable, either)
+		// If we are still loading the region names, we don't know if the region exists or not, so print (Loading...) and the coords
+		// If we have all data loaded, then print the regionName and the coords
+		// Note that a tile refresh, which happens occasionally, will slowly change this layer's data
+		tile.innerHTML = '<span>' + ((regionName == "") ? "" : (regionName + "<br /><span style='font-size: smaller'>(" + osX + "," + osY + ")</font>")) +
+//			'<br /><span style="font-size: smaller">Lat:&nbsp;' + center.lat + '&nbsp;Lng: ' + center.lng + '&nbsp;Zoom: ' + coords.z + '</span>' +
+			'</span>';
+
+		return tile;
+	}
+});
+// Prepare the layer which will contain all labels with the region names and coords
+var gridInfoLayer = new GridInfo();
 
 // Prepare tile map, using extended class above
 var tiles = new OSTileLayer(MAP_URL + '/map-{z}-{x}-{y}-objects.jpg', {
@@ -122,22 +192,26 @@ var map = L.map('gridMap', {
 		[0, 0],
 		[1048576, 1048576] // see comments above
 	],
-	layers: [tiles],
+	layers: [tiles, gridInfoLayer],
 	attributionControl: true
 })
 .on('load', function(event) {
 // 	console.log('inside on map event load, trying to call', MAP_PROTOCOL + GRID_URL + "/mapdata");
 	var request = new XMLHttpRequest();
-	
+
 	if (request) {
 		console.log('XML request succeeded, inside handler');
 		request.onreadystatechange = function() {
 			if (request.readyState == 4) {
 				if (request.status == 200 || request.status == 304) {
 					var xmlGridData = request.responseXML;
-					console.log("Full Grid Data:", xmlGridData);	// For debugging purposes
+//					console.log("Full Grid Data:", xmlGridData);	// For debugging purposes
+					console.log("Grid data has arrived!");
 					var root = xmlGridData.getElementsByTagName('Map')[0];
-					if (root == null) { return; }
+					if (root == null) {
+						console.log("[ERROR]: Grid data has no root element 'Map'");
+						return;
+					}
 					__items = root.getElementsByTagName("Grid");
 				}
 			}
@@ -147,7 +221,7 @@ var map = L.map('gridMap', {
 		request.send(null);
 	} else {
 		console.log("Getting a new XMLHttpRequest failed!");
-	}	
+	}
 })
 .on('click', function(event) {
 	// calculations to get the grid coords & region coords
@@ -163,9 +237,23 @@ var map = L.map('gridMap', {
 	var local_x = Math.round((x - grid_x) * 256);
 	var local_y = Math.round((y - grid_y) * 256);
 
-	var popup = L.popup()
-		.setLatLng(popLocation)
-		.setContent(getRegionInfo(grid_x, grid_y, local_x, local_y))
-		.openOn(map);
+	var regionInfo = getRegionInfo(grid_x, grid_y, local_x, local_y);
+
+	if (regionInfo != "") {	// we have no info for this region, which is displayed as empty water
+		var popup = L.popup()
+			.setLatLng(popLocation)
+			.setContent(regionInfo)
+			.openOn(map);
+	}
 })
-.setView([3650, 3650], mapMaxZoom);
+.setView([3650, 3650], mapMinZoom)
+.on('zoomend', function () { // inspired by https://stackoverflow.com/a/23021470/1035977
+	if (this.getZoom() < mapMaxZoom && this.hasLayer(gridInfoLayer)) {
+		this.removeLayer(gridInfoLayer);
+	}
+	if (this.getZoom() == mapMaxZoom && this.hasLayer(gridInfoLayer) == false)
+	{
+		this.addLayer(gridInfoLayer);
+	}
+})
+.flyTo([3650, 3650], mapMaxZoom);	// do a cute animation to give time for the grid data to be loaded...
