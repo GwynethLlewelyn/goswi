@@ -64,10 +64,6 @@
 	<link href="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css">
 	{{ end }}
 	{{ if .needsMap }}
-<!--		<script type="text/javascript" src="https://maps.google.com/maps/api/js?v=3&key=AIzaSyBACCLjQjfliUdoyI90ZS5HNf7M22TYORI"></script>
-		<script type="text/javascript" src="../assets/js/mapurl.js"></script>
-		<script type="text/javascript" src="../assets/js/copyright.js"></script>
-		<link rel="stylesheet" type="text/css" href="../assets/css/mapstyle.css" />-->
 		<!-- Leaflet -->
 		<link rel="stylesheet" href="https://unpkg.com/leaflet@1.6.0/dist/leaflet.css"
    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
