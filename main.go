@@ -29,9 +29,11 @@ var (
 	tlsKEY		= flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")
 	author		= flag.String("author", "--nobody--", "Author name")
 	description	= flag.String("description", "gOSWI", "Description for each page")
+	titleCommon	= flag.String("titleCommon", "gOSWI - ", "Common part of the title for each page (usually the brand)")
 	wLog, _		= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 )
+
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
 	year, month, day := t.Date()
@@ -86,6 +88,7 @@ func main() {
 			"now": formatAsYear(time.Now()),
 			"author": author,
 			"description": description,
+			"titleCommon": titleCommon + " - Home",
 		})
 	})
 
@@ -96,6 +99,7 @@ func main() {
 			"author": author,
 			"description": description,
 //			"needsTables": true,	// not really needed? (gwyneth 20200612)
+			"titleCommon": titleCommon + " - About",
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {
@@ -103,6 +107,7 @@ func main() {
 			"now": formatAsYear(time.Now()),
 			"author": author,
 			"description": description,
+			"titleCommon": titleCommon + " - Help",
 		})
 	})
 	// the following are not implemented yet
@@ -111,28 +116,42 @@ func main() {
 			"now": formatAsYear(time.Now()),
 			"author": author,
 			"description": description,
+			"titleCommon": titleCommon + " - Economy",
 		})
 	})
-	router.GET("/register", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
+	userRoutes := router.Group("/user") {
+		router.GET("/register", func(c *gin.Context) {
+			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+				"now": formatAsYear(time.Now()),
+				"author": author,
+				"description": description,
+				"titleCommon": titleCommon + " - Register new user",
+			})
 		})
-	})
-	router.GET("/password", func(c *gin.Context) {
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
+		router.GET("/password", func(c *gin.Context) {
+			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+				"now": formatAsYear(time.Now()),
+				"author": author,
+				"description": description,
+				"titleCommon": titleCommon + " - Change Password",
+			})
 		})
-	})
+		router.GET("/login", func(c *gin.Context) {
+			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+				"now": formatAsYear(time.Now()),
+				"author": author,
+				"description": description,
+				"titleCommon": titleCommon + " - Login",
+			})
+		})
+	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
 			"author": author,
 			"description": description,
+			"titleCommon": titleCommon + " - 404",
 		})
 	})
 	router.NoMethod(func(c *gin.Context) {
@@ -140,6 +159,7 @@ func main() {
 			"now": formatAsYear(time.Now()),
 			"author": author,
 			"description": description,
+			"titleCommon": titleCommon + " - 404",
 		})
 	})
 
@@ -150,17 +170,17 @@ func main() {
 				log.Println("Could not run with TLS; either the certificate", *tlsCRT, "was not found, or the private key",
 					*tlsKEY, "was not found, or either [maybe even both] are invalid.")
 				log.Println("Running _without_ TLS on the usual port")
-				router.Run(":8033")
+				log.Fatal(router.Run(":8033"))
 			}
 		} else {
 			log.Println("[INFO] Running with standard HTTP on the usual port, no TLS configuration detected")
-			router.Run(":8033")
+			log.Fatal(router.Run(":8033"))
 		}
 	} else {
-		router.Run(*local)
+		log.Fatal(router.Run(*local))
 	}
 	// if we are here, router.Run() failed with an error
-	log.Println("Boom, something went wrong! (or maybe this was merely stopped, I don't know")
+	log.Fatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know")
 }
 
 /*

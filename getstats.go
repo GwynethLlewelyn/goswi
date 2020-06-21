@@ -1,4 +1,4 @@
-// First attempt to get some data from OpenSim
+// Getting stats from OpenSimulator — viewer version, online users, regions, and map
 
 package main
 
@@ -114,5 +114,6 @@ func GetStats(c *gin.Context) {
 			"regionsTable"	: regionsTable,
 			"usersOnline"	: userTable,
 			"Debug"			: false,
+			"titleCommon"	: titleCommon + "Welcome!",
 	})
 }

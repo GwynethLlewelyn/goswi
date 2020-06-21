@@ -9,7 +9,7 @@
 	<meta name="description" content="{{ .description }}">
 	<meta name="author" content="{{ .author }}">
 
-	<title>Beta Technologies OpenSimulator Grid - Dashboard</title>
+	<title>{{ .titleCommon }}</title>
 
 	<!-- Custom fonts for this template-->
 	<link href="../lib/startbootstrap-sb-admin-2/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
