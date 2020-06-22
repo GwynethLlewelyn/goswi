@@ -58,14 +58,14 @@
 
 	  <!-- Nav Item - Register -->
 	  <li class="nav-item">
-		<a class="nav-link" href="/register">
+		<a class="nav-link" href="/user/register">
 		  <i class="fas fa-fw fa-user-plus"></i>
 		  <span>Register new resident</span></a>
 	  </li>
 
 	 <!-- Nav Item - Password -->
 	  <li class="nav-item">
-		<a class="nav-link" href="/password">
+		<a class="nav-link" href="/user/password">
 		  <i class="fas fa-fw fa-unlock-alt"></i>
 		  <span>Change password</span></a>
 	  </li>

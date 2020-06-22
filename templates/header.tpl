@@ -89,9 +89,10 @@
 		</style>
 	{{ end }}
 </head>
-
+{{- if not .logintemplate -}}
 <body id="page-top">
 
 	<!-- Page Wrapper -->
 	<div id="wrapper">
+{{- end -}}
 {{ end }}

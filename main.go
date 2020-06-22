@@ -21,18 +21,21 @@ import (
 )
 
 var (
-	local		= flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
-	DSN			= flag.String("dsn", "", "DSN for calling MySQL database")
-	templatePath = flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect")
-	ginMode		= flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
-	tlsCRT		= flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP")
-	tlsKEY		= flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")
-	author		= flag.String("author", "--nobody--", "Author name")
-	description	= flag.String("description", "gOSWI", "Description for each page")
-	titleCommon	= flag.String("titleCommon", "gOSWI - ", "Common part of the title for each page (usually the brand)")
 	wLog, _		= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 )
+
+config := map[string]string	{// just a place to keep them all together
+	"local"			: flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
+	"dsn"			: flag.String("dsn", "", "DSN for calling MySQL database")
+	"templatePath"	: flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect")
+	"ginMode"		: flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
+	"tlsCRT"		: flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP")
+	"tlsKEY"		: flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")
+	"author"		: flag.String("author", "--nobody--", "Author name")
+	"description"	: flag.String("description", "gOSWI", "Description for each page")
+	"titleCommon"	: flag.String("titleCommon", "gOSWI - ", "Common part of the title for each page (usually the brand)")
+}
 
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
@@ -60,7 +63,7 @@ func main() {
 	iniflags.Parse()
 
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
-	if *ginMode == "release" { gin.SetMode(gin.ReleaseMode) }
+	if *config["ginMode"] == "release" { gin.SetMode(gin.ReleaseMode) }
 	
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
@@ -68,14 +71,14 @@ func main() {
 		"formatAsYear": formatAsYear,
 	})*/
 	// figure out where the templates are
-	if (*templatePath != "") {
-		if (!strings.HasSuffix(*templatePath, "/")) { 
-			*templatePath += "/"
+	if (*config["templatePath"] != "") {
+		if (!strings.HasSuffix(*config["templatePath"], "/")) { 
+			*config["templatePath"] += "/"
 		}
 	} else {
-		*templatePath = "/templates/"
+		*config["templatePath"] = "/templates/"
 	}
-	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *templatePath, "*.tpl"))
+	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 
 	// Static stuff (will probably do it via nginx)
@@ -86,9 +89,9 @@ func main() {
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
-			"titleCommon": titleCommon + " - Home",
+			"author": *config["author"],
+			"description": *config["description"],
+			"titleCommon": *config["titleCommon"] + " - Home",
 		})
 	})
 
@@ -96,79 +99,72 @@ func main() {
 	router.GET("/about", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "about.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
+			"author": *config["author"],
+			"description": *config["description"],
 //			"needsTables": true,	// not really needed? (gwyneth 20200612)
-			"titleCommon": titleCommon + " - About",
+			"titleCommon": *config["titleCommon"] + " - About",
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "help.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
-			"titleCommon": titleCommon + " - Help",
+			"author": *config["author"],
+			"description": *config["description"],
+			"titleCommon": *config["titleCommon"] + " - Help",
 		})
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
-			"titleCommon": titleCommon + " - Economy",
+			"author": *config["author"],
+			"description": *config["description"],
+			"titleCommon": *config["titleCommon"] + " - Economy",
 		})
 	})
 	userRoutes := router.Group("/user") {
 		router.GET("/register", func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
-				"author": author,
-				"description": description,
-				"titleCommon": titleCommon + " - Register new user",
+				"author": *config["author"],
+				"description": *config["description"],
+				"titleCommon": *config["titleCommon"] + " - Register new user",
 			})
 		})
 		router.GET("/password", func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
-				"author": author,
-				"description": description,
-				"titleCommon": titleCommon + " - Change Password",
+				"author": *config["author"],
+				"description": *config["description"],
+				"titleCommon": *config["titleCommon"] + " - Change Password",
 			})
 		})
-		router.GET("/login", func(c *gin.Context) {
-			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-				"now": formatAsYear(time.Now()),
-				"author": author,
-				"description": description,
-				"titleCommon": titleCommon + " - Login",
-			})
-		})
+		router.GET("/login", showLoginPage)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
-			"titleCommon": titleCommon + " - 404",
+			"author": *config["author"],
+			"description": *config["description"],
+			"titleCommon": *config["titleCommon"] + " - 404",
 		})
 	})
 	router.NoMethod(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now": formatAsYear(time.Now()),
-			"author": author,
-			"description": description,
-			"titleCommon": titleCommon + " - 404",
+			"author": *config["author"],
+			"description": *config["description"],
+			"titleCommon": *config["titleCommon"] + " - 404",
 		})
 	})
 
-	if *local == "" {
-		if (*tlsCRT != "" && *tlsKEY != "") {
-			err := router.RunTLS(":8033", *tlsCRT, *tlsKEY) // if it works, it will never return
+	if *config["local"] == "" {
+		if (*config["tlsCRT"] != "" && *config["tlsKEY"] != "") {
+			err := router.RunTLS(":8033", *config["tlsCRT"], *config["tlsKEY"]) // if it works, it will never return
 			if (err != nil) {
-				log.Println("Could not run with TLS; either the certificate", *tlsCRT, "was not found, or the private key",
-					*tlsKEY, "was not found, or either [maybe even both] are invalid.")
+				log.Println("Could not run with TLS; either the certificate", *config["tlsCRT"], "was not found, or the private key",
+					*config["tlsKEY"], "was not found, or either [maybe even both] are invalid.")
 				log.Println("Running _without_ TLS on the usual port")
 				log.Fatal(router.Run(":8033"))
 			}
@@ -177,7 +173,7 @@ func main() {
 			log.Fatal(router.Run(":8033"))
 		}
 	} else {
-		log.Fatal(router.Run(*local))
+		log.Fatal(router.Run(*config["local"]))
 	}
 	// if we are here, router.Run() failed with an error
 	log.Fatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know")
@@ -224,9 +220,9 @@ func main() {
 
 	flag.Parse()
 
-	if *local != "" { // Run as a local web server
+	if *config["local"] != "" { // Run as a local web server
 		wLog.Info("Run as local web server")
-		err = http.ListenAndServe(*local, r)
+		err = http.ListenAndServe(*config["local"], r)
 	} else { // Run as FCGI via standard I/O
 
 		l, err := net.Listen("unix", "/var/run/fcgiwrap.socket")

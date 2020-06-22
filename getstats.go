@@ -66,10 +66,10 @@ func GetStats(c *gin.Context) {
 	log.Println("[DEBUG] Data from viewer:", viewerInfo)
 	
 	// open database connection
-	if *DSN == "" {
+	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
-	db, err := sql.Open("mysql", *DSN) // presumes mysql for now
+	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
 
 	defer db.Close()
@@ -108,12 +108,12 @@ func GetStats(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"needsTables"	: true,
 			"needsMap"		: true,
-			"author"		: author,
-			"description"	: description,
+			"author"		: *config["author"],
+			"description"	: *config["description"],
 			"viewerInfo"	: viewerInfo,
 			"regionsTable"	: regionsTable,
 			"usersOnline"	: userTable,
 			"Debug"			: false,
-			"titleCommon"	: titleCommon + "Welcome!",
+			"titleCommon"	: *config["titleCommon"] + "Welcome!",
 	})
 }

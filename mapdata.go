@@ -73,10 +73,10 @@ func GetMapData(c *gin.Context) {
 	?>
 */
 	// open database connection
-	if *DSN == "" {
+	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
-	db, err := sql.Open("mysql", *DSN) // presumes mysql for now
+	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
 
 	defer db.Close()
