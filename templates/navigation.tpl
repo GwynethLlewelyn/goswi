@@ -62,14 +62,14 @@
 		  <i class="fas fa-fw fa-user-plus"></i>
 		  <span>Register new resident</span></a>
 	  </li>
-
+{{ if .Authenticated }}
 	 <!-- Nav Item - Password -->
 	  <li class="nav-item">
 		<a class="nav-link" href="/user/password">
 		  <i class="fas fa-fw fa-unlock-alt"></i>
 		  <span>Change password</span></a>
 	  </li>
-
+{{ end }}
 
 	  <!-- Divider -->
 	  <hr class="sidebar-divider d-none d-md-block">

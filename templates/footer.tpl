@@ -1,4 +1,5 @@
 {{ define "footer.tpl" }}
+{{ if not .logintemplate }}
 		<!-- Footer -->
 		<footer class="sticky-footer bg-white">
 			<div class="container my-auto">
@@ -38,7 +39,7 @@
 			</div>
 		</div>
 	</div>
-
+{{ end }}
 	<!-- Bootstrap core JavaScript-->
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/jquery/jquery.min.js"></script>
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>

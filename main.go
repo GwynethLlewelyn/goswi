@@ -25,16 +25,16 @@ var (
 	PathToStaticFiles string
 )
 
-config := map[string]string	{// just a place to keep them all together
-	"local"			: flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000")
-	"dsn"			: flag.String("dsn", "", "DSN for calling MySQL database")
-	"templatePath"	: flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect")
-	"ginMode"		: flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)")
-	"tlsCRT"		: flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP")
-	"tlsKEY"		: flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP")
-	"author"		: flag.String("author", "--nobody--", "Author name")
-	"description"	: flag.String("description", "gOSWI", "Description for each page")
-	"titleCommon"	: flag.String("titleCommon", "gOSWI - ", "Common part of the title for each page (usually the brand)")
+var config = map[string]*string	{// just a place to keep them all together
+	"local"			: flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000"),
+	"dsn"			: flag.String("dsn", "", "DSN for calling MySQL database"),
+	"templatePath"	: flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect"),
+	"ginMode"		: flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)"),
+	"tlsCRT"		: flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP"),
+	"tlsKEY"		: flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP"),
+	"author"		: flag.String("author", "--nobody--", "Author name"),
+	"description"	: flag.String("description", "gOSWI", "Description for each page"),
+	"titleCommon"	: flag.String("titleCommon", "gOSWI - ", "Common part of the title for each page (usually the brand)"),
 }
 
 // formatAsDate is a function for the templating system, which will be registered below.
@@ -122,8 +122,10 @@ func main() {
 			"titleCommon": *config["titleCommon"] + " - Economy",
 		})
 	})
-	userRoutes := router.Group("/user") {
-		router.GET("/register", func(c *gin.Context) {
+
+	userRoutes := router.Group("/user")
+	{
+		userRoutes.GET("/register", func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
 				"author": *config["author"],
@@ -131,7 +133,7 @@ func main() {
 				"titleCommon": *config["titleCommon"] + " - Register new user",
 			})
 		})
-		router.GET("/password", func(c *gin.Context) {
+		userRoutes.GET("/password", func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
 				"author": *config["author"],
@@ -139,7 +141,8 @@ func main() {
 				"titleCommon": *config["titleCommon"] + " - Change Password",
 			})
 		})
-		router.GET("/login", showLoginPage)
+		userRoutes.GET("/login", showLoginPage)
+		userRoutes.POST("/login", performLogin)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {

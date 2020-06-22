@@ -3,9 +3,7 @@
 package main
 
 import (
-	"database/sql"
-// 	"encoding/json"
-//	"fmt"
+//	"database/sql"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 //	jsoniter "github.com/json-iterator/go"
@@ -21,13 +19,18 @@ func showLoginPage(c *gin.Context) {
 		"now"			: formatAsYear(time.Now()),
 		"author"		: *config["author"],
 		"description"	: *config["description"],
-		"viewerInfo"	: viewerInfo,
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Welcome!",
 		"logintemplate"	: true,
 	})
 }
 
-func performLogin(c *gin.Context) {}
+func performLogin(c *gin.Context) {
+	username := c.PostForm("username")
+    password := c.PostForm("password")
+    
+    log.Println("User:", username, "Password:", password)
+    c.Redirect(http.StatusTemporaryRedirect, "/")
+}
 
 func logout(c *gin.Context) {}
