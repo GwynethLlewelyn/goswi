@@ -55,7 +55,7 @@ func GetStats(c *gin.Context) {
 		err error
 	)
 		
-	// TODO(gwyneth): deal with *empty* channel=Firestorm-Releasex64&grid=btgrid&lang=en&login_content_version=2&os=Mac%20OS%20X%2010.15.6&sourceid=&version=6.3.9%20%2858205%29"
+	// Deal with what comes from the SL viewer, e.g. something like channel=Firestorm-Releasex64&grid=btgrid&lang=en&login_content_version=2&os=Mac%20OS%20X%2010.15.6&sourceid=&version=6.3.9%20%2858205%29"
 	if c.Bind(&oneViewer) == nil { // nil means no errors
 		if oneViewer.ViewerName != "" {	// apparently, it binds even if there is nothing to bind to; so we check this first before appending to the table; it means the table will be nil, and commented out on the template (gwyneth 20200616)
 			viewerInfo = append(viewerInfo, oneViewer)
@@ -63,7 +63,9 @@ func GetStats(c *gin.Context) {
 	} else {
 		checkErr(err)
 	}
-	log.Println("[DEBUG] Data from viewer:", viewerInfo)
+	if *config["ginMode"] == "debug" {
+		log.Println("[DEBUG] Data from viewer:", viewerInfo)
+	}
 	
 	// open database connection
 	if *config["dsn"] == "" {
@@ -102,7 +104,9 @@ func GetStats(c *gin.Context) {
 		userTable = append(userTable, SimpleUser{AvatarName: firstName + " " + lastName})
 	}
 	checkErr(err)	
-	log.Println("[DEBUG] Data from userTable:", userTable)
+	if *config["ginMode"] == "debug" {
+		log.Println("[DEBUG] Data from userTable:", userTable)
+	}
 	
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
@@ -113,7 +117,7 @@ func GetStats(c *gin.Context) {
 			"viewerInfo"	: viewerInfo,
 			"regionsTable"	: regionsTable,
 			"usersOnline"	: userTable,
-			"Debug"			: false,
+			"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 			"titleCommon"	: *config["titleCommon"] + "Welcome!",
 	})
 }

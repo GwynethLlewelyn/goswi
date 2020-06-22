@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/user"
+	osUser "os/user"
 	"path/filepath"
 	"runtime"
 )
@@ -41,7 +41,7 @@ func expandPath(path string) (string, error) {
         return path, nil
     }
 
-    usr, err := user.Current()
+    usr, err := osUser.Current()
     if err != nil {
         return "", err
     }

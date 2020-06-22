@@ -178,7 +178,7 @@
 			</li>
 {{ else }}
 			<li>
-				<a href="/user/login" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i>&nbsp;Log in</a>
+				<a href="/user/login" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-sign-in-alt fa-sm text-white-50"></i>&nbsp;Log in</a>
 			</li>
 {{ end }}
 		  </ul>

@@ -55,7 +55,9 @@ func main() {
 	// figure out where the configuration is
 	_, callerFile, _, _ := runtime.Caller(0)
 	PathToStaticFiles := filepath.Dir(callerFile)
-	fmt.Fprintln(os.Stderr, "[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
+	if *config["ginMode"] == "debug" {
+		fmt.Fprintln(os.Stderr, "[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
+	}
 
 	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to	
 	iniflags.SetConfigFile(path.Join(PathToStaticFiles, "/config.ini"))
@@ -125,14 +127,8 @@ func main() {
 
 	userRoutes := router.Group("/user")
 	{
-		userRoutes.GET("/register", func(c *gin.Context) {
-			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-				"now": formatAsYear(time.Now()),
-				"author": *config["author"],
-				"description": *config["description"],
-				"titleCommon": *config["titleCommon"] + " - Register new user",
-			})
-		})
+		userRoutes.POST("/register", register)
+		userRoutes.GET("/register", showRegistrationPage)
 		userRoutes.GET("/password", func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
@@ -141,8 +137,8 @@ func main() {
 				"titleCommon": *config["titleCommon"] + " - Change Password",
 			})
 		})
-		userRoutes.GET("/login", showLoginPage)
 		userRoutes.POST("/login", performLogin)
+		userRoutes.GET("/login", showLoginPage)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
@@ -166,9 +162,9 @@ func main() {
 		if (*config["tlsCRT"] != "" && *config["tlsKEY"] != "") {
 			err := router.RunTLS(":8033", *config["tlsCRT"], *config["tlsKEY"]) // if it works, it will never return
 			if (err != nil) {
-				log.Println("Could not run with TLS; either the certificate", *config["tlsCRT"], "was not found, or the private key",
+				log.Println("[WARN] Could not run with TLS; either the certificate", *config["tlsCRT"], "was not found, or the private key",
 					*config["tlsKEY"], "was not found, or either [maybe even both] are invalid.")
-				log.Println("Running _without_ TLS on the usual port")
+				log.Println("[INFO] Running _without_ TLS on the usual port")
 				log.Fatal(router.Run(":8033"))
 			}
 		} else {
