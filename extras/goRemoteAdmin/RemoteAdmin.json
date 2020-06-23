@@ -1,0 +1,728 @@
+{
+    "admin_teleport_agent": {
+        "group": "Agent management",
+        "description": "remotely teleport an agent to a given region and/or position",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td></td><td> true</td></tr></tbody></table>",
+        "ErrorMessages": "No error messages",
+        "Notes": "From commit 415b7b7 on Wed 7 Dec 2011 (OpenSimulator 0.7.3-dev)",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region"
+            },
+            "agent_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "agent uuid, optionaly agent_first_name and agent_last_name"
+            }
+        },
+        "Optional": {
+            "agent_first_name": {
+                "default": "",
+                "type": "string",
+                "description": "first name of agent"
+            },
+            "agent_last_name": {
+                "default": "",
+                "type": "string",
+                "description": "last name of agent"
+            },
+            "pos_x": {
+                "default": "",
+                "type": "int",
+                "description": "teleport to region position x"
+            },
+            "pos_y": {
+                "default": "",
+                "type": "int",
+                "description": "teleport to region position y"
+            },
+            "pos_z": {
+                "default": "",
+                "type": "int",
+                "description": "teleport to region position z"
+            },
+            "lookat_x": {
+                "default": "",
+                "type": "int",
+                "description": "look in direction x"
+            },
+            "lookat_y": {
+                "default": "",
+                "type": "int",
+                "description": "look in direction y"
+            },
+            "lookat_z": {
+                "default": "",
+                "type": "int",
+                "description": "look in direction z"
+            }
+        }
+    },
+    "admin_get_agents": {
+        "group": "Agent management",
+        "description": "get information about agents in a given region",
+        "ReturnedParameters": "<h3> <span class=\"mw-headline\" id=\"Root\">Root</span></h3><table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td></td><td> true</td></tr><tr><td> <i>regions</i> </td><td> Regions for which information is returned. </td><td> See regions</td></tr></table><h3> <span class=\"mw-headline\" id=\"Regions\">Regions</span></h3><table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> name </td><td> Name of region </td><td></td></tr><tr><td> id </td><td> UUID of region </td><td></td></tr><tr><td> agents </td><td> Agents found in the region requested. </td><td> See agents</td></tr></table><h3> <span class=\"mw-headline\" id=\"Agents\">Agents</span></h3><table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> name </td><td> Name of agent </td><td></td></tr><tr><td> type </td><td> Type of agent </td><td> Npc or User</td></tr><tr><td> id </td><td> UUID of agent </td><td></td></tr><tr><td> current_parcel_id </td><td> UUID of parcel the agent is currently over </td><td></td></tr><tr><td> pos_x </td><td> X position of the agent </td><td></td></tr><tr><td> pos_y </td><td> Y position of the agent </td><td></td></tr><tr><td> pos_z </td><td> Z position of the agent </td><td></td></tr><tr><td> vel_x </td><td> X velocity of the agent </td><td></td></tr><tr><td> vel_y </td><td> Y velocity of the agent </td><td></td></tr><tr><td> vel_z </td><td> Z velocity of the agent </td><td></td></tr><tr><td> lookat_x </td><td> X gaze direction of the agent </td><td></td></tr><tr><td> lookat_y </td><td> X gaze direction of the agent </td><td></td></tr><tr><td> lookat_z </td><td> X gaze direction of the agent </td><td></td></tr><tr><td> is_sat_on_ground </td><td> true if the agent is sat on the ground </td><td></td></tr><tr><td> is_sat_on_object </td><td> true if the agent is sat on an object </td><td></td></tr><tr><td> is_flying </td><td> true if the agent is flying </td><td></td></tr></table>",
+        "ErrorMessages": "No error messages",
+        "Notes": "This was introduced in git master commit 3072f25 (OpenSimulator 0.7.6 development).",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region to look for agents (or region_id below)"
+            },
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "UUID of the region to look for agents (or region_name above)"
+            }
+        },
+        "Optional": {
+            "include_children": {
+                "default": "",
+                "type": "boolean",
+                "description": "If true, then return information about child agents as well as root agents."
+            }
+        }
+    },
+    "admin_create_user": {
+        "group": "User account management",
+        "description": "remotely allows to create a new user",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>avatar_uuid</i></td><td> new avatar uuid, zero uuid when error occured</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "avatar_uuid returnes zero uuid when an error occures",
+        "Notes": "<ul><li> This function is only available to Robust</li><li> This function is the same Identical to admin_create_user_email.</li></ul>",
+        "Required": {
+            "user_firstname": {
+                "default": "",
+                "type": "string",
+                "description": "first name of user"
+            },
+            "user_lastname": {
+                "default": "",
+                "type": "string",
+                "description": "last name of user"
+            },
+            "user_password": {
+                "default": "",
+                "type": "string",
+                "description": "password of user"
+            },
+            "start_region_x": {
+                "default": "",
+                "type": "int",
+                "description": "start region x position in grid"
+            },
+            "start_region_y": {
+                "default": "",
+                "type": "int",
+                "description": "start region y position in grid"
+            }
+        },
+        "Optional": {
+            "user_email": {
+                "default": "",
+                "type": "string",
+                "description": "email adress of user"
+            }
+        }
+    },
+    "admin_create_user_email": {
+        "group": "User account management",
+        "description": "remotely allows to create a new user (alias for admin_create_user)",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>avatar_uuid</i></td><td> new avatar uuid, zero uuid when error occured</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "avatar_uuid returnes zero uuid when an error occures",
+        "Notes": "<ul><li> This function is only available to Robust</li><li> This function is the same Identical to admin_create_user_email.</li></ul>",
+        "Required": {
+            "user_firstname": {
+                "default": "",
+                "type": "string",
+                "description": "first name of user"
+            },
+            "user_lastname": {
+                "default": "",
+                "type": "string",
+                "description": "last name of user"
+            },
+            "user_password": {
+                "default": "",
+                "type": "string",
+                "description": "password of user"
+            },
+            "start_region_x": {
+                "default": "",
+                "type": "int",
+                "description": "start region x position in grid"
+            },
+            "start_region_y": {
+                "default": "",
+                "type": "int",
+                "description": "start region y position in grid"
+            }
+        },
+        "Optional": {
+            "user_email": {
+                "default": "",
+                "type": "string",
+                "description": "email adress of user"
+            }
+        }
+    },
+    "admin_exists_user": {
+        "group": "User account management",
+        "description": "remotely allows to check if a certain user account exists",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td> <i>user_firstname</i></td><td> first name of user</td><td></td></tr><tr><td> <i>user_lastname</i></td><td> last name of user</td><td></td></tr><tr><td><i>lastlogin</i></td><td> timestamp of last user login</td><td> This is a Unix timestamp.  This was buggy before OpenSimulator git master f064075 (post 0.7.5) where the timestamp was returned in a timestamp field in lastlogin instead.  If the user did not exist, this value is 0.</td></tr></tbody></table>",
+        "ErrorMessages": "No error messages.",
+        "Notes": "",
+        "Required": {
+            "user_firstname": {
+                "default": "",
+                "type": "string",
+                "description": "first name of user"
+            },
+            "user_lastname": {
+                "default": "",
+                "type": "string",
+                "description": "last name of user"
+            }
+        },
+        "Optional": "No optional parameters"
+    },
+    "admin_update_user": {
+        "group": "User account management",
+        "description": "remotely allows to update the password and start region of users",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>avatar_uuid</i></td><td> new avatar uuid, zero uuid when error occured</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "avatar_uuid returnes zero uuid when an error occures.",
+        "Notes": "",
+        "Required": {
+            "user_firstname": {
+                "default": "",
+                "type": "string",
+                "description": "first name of user"
+            },
+            "user_lastname": {
+                "default": "",
+                "type": "string",
+                "description": "last name of user"
+            }
+        },
+        "Optional": {
+            "user_password": {
+                "default": "",
+                "type": "string",
+                "description": "password of user"
+            },
+            "start_region_x": {
+                "default": "",
+                "type": "int",
+                "description": "start region x position in grid start_region_y required"
+            },
+            "start_region_y": {
+                "default": "",
+                "type": "int",
+                "description": "start region y position in grid start_region_x required"
+            }
+        }
+    },
+    "admin_authenticate_user": {
+        "group": "User account management",
+        "description": "remotely allows to authenticate an user remotely. This feature is part of the development branch, after the 0.7.6 OpenSim release.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successful</td><td> true, false</td></tr><tr><td><i>error</i></td><td> the error that occurred (ie: authentication failed messages)</td><td></td></tr><tr><td><i>token</i></td><td> the authentication token</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "<p><i>error</i> is set to \"scene does not exist\" in case no scene is available.</p><p><i>error</i> is set to \"avatar FIRSTNAME LASTNAME does not exist\" in case the avatar with FIRSTNAME LASTNAME does not exist.</p><p><i>error</i> is set to \"no password provided for FIRSTNAME LASTNAME\" in case the call did not include a password for the avatar named FISTNAME LASTNAME.</p><p><i>error</i> is set to \"no token lifetime provided for FISTNAME LASTNAME\" if the <i>token</i> parameter has been omitted from the call.</p><p><i>error</i> is set to \"token lifetime longer than 30s for FISTNAME LASTNAME\" in case the request asked for <i>token_lifetime</i> larger than 30.</p><p><i>error</i> is set to \"no authentication module loaded\" in case no authentication module could be loaded.</p><p><i>error</i> is set to \"authentication failed for FIRSTNAME LASTNAME\" in case the authentication failed for user FISTNAME LASTNAME.</p>",
+        "Notes": "",
+        "Required": {
+            "user_firstname": {
+                "default": "",
+                "type": "string",
+                "description": "first name of user"
+            },
+            "user_lastname": {
+                "default": "",
+                "type": "string",
+                "description": "last name of user"
+            },
+            "user_password": {
+                "default": "",
+                "type": "string",
+                "description": "password of user"
+            },
+            "token_lifetime": {
+                "default": "",
+                "type": "int",
+                "description": "the lifetime of the authentication token (max: 30s)"
+            }
+        },
+        "Optional": "No optional parameters"
+    },
+    "admin_broadcast": {
+        "group": "Region management",
+        "description": "remotely allows to broadcast a general alert to all agents in a region",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "No error messages.",
+        "Notes": "",
+        "Required": {
+            "message": {
+                "default": "",
+                "type": "string",
+                "description": "Message to be broadcasted"
+            }
+        },
+        "Optional": "No optional parameters"
+    },
+    "admin_close_region": {
+        "group": "Region management",
+        "description": "remotely allows to close regions. No changes are done to the database. The region will be shutdown and removed from the map.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr><tr><td> <i>region_name</i></td><td> name of region when using <i>region_name</i></td><td></td></tr><tr><td> <i>region_id</i></td><td> name uuid of region when using <i>region_id</i></td><td></td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> region \"{REGION NAME}\" does not exist</li><li> region \"{REGION UUID}\" does not exist</li></ul>",
+        "Notes": "use admin_delete_region if you also want to remove the region from the database",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region, optionaly use region_id"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "string",
+                "description": "region uuid of the region."
+            }
+        }
+    },
+    "admin_create_region": {
+        "group": "Region management",
+        "description": "remotely allows to create a new regions and adds them to an estate. After creation the region is online and available in the map",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr><tr><td> <i>region_name</i></td><td> name of the new region</td><td></td></tr><tr><td> <i>region_uuid</i></td><td> region uuid of the new region</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> cannot instantiate new region, server capacity {MAX REGION LIMIT} already reached; delete regions first</li><li> region {UUID} already in use by region {REGION NAME}, UUID {REGION UUID}</li><li> region name already in use by region {REGION NAME}, UUID {REGION UUID}</li><li> region location <{X},{Y}> already in use by region {REGION NAME}, UUID {REGION UUID}</li><li> region internal IP {IP} and port {PORT} already in use by {REGION NAME}, UUID {REGION UUID}</li><li> Invalid location for region file.</li><li> Specified user was not found.</li><li> Estate owner details not provided.</li><li> Failed to join estate.</li></ul>",
+        "Notes": "<ul><li> When adding a region to a existing estate in the estate database, then one does not need to specify the estate owner. If the estate is does not exist or the estate exists with diffrent estate owners, then one has to use the <i>estate_owner_uuid</i> or <i>estate_owner_first</i> + <i>estate_owner_last</i>.</li><li> When using the optional <i>persist</i> parameter the region configs will be saved to the default region file. You can specify the file using the parameter region_file if you dont want to use the default</li></ul>",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region"
+            },
+            "listen_ip": {
+                "default": "",
+                "type": "string",
+                "description": "listen ip to be used by region"
+            },
+            "listen_port": {
+                "default": "",
+                "type": "int",
+                "description": "integer value of port"
+            },
+            "external_address": {
+                "default": "",
+                "type": "string",
+                "description": "external address to be used by the region"
+            },
+            "region_x": {
+                "default": "",
+                "type": "int",
+                "description": "region x location in grid"
+            },
+            "region_y": {
+                "default": "",
+                "type": "int",
+                "description": "region y location in grid"
+            },
+            "estate_name": {
+                "default": "",
+                "type": "string",
+                "description": "estate name that the new region belongs to. Specify estate owner if the estate does not exist yet"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid to be used for new region"
+            },
+            "estate_owner_uuid": {
+                "default": "",
+                "type": "uuid",
+                "description": "estate owner uuid (optionaly use estate_owner_first and estate_owner_last)"
+            },
+            "estate_owner_first": {
+                "default": "",
+                "type": "string",
+                "description": "estate owners first name"
+            },
+            "estate_owner_last": {
+                "default": "",
+                "type": "string",
+                "description": "estate owners last name"
+            },
+            "persist": {
+                "default": "",
+                "type": "boolean",
+                "description": "saves new region configs to file e.g. region.ini"
+            },
+            "region_file": {
+                "default": "",
+                "type": "string",
+                "description": "when using persist you can specify the file to save region configs to (requires persist to be used)"
+            },
+            "public": {
+                "default": "",
+                "type": "boolean",
+                "description": "enable/disable public access to new region"
+            },
+            "enable_voice": {
+                "default": "",
+                "type": "boolean",
+                "description": "enable/disable voice to new region"
+            },
+            "heightmap_file": {
+                "default": "",
+                "type": "file",
+                "description": "load a heightmap file once the new region has been created"
+            }
+        }
+    },
+    "admin_delete_region": {
+        "group": "Region management",
+        "description": "remotely allows to delete regions. All region data in the database will be removed. The region will be shutdown and removed from the map.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr><tr><td> <i>region_id</i></td><td> uuid of the region</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> region \"{REGION NAME}\" does not exist</li></ul>",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region"
+            }
+        },
+        "Optional": "No optional parameters"
+    },
+    "admin_modify_region": {
+        "group": "Region management",
+        "description": "remotely allows to enable/disable voice and/or enable/disable public access to a region.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr><tr><td> <i>region_id</i></td><td> uuid of region</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> region \"{REGION NAME}\" does not exist</li><li> region \"{REGION UUID}\" does not exist</li></ul>",
+        "Notes": "enable/disable public region access.",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region"
+            }
+        },
+        "Optional": {
+            "enable_voice": {
+                "default": "",
+                "type": "boolean",
+                "description": "enable/disable voice."
+            },
+            "public": {
+                "default": "",
+                "type": "boolean",
+                "description": "enable/disable public region access."
+            }
+        }
+    },
+    "admin_region_query": {
+        "group": "Region management",
+        "description": "remotely allows to query the health of a region.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr><tr><td> <i>health</i></td><td> health data of the region</td><td>integer value</td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> failed to switch to region {REGION NAME}</li><li> failed to switch to region {REGION UUID}</li><li> neither region_name nor region_uuid given</li></ul>",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "string",
+                "description": "region uuid of the region."
+            }
+        }
+    },
+    "admin_restart": {
+        "group": "Region management",
+        "description": "remotely allows to triggers a region to restart.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>accepted</i></td><td> true when accepted</td><td> true, false</td></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr><tr><td> <i>rebooting</i></td><td> true when region is restarting</td><td>true, false</td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> region not found</li></ul>",
+        "Notes": "<ul><li> <i>accepted</i> is an optional returned parameter, probably used prior to <i>success</i> </li></ul>",
+        "Required": {
+            "region_id": {
+                "default": "",
+                "type": "string",
+                "description": "region uuid of the region."
+            }
+        },
+        "Optional": "No optional parameters"
+    },
+    "admin_shutdown": {
+        "group": "Region management",
+        "description": "remotely allows to shutdown the simulator. Agents in the Region recieve a warning. All regions in the instance will be shut down. When using the optional shutdown and milliseconds parameter the shut down is delayed by the specified miliseconds.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true</td></tr><tr><td> <i>accepted</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "<ul><li> Returned Parameter <i>success</i> only implemeted for true, patch in work by Michelle Argus to implement <i>success</i> fully</li></ul>",
+        "Required": "No required parameters",
+        "Optional": {
+            "shutdown": {
+                "default": "",
+                "type": "boolean",
+                "description": "use shutdown together with milliseconds to trigger a delayed shutdown."
+            },
+            "milliseconds": {
+                "default": "",
+                "type": "int",
+                "description": "miliseconds till region shuts down."
+            }
+        }
+    },
+    "admin_load_heightmap": {
+        "group": "Region file management",
+        "description": "remotely allows to load a hight map files to a region.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true</td></tr><tr><td><i>error</i></td><td> error message when not successfull</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "<ul><li> terrain module not available</li></ul>",
+        "Notes": "<ul><li> Terrain files can also be loaded via web, were the filename is the full webadress.</li><li> <i>accepted</i> is an returned parameter, probably used prior to <i>success</i></li></ul>",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region, optionaly use region_id"
+            },
+            "filename": {
+                "default": "",
+                "type": "file",
+                "description": "file name of terrain file"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid of the region."
+            }
+        }
+    },
+    "admin_load_oar": {
+        "group": "Region file management",
+        "description": "remotely allows to load a saved OAR file into a region",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>loaded</i></td><td> true when successfully loaded file</td><td> true, false</td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region, optionaly use region_id"
+            },
+            "filename": {
+                "default": "",
+                "type": "file",
+                "description": "file name of terrain file"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid of the region."
+            },
+            "merge": {
+                "default": "",
+                "type": "boolean",
+                "description": "merge oar with the existing region objects"
+            },
+            "skip-assets": {
+                "default": "",
+                "type": "boolean",
+                "description": "skip loading assets to region objects"
+            }
+        }
+    },
+    "admin_save_heightmap": {
+        "group": "Region file management",
+        "description": "remotely allows to save a hight map of the regions to file.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true</td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "<ul><li> <i>accepted</i> is an returned parameter, probably used prior to <i>success</i></li></ul>",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region, optionaly use region_id"
+            },
+            "filename": {
+                "default": "",
+                "type": "string",
+                "description": "file name of terrain file"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid of the region."
+            }
+        }
+    },
+    "admin_save_oar": {
+        "group": "Region file management",
+        "description": "remotely allows to save a oar files of regions",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td><i>saved</i></td><td> true when successfully saved xml</td><td> true, false</td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the region, optionaly use region_id"
+            },
+            "filename": {
+                "default": "",
+                "type": "string",
+                "description": "file name of terrain file"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid of the region."
+            },
+            "noassets": {
+                "default": "",
+                "type": "boolean",
+                "description": "save oar without objects"
+            },
+            "profile": {
+                "default": "",
+                "type": "string",
+                "description": "add all names of creators from this world with link to profile. <url> of profile service."
+            },
+            "perm": {
+                "default": "",
+                "type": "string",
+                "description": "objects with insufficient permissions will not be saved. C, T, CT."
+            }
+        }
+    },
+    "admin_acl_list": {
+        "group": "Region access management",
+        "description": "remotely allows to retrieve a list of users who can access the region",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td> <i>users</i></td><td> list of users allowed access</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region, optionaly region_uuid"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid"
+            }
+        }
+    },
+    "admin_acl_clear": {
+        "group": "Region access management",
+        "description": "remotely allows to clear the access list for the region",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region, optionaly region_uuid"
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid"
+            }
+        }
+    },
+    "admin_acl_add": {
+        "group": "Region access management",
+        "description": "remotely allows to add a list of users to the access control list",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>added</i></td><td> list of user uuids added</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region, optionaly region_uuid"
+            },
+            "users": {
+                "default": "",
+                "type": "string",
+                "description": "list of users names. eg. \"Jon Doe\""
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid"
+            }
+        }
+    },
+    "admin_acl_remove": {
+        "group": "Region access management",
+        "description": "remotely allows to remove a list of users from the access control list",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr><tr><td> <i>removed</i></td><td> number count of removed users</td><td></td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "",
+        "Required": {
+            "region_name": {
+                "default": "",
+                "type": "string",
+                "description": "Name of the new region, optionaly region_uuid"
+            },
+            "users": {
+                "default": "",
+                "type": "string",
+                "description": "list of users names. eg. \"Jon Doe\""
+            }
+        },
+        "Optional": {
+            "region_id": {
+                "default": "",
+                "type": "uuid",
+                "description": "region uuid"
+            }
+        }
+    },
+    "admin_estate_reload": {
+        "group": "Estate management",
+        "description": "remotely allows to reload estate settings of all regions in the simulator. This can be used to update the estate settings if they have changed on another simulator or database.",
+        "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>success</i></td><td> true when successfull</td><td> true, false</td></tr></tbody></table>",
+        "ErrorMessages": "",
+        "Notes": "<ul><li> From commit 90f03c on Mon 6 May 2013 (OpenSimulator 0.7.5-dev)</li></ul>",
+        "Required": "No required parameters",
+        "Optional": "No optional parameters"
+    },
+    "admin_console_command": {
+        "group": "Administration",
+        "description": "remotely allows to send commands to the console. <br>Caution ! This function gives full permission to execute all available console commands!",
+        "ReturnedParameters": "",
+        "ErrorMessages": "",
+        "Notes": "A list of availiable commands is at: <a href=\"http://opensimulator.org/wiki/Server_Commands\" target=\"_new\">http://opensimulator.org/wiki/Server_Commands</a><br>Some examples:<ul><li>show regions</li><li>monitor report</li></ul>",
+        "Required": {
+            "command": {
+                "default": "",
+                "type": "string",
+                "description": "console command"
+            }
+        },
+        "Optional": "No optional parameters"
+    }
+}
