@@ -1,3 +1,9 @@
+/**
+*	Sub-project to connect to the OpenSim Remote Admin console via XML-RPC. This ‘extra’ will act as a CLI application 
+*	to send commands from the shell to the remote admin console, basically to test things; it uses the excellent idea 
+*	from https://github.com/MarcelEdward/OpenSim-RemoteAdmin/ (a PHP tool) which reads all valid XML-RPC commands from a JSON file.
+**/
+
 package main
 
 import (
