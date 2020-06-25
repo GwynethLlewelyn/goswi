@@ -1,18 +1,20 @@
 /**
-*	Sub-project to connect to the OpenSim Remote Admin console via XML-RPC. This ‘extra’ will act as a CLI application 
-*	to send commands from the shell to the remote admin console, basically to test things; it uses the excellent idea 
+*	Sub-project to connect to the OpenSim Remote Admin console via XML-RPC. This ‘extra’ will act as a CLI application
+*	to send commands from the shell to the remote admin console, basically to test things; it uses the excellent idea
 *	from https://github.com/MarcelEdward/OpenSim-RemoteAdmin/ (a PHP tool) which reads all valid XML-RPC commands from a JSON file.
 **/
 
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
 	"io/ioutil"
-	"github.com/kolo/xmlrpc"
+//	"github.com/kolo/xmlrpc"
 	"github.com/urfave/cli/v2"
+	"net/http"
 	"os"
 	"reflect"
 	"time"
@@ -123,7 +125,7 @@ func main() {
 												for subSubProperty, rawSubSubPropertyData := range oneRawSubProperty {
 													fmt.Println("\t\t", subSubProperty, ":>", rawSubSubPropertyData)
 												}
-											}			
+											}
 										} else {
 											fmt.Println("\t\t", rawSubPropertyData)
 										}
@@ -133,7 +135,7 @@ func main() {
 								fmt.Println("\t", rawData)
 							}
 							fmt.Println("")
-						} 
+						}
 					} else {
 						fmt.Println("(couldn't extract properties)")
 					}
@@ -142,10 +144,10 @@ func main() {
 			return nil
 		},
 	}
-	
+
 /*
 	if xmlrpcRawCommandsJSON == nil || app == nil {
-		log.Fatal("Please place the JSON Remote Admin file on the path\n(you can get it from here: https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json)\nand try again")	
+		log.Fatal("Please place the JSON Remote Admin file on the path\n(you can get it from here: https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json)\nand try again")
 } */
 
 	app.Copyright = "Licensed as CC-BY " + formatAsYear(time.Now()) + " by " + app.Authors[0].String() + ". Few rights reserved."
@@ -160,7 +162,7 @@ func main() {
 				if verboseMode { fmt.Println("Successfully Opened", remoteAdminFile) }
 				// defer the closing of our jsonFile so that we can parse it later on
 				defer jsonFile.Close()
-			
+
 				if byteValue, err := ioutil.ReadAll(jsonFile); err == nil {
 					json.Unmarshal([]byte(byteValue), &xmlrpcRawCommandsJSON)
 				} else {
@@ -169,7 +171,7 @@ func main() {
 			} else {
 				if verboseMode { fmt.Println("Could not open file", remoteAdminFile) }
 			}
-		
+
 		// now try to add the commands to the App
 		if xmlrpcRawCommandsJSON == nil {
 			fmt.Println("No JSON config file specified or file invalid; limited functionality applies")
@@ -180,28 +182,71 @@ func main() {
 			if verboseMode { fmt.Println("--- Loading commands ---") }
 			for rawCommand, rawCommandData := range xmlrpcRawCommandsJSON {
 				// there should be one
-				oneRawCommand, ok := rawCommandData.(map[string]interface{})	
+				oneRawCommand, ok := rawCommandData.(map[string]interface{})
 				if !ok {
 					if verboseMode { fmt.Print("x") }
 					break	// try next command...
 				}
-				
+
 				if rawUsage, ok := oneRawCommand["description"]; ok {
 					usage = fmt.Sprintf("%v", rawUsage)
 				} else {
 					usage = "(no description)"
 				}
-				
+
 				var newCommand cli.Command
 				newCommand = cli.Command{
 					Name:	 rawCommand,
 					Usage:	 usage,
 					Action:	 func(c *cli.Context) error {
-						fmt.Println("Sending", rawCommand, "with", c.Args(), "to", opensimServerURL)
+						fmt.Println("Sending", c.Command.Name, "with", c.Args(), "to", opensimServerURL)
 						if !c.Args().Present() {
 							return fmt.Errorf("No arguments found for command %q - aborting!\n", rawCommand)
 						}
-						// loop through parameter/value pairs
+
+						// Build the XML manually, since it's too hard to do it using a library...
+						var xmlrpcRequest bytes.Buffer
+						xmlrpcRequest.WriteString(`<?xml version="1.0"?>
+<methodCall>
+	<methodName>` + c.Command.Name + `</methodName>
+		<params>
+			<param>
+				<value>
+					<struct>
+						<member>
+							<name>password</name>
+							<value><string>` + password + `</string></value>
+						</member>`)
+						for i := 0; i < c.NArg() - 1; i+=2 {
+							xmlrpcRequest.WriteString("\n\t\t\t\t\t\t<member>\n\t\t\t\t\t\t\t<name>" + c.Args().Get(i) + "</name>\n")
+							xmlrpcRequest.WriteString("\t\t\t\t\t\t\t<value>" + c.Args().Get(i+1) + "</value>\n\t\t\t\t\t\t</member>\n")
+						}
+						xmlrpcRequest.WriteString(`					</struct>
+				</value>
+			</param>
+		</params>
+</methodCall>`)
+//							return fmt.Errorf("Could not initialise buffer for request; error was: %q\n", err.Error())
+
+						// should do some sanitation here
+
+						fmt.Printf("Request: %v\n", xmlrpcRequest.String())
+
+						var client http.Client
+						
+						if req, err := http.NewRequest("POST", opensimServerURL, &xmlrpcRequest); err != nil {
+							return fmt.Errorf("Could not initialise request with error: %q\n", err.Error())
+						} else {
+							req.Header.Add("Content-type", "text/xml")
+							req.Header.Add("Connection", "close")
+							resp, err := client.Do(req)
+						
+							fmt.Printf("Response: %v\n", resp)
+							return err
+						}
+/*
+						// It's hard to extract the parameters to do what I want! This is using "github.com/kolo/xmlrpc"
+						//  loop through parameter/value pairs
 						var xmlrpcRequest []XmlRpcParameter
 						// add password first
 						xmlrpcRequest = append(xmlrpcRequest, XmlRpcParameter{
@@ -214,18 +259,21 @@ func main() {
 								Value:		c.Args().Get(i+1),
 							})
 						}
-						
-						client, err := xmlrpc.NewClient(opensimServerURL, nil)
-						if err != nil {
-							return fmt.Errorf("Could not contact OpenSimulator on %q - aborting!\n", opensimServerURL)
+
+						fmt.Printf("Request: %v\n", xmlrpcRequest)
+						if client, err := xmlrpc.NewClient(opensimServerURL, nil); err != nil {
+							return fmt.Errorf("Could not create a new client to %q - aborting!\n", opensimServerURL)
+						} else {
+							var response xmlrpc.Response
+							err := client.Call(c.Command.Name, &xmlrpcRequest, &response)
+							fmt.Printf("Response: %v\n", response)
+							return err
 						}
-						var result []interface{}
-						client.Call(rawCommand, xmlrpcRequest, &result)
-						fmt.Printf("Result: %v\n", result)
 						return nil
+*/
 					},
 				}
-				
+
 				app.Commands = append(app.Commands, &newCommand)
 				if verboseMode { fmt.Print(".") }
 			}
