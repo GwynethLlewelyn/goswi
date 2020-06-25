@@ -18,13 +18,18 @@ import (
 	"time"
 )
 
+type XmlRpcParameter struct {
+	Parameter string	`xmlrpc:parameter`
+	Value string		`xmlrpc:string`
+}
+
 func main() {
 	var (
 		remoteAdminFile string = "RemoteAdmin.json"
 		verboseMode bool = false // just to make sure!!
 		opensimServerURL string
 		xmlrpcRawCommandsJSON map[string]interface{}
-		username, password string
+		password string
 	)
 
 	// I have no idea why this isn't the default! Note: it doesn't work anyway
@@ -58,11 +63,12 @@ func main() {
 			&cli.StringFlag{
 				Name:			"host",
 				Value:			"http://127.0.0.1:9000",
-				Aliases:		[]string{"H"},
+				Aliases:		[]string{"H", "url"},
 				Usage:			"`URL` to OpenSimulator instance",
 				Destination:	&opensimServerURL,
 				DefaultText:	"localhost, port 9000",
 			},
+/*
 			&cli.StringFlag{
 				Name:			"user",
 				Value:			"",
@@ -71,12 +77,13 @@ func main() {
 				Destination:	&username,
 				DefaultText:	"none, unsafe!",
 			},
+*/
 			&cli.StringFlag{
 				Name:			"password",
 				Value:			"",
-				Aliases:		[]string{"p", "pass", "secret"},
-				Usage:			"`Password` or 'secret' for XML-RPC call",
-				Destination:	&username,
+				Aliases:		[]string{"p"},
+				Usage:			"Access `password` or 'secret' for XML-RPC call",
+				Destination:	&password,
 				DefaultText:	"none, unsafe!",
 			},
 			&cli.BoolFlag{
@@ -191,12 +198,30 @@ func main() {
 					Usage:	 usage,
 					Action:	 func(c *cli.Context) error {
 						fmt.Println("Sending", rawCommand, "with", c.Args(), "to", opensimServerURL)
-						client, _ := xmlrpc.NewClient(opensimServerURL, nil)
-						result := struct{
-							Version string `xmlrpc:"version"`
-						}{}
-						client.Call(rawCommand, nil, &result)
-						fmt.Printf("Result: %v\n", result) // Version: 4.2.7+
+						if !c.Args().Present() {
+							return fmt.Errorf("No arguments found for command %q - aborting!\n", rawCommand)
+						}
+						// loop through parameter/value pairs
+						var xmlrpcRequest []XmlRpcParameter
+						// add password first
+						xmlrpcRequest = append(xmlrpcRequest, XmlRpcParameter{
+								Parameter:	"password",
+								Value:		password,
+							})
+						for i := 2; i < c.NArg() - 1; i+=2 {
+							xmlrpcRequest = append(xmlrpcRequest, XmlRpcParameter{
+								Parameter:	c.Args().Get(i),
+								Value:		c.Args().Get(i+1),
+							})
+						}
+						
+						client, err := xmlrpc.NewClient(opensimServerURL, nil)
+						if err != nil {
+							return fmt.Errorf("Could not contact OpenSimulator on %q - aborting!\n", opensimServerURL)
+						}
+						var result []interface{}
+						client.Call(rawCommand, xmlrpcRequest, &result)
+						fmt.Printf("Result: %v\n", result)
 						return nil
 					},
 				}
