@@ -242,6 +242,7 @@ func main() {
 							resp, err := client.Do(req)
 						
 							fmt.Printf("Response: %v\n", resp)
+							// decode resp to get valid XML, etc.
 							return err
 						}
 /*
