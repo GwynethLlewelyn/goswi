@@ -54,13 +54,45 @@ func isUserValid(username, password string) bool {
 		avatarFirstName, avatarLastName).Scan(&principalID)	// there can be only one, or our database is corrupted
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
-			log.Println("[DEBUG]", username, "not in database")
+			log.Println("[DEBUG]: user", username, "not in database")
 		}
 		return false
 	}
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] Avatar data from database: '%s %s' (%s)", avatarFirstName, avatarLastName, principalID)
 	}
+	var passwordHash, passwordSalt string
+	err = db.QueryRow("SELECT passwordHash, passwordSalt FROM auth WHERE UUID = ?", 
+		principalID).Scan(&passwordHash, &passwordSalt)
+	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
+		if *config["ginMode"] == "debug" {
+			log.Println("[DEBUG]: password not in database")
+		}
+		return false
+	}
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] Authentication data for: '%s %s' (%s): user-submitted password: %q Hash on DB: %q Salt on DB: %q",
+			avatarFirstName, avatarLastName, principalID, password, passwordHash, passwordSalt)
+	}
+	// md5(md5("password") + ":" + passwordSalt) according to http://opensimulator.org/wiki/Auth
+	firsthash := GetMD5Hash(password)
+	var internalconcat string = fmt.Sprintf("%s:%s", GetMD5Hash(firsthash), passwordSalt)
+	externalhash := GetMD5Hash(internalconcat)
+	// we'll simplify the above code to a one-liner which will be more legible once we debug this properly! (gwyneth 20200626)
+
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG]: md5('password') = %q; md5('password') + ':' + passwordSalt = %q; md5(md5('password') + ':' + passwordSalt) = %q, which we must compare with %q", firsthash, internalconcat, externalhash, passwordHash)
+	
+		return false
+	}
+	// compare and see if it matches
+	if externalhash == passwordHash {
+		// authenticated! now set session cookie and do all the magic
+		log.Printf("[INFO]: User %q authenticated.", username)
+	} else {
+		log.Printf("[WARN]: Invalid authentication for %q — either user not found or password is wrong", username)
+	}
+		
 	return true
 }
 
