@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"fmt"
 	"log"
 	"os"
@@ -46,4 +48,10 @@ func expandPath(path string) (string, error) {
         return "", err
     }
     return filepath.Join(usr.HomeDir, path[1:]), nil
+}
+
+// GetMD5Hash calculated the MD5 hash of any string. See aviv's solution on SO: https://stackoverflow.com/a/25286918/1035977
+func GetMD5Hash(text string) string {
+	hash := md5.Sum([]byte(text))
+	return hex.EncodeToString(hash[:])
 }
