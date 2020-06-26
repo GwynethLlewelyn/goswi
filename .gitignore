@@ -34,13 +34,13 @@ Temporary Items
 *.dll
 *.so
 *.dylib
+goswi
 
 # Test binary, built with `go test -c`
 *.test
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
-goswi
 
 # Files that may have sensitive information and should be kept out of GitHub
 config.ini
