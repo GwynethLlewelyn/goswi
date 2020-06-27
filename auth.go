@@ -117,6 +117,7 @@ func showLoginPage(c *gin.Context) {
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Welcome!",
 		"logintemplate"	: true,
+		"Authenticated"	: c.GetString("Authenticated"),
 	})
 }
 
@@ -149,8 +150,18 @@ func performLogin(c *gin.Context) {
 		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
 		
 		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
-			"ErrorTitle":   "Login Failed",
-			"ErrorMessage": "Invalid credentials provided"})
+			"ErrorTitle"	: "Login Failed",
+			"ErrorMessage"	: "Invalid credentials provided",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"Debug"			: false,
+			"titleCommon"	: *config["titleCommon"] + "Oh, No!",
+			"logintemplate"	: true,
+			"WrongUsername"	: oneUser.Username,
+			"WrongPassword"	: oneUser.Password,
+			"WrongRememberMe" : oneUser.RememberMe,
+		})
 	}
 	c.Redirect(http.StatusSeeOther, "/")	// see https://softwareengineering.stackexchange.com/questions/99894/why-doesnt-http-have-post-redirect and https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
 }
@@ -207,6 +218,7 @@ func showRegistrationPage(c *gin.Context) {
 		"author": *config["author"],
 		"description": *config["description"],
 		"titleCommon": *config["titleCommon"] + " - Register new user",
+		"Authenticated": c.GetString("Authenticated"),
 	})
 }
 
@@ -218,6 +230,7 @@ func register(c *gin.Context) {
 		"author": *config["author"],
 		"description": *config["description"],
 		"titleCommon": *config["titleCommon"] + " - Register new user",
+		"Authenticated": c.GetString("Authenticated"),
 	})
 }
 

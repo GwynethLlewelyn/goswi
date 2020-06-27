@@ -96,6 +96,7 @@ func main() {
 			"author": *config["author"],
 			"description": *config["description"],
 			"titleCommon": *config["titleCommon"] + " - Home",
+			"Authenticated": c.GetString("Authenticated"),
 		})
 	})
 
@@ -116,6 +117,7 @@ func main() {
 			"author": *config["author"],
 			"description": *config["description"],
 			"titleCommon": *config["titleCommon"] + " - Help",
+			"Authenticated": c.GetString("Authenticated"),
 		})
 	})
 	// the following are not implemented yet
@@ -125,6 +127,7 @@ func main() {
 			"author": *config["author"],
 			"description": *config["description"],
 			"titleCommon": *config["titleCommon"] + " - Economy",
+			"Authenticated": c.GetString("Authenticated"),
 		})
 	})
 
@@ -138,6 +141,7 @@ func main() {
 				"author": *config["author"],
 				"description": *config["description"],
 				"titleCommon": *config["titleCommon"] + " - Change Password",
+				"Authenticated": c.GetString("Authenticated"),
 			})
 		})
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
@@ -151,6 +155,7 @@ func main() {
 			"author": *config["author"],
 			"description": *config["description"],
 			"titleCommon": *config["titleCommon"] + " - 404",
+			"Authenticated": c.GetString("Authenticated"),
 		})
 	})
 	router.NoMethod(func(c *gin.Context) {
@@ -159,6 +164,7 @@ func main() {
 			"author": *config["author"],
 			"description": *config["description"],
 			"titleCommon": *config["titleCommon"] + " - 404",
+			"Authenticated": c.GetString("Authenticated"),
 		})
 	})
 	// Ping handler (who knows, it might be useful in some contexts... such as Let's Encrypt certificates

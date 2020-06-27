@@ -26,16 +26,16 @@
 									{{end}}
 									<form class="user" action="/user/login" method="POST">
 										<div class="form-group">
-											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username...">
+											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username..." value="{{- .WrongUsername -}}">
 										</div>
 
 										<div class="form-group">
-											<input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password">
+											<input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password" value="{{- .WrongPassword -}}">
 										</div>
 
 										<div class="form-group">
 											<div class="custom-control custom-checkbox small">
-												<input type="checkbox" class="custom-control-input" id="rememberMe" name="rememberMe"> <label class="custom-control-label" for="rememberMe">Remember Me</label>
+												<input type="checkbox" class="custom-control-input" id="rememberMe" name="rememberMe" {{- if .WrongRememberMe -}}checked{{- end -}}> <label class="custom-control-label" for="rememberMe">Remember Me</label>
 											</div>
 										</div><input type="submit" class="btn btn-primary btn-user btn-block" value="Login">
 <!--									<hr>

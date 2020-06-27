@@ -119,5 +119,6 @@ func GetStats(c *gin.Context) {
 			"usersOnline"	: userTable,
 			"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 			"titleCommon"	: *config["titleCommon"] + "Welcome!",
+			"Authenticated"	: c.GetString("Authenticated"),
 	})
 }
