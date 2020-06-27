@@ -17,9 +17,13 @@
 							<div class="col-lg-6">
 								<div class="p-5">
 									<div class="text-center">
-										<h1 class="h4 text-gray-900 mb-4">Welcome Back!</h1>
+										<h1 class="h4 text-gray-900 mb-4">{{- if .ErrorTitle -}}Oh, no!{{- else -}}Welcome Back!{{- end -}}</h1>
 									</div>
-
+								    {{ if .ErrorTitle}}
+									<div class="bg-gradient-danger text-white">
+										<i class="fas fa-exclamation-triangle text-white"></i>&nbsp;{{.ErrorTitle}}: {{.ErrorMessage}}
+									</div>
+									{{end}}
 									<form class="user" action="/user/login" method="POST">
 										<div class="form-group">
 											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username...">
