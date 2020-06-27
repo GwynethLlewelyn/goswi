@@ -35,9 +35,14 @@ func generateSessionToken() string {
 func isUserValid(username, password string) bool {
 	// split username into space-separated fields
 	theUsername := strings.Fields(strings.TrimSpace(username))
+	if len(theUsername) < 2 {
+		log.Printf("[WARN] Invalid first name/last name: %q does not contain spaces! Returning with error", username)
+		return false
+	}		
 	// We'll just use the first two
 	avatarFirstName	:= theUsername[0]
 	avatarLastName	:= theUsername[1]
+
 	
 	// check if user exists; we'll do password checking later, as soon as we figure out how
 	if *config["dsn"] == "" {
@@ -74,22 +79,30 @@ func isUserValid(username, password string) bool {
 			avatarFirstName, avatarLastName, principalID, password, passwordHash, passwordSalt)
 	}
 	// md5(md5("password") + ":" + passwordSalt) according to http://opensimulator.org/wiki/Auth
-	// but the code for OpenSim is different!!
 	
-	hashed := GetMD5Hash(password + ":" + passwordSalt) // see OpenSimulator source code in /opensim/OpenSim/Services/PasswordAuthenticationService, method Authenticate()
+	var hashedPassword, hashed, interior string // make sure they are strings, or comparison might fail
+	
+	hashedPassword = GetMD5Hash(password)
+	interior = hashedPassword + ":" + passwordSalt
+	hashed = GetMD5Hash(interior) // see OpenSimulator source code in /opensim/OpenSim/Services/PasswordAuthenticationService, method Authenticate()
 	
 	// we'll simplify the above code to a one-liner which will be more legible once we debug this properly! (gwyneth 20200626)
 
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG]: md5(password + ':' + passwordSalt) = %q, which we must compare with %q", hashed, passwordHash)
-		return false
+		log.Printf("[DEBUG] md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q, which we must compare with %q", 
+			hashedPassword, interior, hashed, passwordHash)
 	}
 	// compare and see if it matches
+	//i := strings.Compare(hashed, passwordHash)
+	
+//	if i == 0 {
 	if passwordHash == hashed {
 		// authenticated! now set session cookie and do all the magic
-		log.Printf("[INFO]: User %q authenticated.", username)
+		log.Printf("[INFO] User %q authenticated.", username)
+		return true
 	} else {
-		log.Printf("[WARN]: Invalid authentication for %q — either user not found or password is wrong", username)
+		log.Printf("[WARN] Invalid authentication for %q — either user not found or password is wrong", username)
+		return false
 	}
 		
 	return true
@@ -117,10 +130,6 @@ func performLogin(c *gin.Context) {
 		// probably should do a redirect, we'll see — or at least have a cooler-looking page.
 		return
 	}	
-/*
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-*/
 	if strings.TrimSpace(oneUser.Password) == "" {	// this should not happen, as we put the password as 'required' on the decorations
 		log.Println("The password can't be empty")
 	}
@@ -129,10 +138,19 @@ func performLogin(c *gin.Context) {
 		log.Printf("[INFO] User: %q Password: %q Remember me? %q", oneUser.Username, oneUser.Password, oneUser.RememberMe)
 	}
 	if isUserValid(oneUser.Username, oneUser.Password) {
-		c.SetCookie("goswitoken", generateSessionToken(), 3600, "", "", false, false)
+		token := generateSessionToken()
+		c.SetCookie("goswitoken", token, 3600, "", "", false, false)
 		c.SetCookie("goswiusername", oneUser.Username, 3600, "", "", false, false)
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO] Cookie for %q set: token %q", oneUser.Username, token)
+		}
 	} else {
-		 log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
+		// invalid user, do not set cookies!
+		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
+		
+		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
+			"ErrorTitle":   "Login Failed",
+			"ErrorMessage": "Invalid credentials provided"})
 	}
 	c.Redirect(http.StatusSeeOther, "/")	// see https://softwareengineering.stackexchange.com/questions/99894/why-doesnt-http-have-post-redirect and https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
 }
@@ -203,38 +221,81 @@ func register(c *gin.Context) {
 	})
 }
 
+/***
+*	Middleware for dealing with login/session cookies
+*/
+
+// ensureLoggedIn tests if the user is logged in, reading in from the context to see if a flag is set.
+// Note that this flag is not a boolean any more, I'm using this pseudo-flag to store the username
 func ensureLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		loggedInInterface, _ := c.Get("Authenticated")
-		loggedIn := loggedInInterface.(bool)
-		if !loggedIn {
+		loggedInInterface := c.GetString("Authenticated")
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO]: ensureLoggedIn(): Authenticated is %q; full context is %v", loggedInInterface, c)
+		}	
+		if loggedInInterface == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
 }
 
+// ensureNotLoggedIn tests if the user is NOT logged in, reading in from the context to see if a flag is set.
 func ensureNotLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		loggedInInterface, _ := c.Get("Authenticated")
-		loggedIn := loggedInInterface.(bool)
-		if loggedIn {
+		loggedInInterface := c.GetString("Authenticated")
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO]: ensureNotLoggedIn(): Authenticated is %q; full context is %v", loggedInInterface, c)
+		}	
+		if loggedInInterface != "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
 }
 
+// setUserStatus gets loaded for each page, and sees if the cookie is set. This seems to be the 'correct' way to do this under Gin.
 func setUserStatus() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if token, err := c.Cookie("goswitoken"); err == nil || token != "" {
+		var token string
+		token, err := c.Cookie("goswitoken")
+		
+		if *config["ginMode"] == "debug" {
+			if err == nil {
+				log.Printf("[INFO]: setUserStatus(): Cookie token: %q", token)
+			} else {
+				log.Printf("[INFO]: setUserStatus(): Cookie token not found; error was: %q", err)
+			}
+		}
+		
+		if err == nil || token != "" {
 			cookie, err := c.Cookie("goswiusername")
+
+			if *config["ginMode"] == "debug" {
+				if err == nil {
+					log.Printf("[INFO]: setUserStatus(): Cookie username: %q", cookie)
+				} else {
+					log.Printf("[INFO]: setUserStatus(): Cookie username not found; error was: %q", err)
+				}
+			}
 
 			if err != nil {
 				c.Set("Authenticated", "<unknown username>")
+				if *config["ginMode"] == "debug" {
+					log.Printf("[WARN]: Weirdly, we didn't get a username, but we have a valid authentication token: %q... error was %v", token, err)
+				}				
 			} else {
 				c.Set("Authenticated", cookie)
+				if *config["ginMode"] == "debug" {
+					log.Printf("[INFO]: Setting Authenticated to username %q", cookie)
+				}
 			}
 		} else {
-			c.Set("Authenticated", false)
+			if *config["ginMode"] == "debug" {
+				log.Println("[INFO]: No cookies found, error was", err)
+			}							
+			c.Set("Authenticated", "")
 		}
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO]: setUserStatus(): Authenticated? %q (username) Cookie token: %q", c.GetString("Authenticated"), token)
+		}	
 	}
 }
