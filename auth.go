@@ -203,7 +203,7 @@ func register(c *gin.Context) {
 	})
 }
 
-ffunc ensureLoggedIn() gin.HandlerFunc {
+func ensureLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		loggedInInterface, _ := c.Get("Authenticated")
 		loggedIn := loggedInInterface.(bool)
