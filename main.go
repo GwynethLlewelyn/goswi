@@ -34,7 +34,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"tlsKEY"		: flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP"),
 	"author"		: flag.String("author", "--nobody--", "Author name"),
 	"description"	: flag.String("description", "gOSWI", "Description for each page"),
-	"titleCommon"	: flag.String("titleCommon", "gOSWI - ", "Common part of the title for each page (usually the brand)"),
+	"titleCommon"	: flag.String("titleCommon", "gOSWI", "Common part of the title for each page (usually the brand)"),
 }
 
 // formatAsDate is a function for the templating system, which will be registered below.
@@ -107,6 +107,7 @@ func main() {
 			"description": *config["description"],
 //			"needsTables": true,	// not really needed? (gwyneth 20200612)
 			"titleCommon": *config["titleCommon"] + " - About",
+			"Authenticated": c.GetString("Authenticated"),
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {
@@ -129,9 +130,9 @@ func main() {
 
 	userRoutes := router.Group("/user")
 	{
-		userRoutes.POST("/register", ensureNotLoggedIn(), register)
-		userRoutes.GET("/register", ensureNotLoggedIn(), showRegistrationPage)
-		userRoutes.GET("/password", ensureLoggedIn(), func(c *gin.Context) {
+		userRoutes.POST("/register",	ensureNotLoggedIn(), register)
+		userRoutes.GET("/register",		ensureNotLoggedIn(), showRegistrationPage)
+		userRoutes.GET("/password",		ensureLoggedIn(), func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
 				"author": *config["author"],
@@ -139,8 +140,9 @@ func main() {
 				"titleCommon": *config["titleCommon"] + " - Change Password",
 			})
 		})
-		userRoutes.POST("/login", ensureNotLoggedIn(), performLogin)
-		userRoutes.GET("/login", ensureNotLoggedIn(), showLoginPage)
+		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
+		userRoutes.GET("/login", 	ensureNotLoggedIn(), showLoginPage)
+		userRoutes.GET("/logout",	ensureLoggedIn(), logout)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
