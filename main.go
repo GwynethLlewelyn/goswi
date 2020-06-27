@@ -80,8 +80,10 @@ func main() {
 	} else {
 		*config["templatePath"] = "/templates/"
 	}
+	
 	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
+	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
 
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
@@ -127,9 +129,9 @@ func main() {
 
 	userRoutes := router.Group("/user")
 	{
-		userRoutes.POST("/register", register)
-		userRoutes.GET("/register", showRegistrationPage)
-		userRoutes.GET("/password", func(c *gin.Context) {
+		userRoutes.POST("/register", ensureNotLoggedIn(), register)
+		userRoutes.GET("/register", ensureNotLoggedIn(), showRegistrationPage)
+		userRoutes.GET("/password", ensureLoggedIn(), func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now": formatAsYear(time.Now()),
 				"author": *config["author"],
@@ -137,8 +139,8 @@ func main() {
 				"titleCommon": *config["titleCommon"] + " - Change Password",
 			})
 		})
-		userRoutes.POST("/login", performLogin)
-		userRoutes.GET("/login", showLoginPage)
+		userRoutes.POST("/login", ensureNotLoggedIn(), performLogin)
+		userRoutes.GET("/login", ensureNotLoggedIn(), showLoginPage)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
@@ -156,6 +158,10 @@ func main() {
 			"description": *config["description"],
 			"titleCommon": *config["titleCommon"] + " - 404",
 		})
+	})
+	// Ping handler (who knows, it might be useful in some contexts... such as Let's Encrypt certificates
+	router.GET("/ping", func(c *gin.Context) {
+		c.String(200, "pong")
 	})
 
 	if *config["local"] == "" {

@@ -56,12 +56,14 @@
 		  <span>Economy</span></a>
 	  </li>
 
+{{ if not .Authenticated }}
 	  <!-- Nav Item - Register -->
 	  <li class="nav-item">
 		<a class="nav-link" href="/user/register">
 		  <i class="fas fa-fw fa-user-plus"></i>
 		  <span>Register new resident</span></a>
 	  </li>
+{{ end }}
 {{ if .Authenticated }}
 	 <!-- Nav Item - Password -->
 	  <li class="nav-item">

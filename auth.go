@@ -130,15 +130,17 @@ func performLogin(c *gin.Context) {
 	}
 	if isUserValid(oneUser.Username, oneUser.Password) {
 		c.SetCookie("goswitoken", generateSessionToken(), 3600, "", "", false, false)
+		c.SetCookie("goswiusername", oneUser.Username, 3600, "", "", false, false)
 	} else {
 		 log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
 	}
 	c.Redirect(http.StatusSeeOther, "/")	// see https://softwareengineering.stackexchange.com/questions/99894/why-doesnt-http-have-post-redirect and https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
 }
 
-// logout kills the session/cookie that contains the user authentication data.
+// logout unsets the session/cookie that contains the user authentication data.
 func logout(c *gin.Context) {
-	c.SetCookie("goswitoken", "", -1, "", "", false, true)
+	c.SetCookie("goswitoken", "", -1, "", "", false, false)
+	c.SetCookie("goswiusername", "", -1, "", "", false, false)
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
@@ -199,4 +201,40 @@ func register(c *gin.Context) {
 		"description": *config["description"],
 		"titleCommon": *config["titleCommon"] + " - Register new user",
 	})
+}
+
+ffunc ensureLoggedIn() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		loggedInInterface, _ := c.Get("Authenticated")
+		loggedIn := loggedInInterface.(bool)
+		if !loggedIn {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+	}
+}
+
+func ensureNotLoggedIn() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		loggedInInterface, _ := c.Get("Authenticated")
+		loggedIn := loggedInInterface.(bool)
+		if loggedIn {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+	}
+}
+
+func setUserStatus() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if token, err := c.Cookie("goswitoken"); err == nil || token != "" {
+			cookie, err := c.Cookie("goswiusername")
+
+			if err != nil {
+				c.Set("Authenticated", "<unknown username>")
+			} else {
+				c.Set("Authenticated", cookie)
+			}
+		} else {
+			c.Set("Authenticated", false)
+		}
+	}
 }
