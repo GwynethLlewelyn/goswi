@@ -6,6 +6,7 @@ import (
 	"database/sql"
 // 	"encoding/json"
 //	"fmt"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 //	jsoniter "github.com/json-iterator/go"
@@ -107,6 +108,7 @@ func GetStats(c *gin.Context) {
 	if *config["ginMode"] == "debug" {
 		log.Println("[DEBUG] Data from userTable:", userTable)
 	}
+	session := sessions.Default(c)
 	
 	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
@@ -119,7 +121,7 @@ func GetStats(c *gin.Context) {
 			"usersOnline"	: userTable,
 			"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 			"titleCommon"	: *config["titleCommon"] + "Welcome!",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 	})
 }

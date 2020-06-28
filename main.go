@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/vharitonsky/iniflags"
 //	"html/template"
@@ -35,7 +37,18 @@ var config = map[string]*string	{// just a place to keep them all together
 	"author"		: flag.String("author", "--nobody--", "Author name"),
 	"description"	: flag.String("description", "gOSWI", "Description for each page"),
 	"titleCommon"	: flag.String("titleCommon", "gOSWI", "Common part of the title for each page (usually the brand)"),
+	"cookieStore"	: flag.String("cookieStore", "", "Secret random string required for the cookie store; mandatory!"),
 }
+
+// goswiSession represents our encapsulated session. We need to store a bit more than just a string token, so this needs to be encoded later.
+/*
+type goswiSession struct {
+	Username string `form:"username" json:"username"`,
+	Email string `form:"email" json:"email"`,
+	Libravatar string `form:"libravatar" json:"libravatar"`,
+	Token string, // probably never exported
+}
+*/
 
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
@@ -64,9 +77,15 @@ func main() {
 	// start parsing configuration
 	iniflags.Parse()
 
+	// cookieStore MUST be set to a random string! (gwyneth 20200628)
+	// we might also check for weak security strings on the configuration
+	if *config["cookieStore"] == "" {
+		log.Fatal("Make sure that a random string for 'cookieStore' is set either on the .INI file or pass it via a flag!\nAborting for security reasons.")	
+	}
+
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
 	if *config["ginMode"] == "release" { gin.SetMode(gin.ReleaseMode) }
-	
+		
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
 /*	router.SetFuncMap(template.FuncMap{
@@ -83,55 +102,77 @@ func main() {
 	
 	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
-	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
-
+	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
+	store := cookie.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
+	router.Use(sessions.Sessions("goswisession", store))
+	
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
 	router.Static("/assets", path.Join(PathToStaticFiles, "/assets"))
 	router.StaticFile("/favicon.ico", path.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
 
 	router.GET("/", func(c *gin.Context) {
+		session := sessions.Default(c)
+
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 			"titleCommon"	: *config["titleCommon"] + " - Home",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 		})
 	})
 
 	router.GET("/welcome", GetStats)
 	router.GET("/about", func(c *gin.Context) {
+		session := sessions.Default(c)
+
 		c.HTML(http.StatusOK, "about.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 //			"needsTables"	: true,	// not really needed? (gwyneth 20200612)
 			"titleCommon"	: *config["titleCommon"] + " - About",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {
+		session := sessions.Default(c)
+
 		c.HTML(http.StatusOK, "help.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 			"titleCommon"	: *config["titleCommon"] + " - Help",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 		})
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
+		session := sessions.Default(c)
+
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 			"titleCommon"	: *config["titleCommon"] + " - Economy",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
+		})
+	})
+	router.GET("/search", func(c *gin.Context) {
+		session := sessions.Default(c)
+
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - Economy",
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 		})
 	})
 
@@ -140,13 +181,15 @@ func main() {
 		userRoutes.POST("/register",	ensureNotLoggedIn(), register)
 		userRoutes.GET("/register",		ensureNotLoggedIn(), showRegistrationPage)
 		userRoutes.GET("/password",		ensureLoggedIn(), func(c *gin.Context) {
+			session := sessions.Default(c)
+
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 				"now"			: formatAsYear(time.Now()),
 				"author"		: *config["author"],
 				"description"	: *config["description"],
 				"titleCommon"	: *config["titleCommon"] + " - Change Password",
-				"Authenticated"	: c.GetString("Authenticated"),
-				"Libravatar"	: c.GetString("Libravatar"),
+				"Username"		: session.Get("Username"),
+				"Libravatar"	: session.Get("Libravatar"),
 			})
 		})
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
@@ -155,23 +198,27 @@ func main() {
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
+		session := sessions.Default(c)
+		
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 			"titleCommon"	: *config["titleCommon"] + " - 404",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 		})
 	})
 	router.NoMethod(func(c *gin.Context) {
+		session := sessions.Default(c)
+
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 			"titleCommon"	: *config["titleCommon"] + " - 404",
-			"Authenticated"	: c.GetString("Authenticated"),
-			"Libravatar"	: c.GetString("Libravatar"),
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
 		})
 	})
 	// Ping handler (who knows, it might be useful in some contexts... such as Let's Encrypt certificates

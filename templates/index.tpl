@@ -19,12 +19,12 @@
 	
 				<!-- Content Row -->
 				<div class="row">
-{{ if .Authenticated -}}
+{{- if .Username -}}
 					<img class="img-profile" src="{{- .Libravatar -}}">
-					<p>Welcome,&nbsp;{{- .Authenticated -}}!</p>
-{{ else -}}
+					<p>Welcome,&nbsp;{{- .Username -}}!</p>
+{{- else -}}
 					<p>Nothing yet... please be patient!</p>
-{{ end -}}
+{{- end -}}
 				</div>
 				<!-- /.row -->
 			</div>

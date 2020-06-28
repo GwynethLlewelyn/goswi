@@ -20,8 +20,11 @@
 										<h1 class="h4 text-gray-900 mb-4">{{- if .ErrorTitle -}}Oh, no!{{- else -}}Welcome Back!{{- end -}}</h1>
 									</div>
 								    {{ if .ErrorTitle}}
-									<div class="bg-gradient-danger text-white">
-										<i class="fas fa-exclamation-triangle text-white"></i>&nbsp;{{.ErrorTitle}}: {{.ErrorMessage}}
+								    <div class="alert alert-danger bg-gradient-danger text-white alert-warning alert-dismissible fade show" role="alert">
+										<i class="fas fa-exclamation-triangle text-white"></i>&nbsp;<strong>{{.ErrorTitle}}:</strong>{{.ErrorMessage}}
+										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
+											<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
+										</button>
 									</div>
 									{{end}}
 									<form class="user" action="/user/login" method="POST">
