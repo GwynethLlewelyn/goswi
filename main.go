@@ -110,6 +110,8 @@ func main() {
 	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
 	router.Static("/assets", path.Join(PathToStaticFiles, "/assets"))
 	router.StaticFile("/favicon.ico", path.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
+	router.StaticFile("/browserconfig.xml", path.Join(PathToStaticFiles, "/assets/favicons/browserconfig.xml"))
+	router.StaticFile("/site.webmanifest", path.Join(PathToStaticFiles, "/assets/favicons/site.webmanifest"))
 
 	router.GET("/", func(c *gin.Context) {
 		session := sessions.Default(c)
