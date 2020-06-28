@@ -227,7 +227,9 @@ func performLogin(c *gin.Context) {
 // logout unsets the session/cookie that contains the user authentication data.
 func logout(c *gin.Context) {
 	session := sessions.Default(c)
-	session.Clear()	// it seems that nothing else is needed here...
+	session.Set("dummy", "content") // this will mark the session as "written"
+	session.Options(sessions.Options{MaxAge: -1}) // this sets the cookie with a MaxAge of 0, 
+	session.Save()
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
@@ -312,7 +314,7 @@ func ensureLoggedIn() gin.HandlerFunc {
 		if *config["ginMode"] == "debug" {
 			log.Printf("[INFO]: ensureLoggedIn(): Username is %q (empty means not authenticated)", loggedInInterface)
 		}	
-		if loggedInInterface == "" {
+		if loggedInInterface == nil || loggedInInterface == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
@@ -327,7 +329,7 @@ func ensureNotLoggedIn() gin.HandlerFunc {
 		if *config["ginMode"] == "debug" {
 			log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q (empty means not authenticated)", loggedInInterface)
 		}	
-		if loggedInInterface != "" {
+		if loggedInInterface != nil && loggedInInterface != "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
 		}
 	}
