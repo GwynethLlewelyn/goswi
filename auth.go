@@ -14,7 +14,7 @@ import (
 // 	"math/rand"
 	"net/http"
 	"strings"
-// 	"strconv"
+	"strk.kbt.io/projects/go/libravatar"
 	"time"
 )
 
@@ -31,18 +31,19 @@ func generateSessionToken() string {
 	return uuid.New().String()
 }
 
-// isUserValid checks the database for a valid user/pass combination.
-func isUserValid(username, password string) bool {
+// isUserValid checks the database for a valid user/pass combination. It returns a boolean and the email. Yes, it's ugly.
+// TODO(gwyneth): Figure out a better way to extract the email data and store it safely.
+// TODO(gwyneth): Probably, this ought to return (string, bool) to be a bit more consistent...
+func isUserValid(username, password string) (bool, string) {
 	// split username into space-separated fields
 	theUsername := strings.Fields(strings.TrimSpace(username))
 	if len(theUsername) < 2 {
 		log.Printf("[WARN] Invalid first name/last name: %q does not contain spaces! Returning with error", username)
-		return false
+		return false, ""
 	}		
 	// We'll just use the first two
 	avatarFirstName	:= theUsername[0]
 	avatarLastName	:= theUsername[1]
-
 	
 	// check if user exists; we'll do password checking later, as soon as we figure out how
 	if *config["dsn"] == "" {
@@ -53,18 +54,19 @@ func isUserValid(username, password string) bool {
 
 	defer db.Close()
 
-	var principalID string
-	err = db.QueryRow("SELECT PrincipalID FROM UserAccounts WHERE FirstName = ? AND LastName = ?", 
-		avatarFirstName, avatarLastName).Scan(&principalID)	// there can be only one, or our database is corrupted
+	var principalID, email string
+	err = db.QueryRow("SELECT PrincipalID, Email FROM UserAccounts WHERE FirstName = ? AND LastName = ?", 
+		avatarFirstName, avatarLastName).Scan(&principalID, &email)	// there can be only one, or our database is corrupted
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
 			log.Println("[DEBUG]: user", username, "not in database")
 		}
-		return false
+		return false, ""
 	}
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] Avatar data from database: '%s %s' (%s)", avatarFirstName, avatarLastName, principalID)
+		log.Printf("[DEBUG] Avatar data from database: '%s %s' (%s) Email: %q", avatarFirstName, avatarLastName, principalID, email)
 	}
+	
 	var passwordHash, passwordSalt string
 	err = db.QueryRow("SELECT passwordHash, passwordSalt FROM auth WHERE UUID = ?", 
 		principalID).Scan(&passwordHash, &passwordSalt)
@@ -72,7 +74,7 @@ func isUserValid(username, password string) bool {
 		if *config["ginMode"] == "debug" {
 			log.Println("[DEBUG]: password not in database")
 		}
-		return false
+		return false, ""
 	}
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] Authentication data for: '%s %s' (%s): user-submitted password: %q Hash on DB: %q Salt on DB: %q",
@@ -99,13 +101,13 @@ func isUserValid(username, password string) bool {
 	if passwordHash == hashed {
 		// authenticated! now set session cookie and do all the magic
 		log.Printf("[INFO] User %q authenticated.", username)
-		return true
+		return true, email
 	} else {
 		log.Printf("[WARN] Invalid authentication for %q — either user not found or password is wrong", username)
-		return false
+		return false, ""
 	}
 		
-	return true
+	return true, email
 }
 
 // showLoginPage does exactly what it says, being retrieved with a simple GET request.
@@ -118,6 +120,7 @@ func showLoginPage(c *gin.Context) {
 		"titleCommon"	: *config["titleCommon"] + "Welcome!",
 		"logintemplate"	: true,
 		"Authenticated"	: c.GetString("Authenticated"),
+		"Libravatar"	: c.GetString("Libravatar"),
 	})
 }
 
@@ -138,12 +141,29 @@ func performLogin(c *gin.Context) {
 		// warning: this will expose a password!!
 		log.Printf("[INFO] User: %q Password: %q Remember me? %q", oneUser.Username, oneUser.Password, oneUser.RememberMe)
 	}
-	if isUserValid(oneUser.Username, oneUser.Password) {
+	if ok, email := isUserValid(oneUser.Username, oneUser.Password); ok {
 		token := generateSessionToken()
 		c.SetCookie("goswitoken", token, 3600, "", "", false, false)
-		c.SetCookie("goswiusername", oneUser.Username, 3600, "", "", false, false)
+		c.SetCookie("goswiusername", oneUser.Username, 3600, "", "", false, false)	// TODO(gwyneth): we might avoid this and just store it on the context, we'll see
+		
+		if email != "" {
+//			avt.SetSecureFallbackHost("unicornify.pictures")	// possibly not needed, we'll implement it locally
+			avt := libravatar.New()
+			avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
+			avt.SetUseHTTPS(true)
+			if avatar_url, err := avt.FromEmail(email); err == nil {
+				c.Set("Libravatar", avatar_url)
+			} else {
+				// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
+				c.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")			
+			}			
+		} else {
+			// if we don't have a valid email, get an Unicorn! 
+			c.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
+		}
+		// TODO(gwyneth): we ought to deal with an empty email and/or an empty avatar_url
 		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO] Cookie for %q set: token %q", oneUser.Username, token)
+			log.Printf("[INFO] Cookie for %q set: token %q - Also, Libravatar is %q", oneUser.Username, token, c.GetString("Libravatar"))
 		}
 	} else {
 		// invalid user, do not set cookies!
@@ -170,6 +190,7 @@ func performLogin(c *gin.Context) {
 func logout(c *gin.Context) {
 	c.SetCookie("goswitoken", "", -1, "", "", false, false)
 	c.SetCookie("goswiusername", "", -1, "", "", false, false)
+	c.Set("Libravatar", "")	// theoretically not needed, but it's better to be safe than sorry...
 	c.Redirect(http.StatusTemporaryRedirect, "/")
 }
 
@@ -214,11 +235,12 @@ func isUsernameAvailable(username string) bool {
 func showRegistrationPage(c *gin.Context) {
 	// we show a 404 error for now
 	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-		"now": formatAsYear(time.Now()),
-		"author": *config["author"],
-		"description": *config["description"],
-		"titleCommon": *config["titleCommon"] + " - Register new user",
-		"Authenticated": c.GetString("Authenticated"),
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"titleCommon"	: *config["titleCommon"] + " - Register new user",
+		"Authenticated"	: c.GetString("Authenticated"),
+		"Libravatar"	: c.GetString("Libravatar"),
 	})
 }
 
@@ -226,11 +248,12 @@ func showRegistrationPage(c *gin.Context) {
 func register(c *gin.Context) {
 	// reply with a 404 for now
 	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-		"now": formatAsYear(time.Now()),
-		"author": *config["author"],
-		"description": *config["description"],
-		"titleCommon": *config["titleCommon"] + " - Register new user",
-		"Authenticated": c.GetString("Authenticated"),
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"titleCommon"	: *config["titleCommon"] + " - Register new user",
+		"Authenticated"	: c.GetString("Authenticated"),
+		"Libravatar"	: c.GetString("Libravatar"),
 	})
 }
 
@@ -244,7 +267,7 @@ func ensureLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		loggedInInterface := c.GetString("Authenticated")
 		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO]: ensureLoggedIn(): Authenticated is %q; full context is %v", loggedInInterface, c)
+			log.Printf("[INFO]: ensureLoggedIn(): Authenticated is %q", loggedInInterface)
 		}	
 		if loggedInInterface == "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -257,7 +280,7 @@ func ensureNotLoggedIn() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		loggedInInterface := c.GetString("Authenticated")
 		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO]: ensureNotLoggedIn(): Authenticated is %q; full context is %v", loggedInInterface, c)
+			log.Printf("[INFO]: ensureNotLoggedIn(): Authenticated is %q", loggedInInterface,)
 		}	
 		if loggedInInterface != "" {
 			c.AbortWithStatus(http.StatusUnauthorized)
@@ -291,6 +314,8 @@ func setUserStatus() gin.HandlerFunc {
 			}
 
 			if err != nil {
+				// TODO(gwyneth): This is exactly what I have to avoid: a situation where you have an auth token cookie but not
+				//  the cookie with the name...  
 				c.Set("Authenticated", "<unknown username>")
 				if *config["ginMode"] == "debug" {
 					log.Printf("[WARN]: Weirdly, we didn't get a username, but we have a valid authentication token: %q... error was %v", token, err)
@@ -308,7 +333,7 @@ func setUserStatus() gin.HandlerFunc {
 			c.Set("Authenticated", "")
 		}
 		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO]: setUserStatus(): Authenticated? %q (username) Cookie token: %q", c.GetString("Authenticated"), token)
+			log.Printf("[INFO]: setUserStatus(): Authenticated? %q (username) Cookie token: %q Libravatar: %q", c.GetString("Authenticated"), token, c.GetString("Libravatar"))
 		}	
 	}
 }

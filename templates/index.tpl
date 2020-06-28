@@ -20,7 +20,8 @@
 				<!-- Content Row -->
 				<div class="row">
 {{ if .Authenticated -}}
-					<p>Welcome, {{- .Authenticated -}}!</p>
+					<img class="img-profile" src="{{- .Libravatar -}}">
+					<p>Welcome,&nbsp;{{- .Authenticated -}}!</p>
 {{ else -}}
 					<p>Nothing yet... please be patient!</p>
 {{ end -}}

@@ -92,42 +92,46 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": *config["author"],
-			"description": *config["description"],
-			"titleCommon": *config["titleCommon"] + " - Home",
-			"Authenticated": c.GetString("Authenticated"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - Home",
+			"Authenticated"	: c.GetString("Authenticated"),
+			"Libravatar"	: c.GetString("Libravatar"),
 		})
 	})
 
 	router.GET("/welcome", GetStats)
 	router.GET("/about", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "about.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": *config["author"],
-			"description": *config["description"],
-//			"needsTables": true,	// not really needed? (gwyneth 20200612)
-			"titleCommon": *config["titleCommon"] + " - About",
-			"Authenticated": c.GetString("Authenticated"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+//			"needsTables"	: true,	// not really needed? (gwyneth 20200612)
+			"titleCommon"	: *config["titleCommon"] + " - About",
+			"Authenticated"	: c.GetString("Authenticated"),
+			"Libravatar"	: c.GetString("Libravatar"),
 		})
 	})
 	router.GET("/help", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "help.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": *config["author"],
-			"description": *config["description"],
-			"titleCommon": *config["titleCommon"] + " - Help",
-			"Authenticated": c.GetString("Authenticated"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - Help",
+			"Authenticated"	: c.GetString("Authenticated"),
+			"Libravatar"	: c.GetString("Libravatar"),
 		})
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": *config["author"],
-			"description": *config["description"],
-			"titleCommon": *config["titleCommon"] + " - Economy",
-			"Authenticated": c.GetString("Authenticated"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - Economy",
+			"Authenticated"	: c.GetString("Authenticated"),
+			"Libravatar"	: c.GetString("Libravatar"),
 		})
 	})
 
@@ -137,11 +141,12 @@ func main() {
 		userRoutes.GET("/register",		ensureNotLoggedIn(), showRegistrationPage)
 		userRoutes.GET("/password",		ensureLoggedIn(), func(c *gin.Context) {
 			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-				"now": formatAsYear(time.Now()),
-				"author": *config["author"],
-				"description": *config["description"],
-				"titleCommon": *config["titleCommon"] + " - Change Password",
-				"Authenticated": c.GetString("Authenticated"),
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"titleCommon"	: *config["titleCommon"] + " - Change Password",
+				"Authenticated"	: c.GetString("Authenticated"),
+				"Libravatar"	: c.GetString("Libravatar"),
 			})
 		})
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
@@ -151,20 +156,22 @@ func main() {
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": *config["author"],
-			"description": *config["description"],
-			"titleCommon": *config["titleCommon"] + " - 404",
-			"Authenticated": c.GetString("Authenticated"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - 404",
+			"Authenticated"	: c.GetString("Authenticated"),
+			"Libravatar"	: c.GetString("Libravatar"),
 		})
 	})
 	router.NoMethod(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now": formatAsYear(time.Now()),
-			"author": *config["author"],
-			"description": *config["description"],
-			"titleCommon": *config["titleCommon"] + " - 404",
-			"Authenticated": c.GetString("Authenticated"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - 404",
+			"Authenticated"	: c.GetString("Authenticated"),
+			"Libravatar"	: c.GetString("Libravatar"),
 		})
 	})
 	// Ping handler (who knows, it might be useful in some contexts... such as Let's Encrypt certificates
