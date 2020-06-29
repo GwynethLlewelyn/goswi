@@ -227,10 +227,12 @@ func performLogin(c *gin.Context) {
 // logout unsets the session/cookie that contains the user authentication data.
 func logout(c *gin.Context) {
 	session := sessions.Default(c)
-	session.Set("dummy", "content") // this will mark the session as "written"
-	session.Options(sessions.Options{MaxAge: -1}) // this sets the cookie with a MaxAge of 0, 
+	session.Set("Username", "") // this will mark the session as "written" and hopefully remove the username
+	session.Clear()
+	session.Options(sessions.Options{Path: "/", MaxAge: -1}) // this sets the cookie with a MaxAge of 0, 
 	session.Save()
 	c.Redirect(http.StatusTemporaryRedirect, "/")
+//	c.Redirect(http.StatusFound, "/")	// see https://github.com/gin-contrib/sessions/issues/29#issuecomment-376382465
 }
 
 // registerNewUser is currently unimplemented but will use Remote Admin to create new users, as opposed to writing to the OpenSimulator database directly.
