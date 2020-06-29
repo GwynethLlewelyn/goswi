@@ -187,6 +187,7 @@ func performLogin(c *gin.Context) {
 			avt := libravatar.New()
 			avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
 			avt.SetUseHTTPS(true)
+			avt.SetFallbackHost("unicornify.pictures")
 			if avatar_url, err := avt.FromEmail(email); err == nil {
 				session.Set("Libravatar", avatar_url)
 			} else {
