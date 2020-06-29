@@ -15,9 +15,9 @@
 				<div class="col">
 					<!-- 404 Error Text -->
 					<div class="text-center">
-						<div class="error mx-auto" data-text="404">404</div>
-						<p class="lead text-gray-800 mb-5">Page Not Found</p>
-						<p class="text-gray-500 mb-4">It looks like you found a glitch in the matrix...</p>
+						<div class="error mx-auto" data-text="{{- if .errorcode -}}{{- .errorcode -}}{{- else -}}404{{- end -}}">{{- if .errorcode -}}{{- .errorcode -}}{{- else -}}404{{- end -}}</div>
+						<p class="lead text-gray-800 mb-5">{{- if .errortext -}}{{- .errortext -}}{{- else -}}Page Not Found{{- end -}}</p>
+						<p class="text-gray-500 mb-4">{{- if .errorbody -}}{{- .errorbody -}}{{- else -}}It looks like you found a glitch in the matrix...{{- end -}}</p>
 					</div>
 				</div>
 			</div>
