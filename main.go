@@ -188,7 +188,7 @@ func main() {
 			c.HTML(http.StatusForbidden, "404.tpl", gin.H{
 				"errorcode"		: http.StatusForbidden,
 				"errortext"		: "Access denied",
-				"errorcode"		: "Sorry, this grid is not accepting new registrations.",
+				"errorbody"		: "Sorry, this grid is not accepting new registrations.",
 				"now"			: formatAsYear(time.Now()),
 				"author"		: *config["author"],
 				"description"	: *config["description"],
