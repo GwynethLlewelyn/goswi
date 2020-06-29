@@ -67,7 +67,7 @@
 {{ if .Username }}
 	 <!-- Nav Item - Password -->
 	  <li class="nav-item">
-		<a class="nav-link" href="/user/password">
+		<a class="nav-link" href="/user/change-password">
 		  <i class="fas fa-fw fa-unlock-alt"></i>
 		  <span>Change password</span></a>
 	  </li>

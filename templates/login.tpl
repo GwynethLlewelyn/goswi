@@ -38,7 +38,7 @@
 
 										<div class="form-group">
 											<div class="custom-control custom-checkbox small">
-												<input type="checkbox" class="custom-control-input" id="rememberMe" name="rememberMe" {{- if .WrongRememberMe -}}checked{{- end -}}> <label class="custom-control-label" for="rememberMe">Remember Me</label>
+												<input type="checkbox" class="custom-control-input" id="rememberMe" name="rememberMe" {{- if .WrongRememberMe -}}checked{{- end -}} disabled="disabled">&nbsp;<!-- disabled for now --><label class="custom-control-label" for="rememberMe">Remember Me</label>
 											</div>
 										</div><input type="submit" class="btn btn-primary btn-user btn-block" value="Login">
 <!--									<hr>
@@ -48,7 +48,7 @@
 <!--									<hr> -->
 
 									<div class="text-center">
-										<a class="small" href="/user/forgot-password">Forgot Password?</a>
+										<a class="small" href="/user/reset-password">Forgot Password?</a>
 									</div>
 
 									<div class="text-center">

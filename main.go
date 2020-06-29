@@ -180,12 +180,25 @@ func main() {
 
 	userRoutes := router.Group("/user")
 	{
-		userRoutes.POST("/register",	ensureNotLoggedIn(), register)
-		userRoutes.GET("/register",		ensureNotLoggedIn(), showRegistrationPage)
-		userRoutes.GET("/password",		ensureLoggedIn(), func(c *gin.Context) {
+		userRoutes.POST("/register",	ensureNotLoggedIn(), registerNewUser)
+		userRoutes.GET("/register",		ensureNotLoggedIn(), func(c *gin.Context) {
+			session := sessions.Default(c)
+	
+			// we show a 404 error for now
+			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"titleCommon"	: *config["titleCommon"] + " - Register new user",
+				"Username"		: session.Get("Username"),
+				"Libravatar"	: session.Get("Libravatar"),
+			})
+		})
+		userRoutes.POST("/change-password",	ensureLoggedIn(), changePassword)
+		userRoutes.GET("/change-password",	ensureLoggedIn(), func(c *gin.Context) {
 			session := sessions.Default(c)
 
-			c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			c.HTML(http.StatusOK, "change-password.tpl", gin.H{
 				"now"			: formatAsYear(time.Now()),
 				"author"		: *config["author"],
 				"description"	: *config["description"],
@@ -194,8 +207,34 @@ func main() {
 				"Libravatar"	: session.Get("Libravatar"),
 			})
 		})
+		userRoutes.POST("/reset-password",	ensureLoggedIn(), resetPassword)
+		userRoutes.GET("/reset-password",	ensureLoggedIn(), func(c *gin.Context) {
+			session := sessions.Default(c)
+
+			c.HTML(http.StatusOK, "reset-password.tpl", gin.H{
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"titleCommon"	: *config["titleCommon"] + " - Reset Password",
+				"Username"		: session.Get("Username"),
+				"Libravatar"	: session.Get("Libravatar"),
+			})
+		})
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
-		userRoutes.GET("/login", 	ensureNotLoggedIn(), showLoginPage)
+		userRoutes.GET("/login", 	ensureNotLoggedIn(), func(c *gin.Context) {
+			session := sessions.Default(c)
+				
+			c.HTML(http.StatusOK, "login.tpl", gin.H{
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"Debug"			: false,	// probably unnecessary
+				"titleCommon"	: *config["titleCommon"] + "Welcome!",
+				"logintemplate"	: true,
+				"Username"		: session.Get("Username"),	// very likely not set!!
+				"Libravatar"	: session.Get("Libravatar"),
+			})
+		})
 		userRoutes.GET("/logout",	ensureLoggedIn(), logout)
 	}
 	router.GET("/mapdata", GetMapData)

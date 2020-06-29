@@ -1,4 +1,7 @@
 {{ define "footer.tpl" }}
+{{ if .logintemplate }}
+{{ template "back.tpl" .}}
+{{ end }}
 {{ if not .logintemplate }}
 		<!-- Footer -->
 		<footer class="sticky-footer bg-white">

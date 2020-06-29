@@ -4,7 +4,7 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
+//	"fmt"
 	"github.com/gin-contrib/sessions"
 // 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
@@ -25,7 +25,18 @@ import (
 type UserForm struct {
 	Username string `json:"username" form:"username" binding:"required"`
 	Password string `json:"-" form:"password" binding:"required"`
+	Email string `json:"-" form:"email"`
 	RememberMe string `json:"rememberMe" form:"rememberMe"`
+}
+
+type ChangePasswordForm struct {
+	OldPassword string `json:"-" form:"oldpassword" binding:"required"`
+	NewPassword string `json:"-" form:"newpassword" binding:"required"`
+	ConfirmNewPassword string `json:"-" form:"confirmnewpassword" binding:"required"`
+}
+
+type ResetPasswordForm struct {
+	Email string `json:"email" form:"email" binding:"required"`
 }
 
 // generateSessionToken uses the same approach as OpenSimulator, which is to return a newly created UUID.
@@ -112,23 +123,7 @@ func isUserValid(username, password string) (bool, string) {
 	return true, email
 }
 
-// showLoginPage does exactly what it says, being retrieved with a simple GET request.
-func showLoginPage(c *gin.Context) {
-	session := sessions.Default(c)
-		
-	c.HTML(http.StatusOK, "login.tpl", gin.H{
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"Debug"			: false,
-		"titleCommon"	: *config["titleCommon"] + "Welcome!",
-		"logintemplate"	: true,
-		"Username"		: session.Get("Username"),	// very likely not set!!
-		"Libravatar"	: session.Get("Libravatar"),
-	})
-}
-
-// performLogin is what the form above will call as the method to pass username/password.
+// performLogin is what the login form will call as the method to pass username/password.
 func performLogin(c *gin.Context) {
 	var oneUser UserForm
 	session := sessions.Default(c)
@@ -187,7 +182,7 @@ func performLogin(c *gin.Context) {
 			avt := libravatar.New()
 			avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
 			avt.SetUseHTTPS(true)
-			avt.SetFallbackHost("unicornify.pictures")
+			avt.SetSecureFallbackHost("unicornify.pictures")
 			if avatar_url, err := avt.FromEmail(email); err == nil {
 				session.Set("Libravatar", avatar_url)
 			} else {
@@ -236,9 +231,88 @@ func logout(c *gin.Context) {
 //	c.Redirect(http.StatusFound, "/")	// see https://github.com/gin-contrib/sessions/issues/29#issuecomment-376382465
 }
 
-// registerNewUser is currently unimplemented but will use Remote Admin to create new users, as opposed to writing to the OpenSimulator database directly.
-func registerNewUser(username, password string) (*UserForm, error) {
-	return nil, fmt.Errorf("placeholder error")
+// registerNewUser is currently unimplemented (too dangerous).
+func registerNewUser(c *gin.Context) {
+	var oneUser UserForm	// similar to performLogin()
+//	session := sessions.Default(c)	// should not have any session
+		
+	if c.Bind(&oneUser) != nil { // nil means no errors
+		c.HTML(http.StatusBadRequest, "register.tpl", gin.H{
+			"ErrorTitle"	: "Registration Failed",
+			"ErrorMessage"	: "No form data posted",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"Debug"			: false,
+			"titleCommon"	: *config["titleCommon"] + "What?",
+			"logintemplate"	: true,
+		})
+		log.Println("No form data posted")
+
+		return
+	}
+//(username, password string) (*UserForm, error) {
+	log.Printf("[INFO] Not implemented yet")
+	
+	c.HTML(http.StatusBadRequest, "register.tpl", gin.H{
+		"ErrorTitle"	: "Registration Failed",
+		"ErrorMessage"	: "No new users allowed!",
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"Debug"			: false,
+		"titleCommon"	: *config["titleCommon"] + "Sorry!",
+		"logintemplate"	: true,
+		"WrongUsername"	: oneUser.Username,
+		"WrongPassword"	: oneUser.Password,
+		"WrongEmail"	: oneUser.Email,
+	})
+	
+	return
+}
+
+func changePassword(c *gin.Context) {
+//(oldpassword, newpassword, newpasswordverify string) (*UserForm, error) {
+	var aPasswordChange ChangePasswordForm
+	// session := sessions.Default(c)
+	
+	if c.Bind(&aPasswordChange) != nil { // nil means no errors
+		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+			"ErrorTitle"	: "Password change failed",
+			"ErrorMessage"	: "No form data posted",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"Debug"			: false,
+			"titleCommon"	: *config["titleCommon"] + "Say what?",
+			"logintemplate"	: true,
+		})
+		log.Println("No form data posted")
+
+		return
+	}
+}
+
+func resetPassword(c *gin.Context) {
+//email string) (*UserForm, error) {
+	var aPasswordReset ResetPasswordForm
+	//session := sessions.Default(c)
+	
+	if c.Bind(&aPasswordReset) != nil { // nil means no errors
+		c.HTML(http.StatusBadRequest, "reset-password.tpl", gin.H{
+			"ErrorTitle"	: "Password reset failed",
+			"ErrorMessage"	: "No form data posted",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"Debug"			: false,
+			"titleCommon"	: *config["titleCommon"] + "Whut?",
+			"logintemplate"	: true,
+		})
+		log.Println("No form data posted")
+
+		return
+	}
 }
 
 // isUsernameAvailable simply checks the OpenSimulator database table 'UserAccounts' to see if a user exists with this username; note that OpenSimulator considers the username to have two distinct parts, 'first name' and 'last name'.
@@ -271,36 +345,6 @@ func isUsernameAvailable(username string) bool {
 	}
 	// no errors, username already exists in the database; it's not available, so we return false
 	return false
-}
-
-// showRegistrationPage is the handler for showing the registration page (currently 404).
-func showRegistrationPage(c *gin.Context) {
-	session := sessions.Default(c)
-
-	// we show a 404 error for now
-	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"titleCommon"	: *config["titleCommon"] + " - Register new user",
-		"Username"		: session.Get("Username"),
-		"Libravatar"	: session.Get("Libravatar"),
-	})
-}
-
-// register is the method called from the registration page (currently 404).
-func register(c *gin.Context) {
-	session := sessions.Default(c)
-
-	// reply with a 404 for now
-	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"titleCommon"	: *config["titleCommon"] + " - Register new user",
-		"Username"		: session.Get("Username"),
-		"Libravatar"	: session.Get("Libravatar"),
-	})
 }
 
 /***
