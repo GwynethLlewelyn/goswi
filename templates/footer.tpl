@@ -1,6 +1,6 @@
 {{ define "footer.tpl" }}
 {{ if .logintemplate }}
-{{ template "back.tpl" .}}
+<!-- we may include jQuery here, for doing the fancy view password thing -->
 {{ end }}
 {{ if not .logintemplate }}
 		<!-- Footer -->

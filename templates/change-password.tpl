@@ -29,7 +29,7 @@
 											</button>
 										</div>
 										{{else}}
-										<p class="mb-4">Please enter your old password, the new one and validate the new one</p>
+										<p class="mb-4">Please enter your old password, the new one and confirm the new one</p>
 										{{ end }}
 									</div> <!-- ./text-center -->
 									<form class="user" action="/user/change-password" method="POST">
@@ -42,8 +42,12 @@
 										<div class="form-group">
 											<input type="password" class="form-control form-control-user" id="confirmnewpassword" name="confirmnewpassword" placeholder="Confirm New Password" value="{{- .WrongConfirmNewPassword -}}">
 										</div>
-										<button type="submit" value="Change Password" class="btn btn-primary btn-user btn-block">
+										<input type="submit" value="Change Password" class="btn btn-primary btn-user btn-block">
 									</form>
+									<hr>
+									<div class="text-center">
+										<a class="small" href="/"><i class="fas fa-fw fa-long-arrow-alt-left"></i>&nbsp;Back to Dashboard</a>
+									</div>
 								</div> <!-- ./p-5 -->
 							</div> <!-- ./col-lg-6 -->
 						</div> <!-- ./row -->

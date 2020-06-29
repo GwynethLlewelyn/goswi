@@ -29,7 +29,7 @@
 										<div class="form-group">
 											<input type="email" class="form-control form-control-user" id="email" name="email" aria-describedby="emailHelp" placeholder="Enter Email Address..." value="{{- .WrongEmail -}}">
 										</div>
-										<button type="submit" value="Reset Password" class="btn btn-primary btn-user btn-block">
+										<input type="submit" class="btn btn-primary btn-user btn-block" value="Reset">
 									</form>
 									<hr>
 									<div class="text-center">
@@ -38,6 +38,9 @@
 									<div class="text-center">
 										<a class="small" href="/user/login">Already have an account? Login!</a>
 									</div> <!-- login -->
+									<div class="text-center">
+										<a class="small" href="/"><i class="fas fa-fw fa-long-arrow-alt-left"></i>&nbsp;Back to Dashboard</a>
+									</div>
 								</div> <!-- ./p-5 -->
 							</div> <!-- ./col-lg-6 -->
 						</div> <!-- ./row -->
