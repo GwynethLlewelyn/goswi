@@ -190,6 +190,7 @@ func main() {
 				"author"		: *config["author"],
 				"description"	: *config["description"],
 				"titleCommon"	: *config["titleCommon"] + " - Register new user",
+				"logintemplate"	: true,
 				"Username"		: session.Get("Username"),
 				"Libravatar"	: session.Get("Libravatar"),
 			})
@@ -203,12 +204,13 @@ func main() {
 				"author"		: *config["author"],
 				"description"	: *config["description"],
 				"titleCommon"	: *config["titleCommon"] + " - Change Password",
+				"logintemplate"	: true,
 				"Username"		: session.Get("Username"),
 				"Libravatar"	: session.Get("Libravatar"),
 			})
 		})
-		userRoutes.POST("/reset-password",	ensureLoggedIn(), resetPassword)
-		userRoutes.GET("/reset-password",	ensureLoggedIn(), func(c *gin.Context) {
+		userRoutes.POST("/reset-password",	ensureNotLoggedIn(), resetPassword)
+		userRoutes.GET("/reset-password",	ensureNotLoggedIn(), func(c *gin.Context) {
 			session := sessions.Default(c)
 
 			c.HTML(http.StatusOK, "reset-password.tpl", gin.H{
@@ -216,6 +218,7 @@ func main() {
 				"author"		: *config["author"],
 				"description"	: *config["description"],
 				"titleCommon"	: *config["titleCommon"] + " - Reset Password",
+				"logintemplate"	: true,
 				"Username"		: session.Get("Username"),
 				"Libravatar"	: session.Get("Libravatar"),
 			})
