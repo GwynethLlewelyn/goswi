@@ -317,7 +317,14 @@ func ensureLoggedIn() gin.HandlerFunc {
 			log.Printf("[INFO]: ensureLoggedIn(): Username is %q (empty means not authenticated)", loggedInInterface)
 		}	
 		if loggedInInterface == nil || loggedInInterface == "" {
+			if *config["ginMode"] == "debug" {
+				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user", loggedInInterface)
+			}	
 			c.AbortWithStatus(http.StatusUnauthorized)
+		} else {
+			if *config["ginMode"] == "debug" {
+				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
+			}	
 		}
 	}
 }
@@ -332,7 +339,14 @@ func ensureNotLoggedIn() gin.HandlerFunc {
 			log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q (empty means not authenticated)", loggedInInterface)
 		}	
 		if loggedInInterface != nil && loggedInInterface != "" {
+			if *config["ginMode"] == "debug" {
+				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
+			}	
 			c.AbortWithStatus(http.StatusUnauthorized)
+		} else {
+			if *config["ginMode"] == "debug" {
+				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user", loggedInInterface)
+			}
 		}
 	}
 }
