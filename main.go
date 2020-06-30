@@ -185,7 +185,7 @@ func main() {
 			session := sessions.Default(c)
 	
 			// we show a 404 error for now
-			c.HTML(http.StatusForbidden, "404.tpl", gin.H{
+			c.HTML(http.StatusOK, "404.tpl", gin.H{
 				"errorcode"		: http.StatusForbidden,
 				"errortext"		: "Access denied",
 				"errorbody"		: "Sorry, this grid is not accepting new registrations.",
@@ -193,7 +193,7 @@ func main() {
 				"author"		: *config["author"],
 				"description"	: *config["description"],
 				"titleCommon"	: *config["titleCommon"] + " - Register new user",
-				"logintemplate"	: true,
+				"logintemplate"	: false,
 				"Username"		: session.Get("Username"),
 				"Libravatar"	: session.Get("Libravatar"),
 			})
