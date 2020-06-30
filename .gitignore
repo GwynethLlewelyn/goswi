@@ -28,6 +28,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
+# Stuff from the Nova editor
+.nova
+
 # Binaries for programs and plugins
 *.exe
 *.exe~
