@@ -30,6 +30,10 @@ Temporary Items
 
 # Stuff from the Nova editor
 .nova
+node_modules
+package.json
+package-lock.json
+.eslintrc.yml
 
 # Binaries for programs and plugins
 *.exe
