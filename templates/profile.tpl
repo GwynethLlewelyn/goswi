@@ -29,6 +29,7 @@
 				<div class="col-lg-10 mb-4">
 					{{- if .Username -}}<h2>{{- .Username -}}</h2>{{- end -}}
 					<p>One day, your profile will be here!</p>
+					{{ if .ProfileData }}<p>{{- .ProfileData }}</p>{{- end -}}
 				</div>
 			</div> <!-- /.row -->
 			<div class="row">
