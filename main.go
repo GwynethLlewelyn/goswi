@@ -72,7 +72,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
 	}
 
-	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to	
+	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to
 	iniflags.SetConfigFile(path.Join(PathToStaticFiles, "/config.ini"))
 	// start parsing configuration
 	iniflags.Parse()
@@ -80,12 +80,12 @@ func main() {
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
 	// we might also check for weak security strings on the configuration
 	if *config["cookieStore"] == "" {
-		log.Fatal("Make sure that a random string for 'cookieStore' is set either on the .INI file or pass it via a flag!\nAborting for security reasons.")	
+		log.Fatal("Make sure that a random string for 'cookieStore' is set either on the .INI file or pass it via a flag!\nAborting for security reasons.")
 	}
 
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
 	if *config["ginMode"] == "release" { gin.SetMode(gin.ReleaseMode) }
-		
+
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
 /*	router.SetFuncMap(template.FuncMap{
@@ -93,19 +93,19 @@ func main() {
 	})*/
 	// figure out where the templates are
 	if (*config["templatePath"] != "") {
-		if (!strings.HasSuffix(*config["templatePath"], "/")) { 
+		if (!strings.HasSuffix(*config["templatePath"], "/")) {
 			*config["templatePath"] += "/"
 		}
 	} else {
 		*config["templatePath"] = "/templates/"
 	}
-	
+
 	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
 	store := cookie.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
 	router.Use(sessions.Sessions("goswisession", store))
-	
+
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
 	router.Static("/assets", path.Join(PathToStaticFiles, "/assets"))
@@ -183,7 +183,7 @@ func main() {
 		userRoutes.POST("/register",	ensureNotLoggedIn(), registerNewUser)
 		userRoutes.GET("/register",		ensureNotLoggedIn(), func(c *gin.Context) {
 			session := sessions.Default(c)
-	
+
 			// we show a 404 error for now
 			c.HTML(http.StatusOK, "404.tpl", gin.H{
 				"errorcode"		: http.StatusForbidden,
@@ -229,7 +229,7 @@ func main() {
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
 		userRoutes.GET("/login", 	ensureNotLoggedIn(), func(c *gin.Context) {
 			session := sessions.Default(c)
-				
+
 			c.HTML(http.StatusOK, "login.tpl", gin.H{
 				"now"			: formatAsYear(time.Now()),
 				"author"		: *config["author"],
@@ -242,11 +242,12 @@ func main() {
 			})
 		})
 		userRoutes.GET("/logout",	ensureLoggedIn(), logout)
+		userRoutes.GET("/profile",	ensureLoggedIn(), GetProfile)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
 		session := sessions.Default(c)
-		
+
 		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
@@ -299,7 +300,7 @@ func homeView(w http.ResponseWriter, r *http.Request) {
 	wLog.Info("homeView called")
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	
+
 	io.WriteString(w, "<html><head><title>It works!</title></head><body><p>FastCGI under Go works!</p></body></html>")
 }
 
@@ -307,9 +308,9 @@ func balView(w http.ResponseWriter, r *http.Request) {
 	wLog.Info("balView called")
 	w.Header().Set("Content-Type", "text/html")
 	w.WriteHeader(http.StatusOK)
-	
+
 	fastCGIenv := fcgi.ProcessEnv(r)
-	
+
 	io.WriteString(w, "<html><head><title>Balurdio!</title></head><body><p>Returning:</p><p><pre>")
 	if fastCGIenv != nil {
 		n, err := fmt.Fprintln(w, fastCGIenv)
@@ -326,7 +327,7 @@ func balView(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	var err error
-	
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/balurdio/", balView)

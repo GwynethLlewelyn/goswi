@@ -27,7 +27,7 @@
 					<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo"></a>
 				</div>
 				<div class="col-lg-10 mb-4">
-					{{- if .Username -}}<h2>{{- .Username -}}</h2>{{- end -}}
+					{{- if .Username -}}<h2>{{- .Username -}} Profile</h2>{{- end -}}
 					<p>One day, your profile will be here!</p>
 					{{ if .ProfileData }}<p>{{- .ProfileData }}</p>{{- end -}}
 				</div>
@@ -49,7 +49,7 @@
 											<tr>
 												<th>Avatar Name</th>
 											</tr>
-										</thead>								
+										</thead>
 									</table>
 								</div>
 							</div>
