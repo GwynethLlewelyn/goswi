@@ -109,12 +109,9 @@ func isUserValid(username, password string) (bool, string, string) {
 			hashedPassword, interior, hashed, passwordHash)
 	}
 	// compare and see if it matches
-	//i := strings.Compare(hashed, passwordHash)
-
-//	if i == 0 {
 	if passwordHash == hashed {
 		// authenticated! now set session cookie and do all the magic
-		log.Printf("[INFO] User %q authenticated.", username)
+		log.Printf("[INFO] User %q (%v) authenticated (email: <%s>).", username, principalID, email)
 		return true, email,	principalID
 	} else {
 		log.Printf("[WARN] Invalid authentication for %q — either user not found or password is wrong", username)
@@ -191,13 +188,12 @@ func performLogin(c *gin.Context) {
 				// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
 				session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
 				session.Set("Email", email)	// who knows, it might be useful at some point
-				session.Set("RememberMe", oneUser.RememberMe)
 			}
 		} else {
 			// if we don't have a valid email, get an Unicorn!
 			session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
 		}
-
+		session.Set("RememberMe", oneUser.RememberMe)
 		session.Save()
 	} else {
 		// invalid user, do not set cookies!

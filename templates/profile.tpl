@@ -24,12 +24,23 @@
 			<div class="row">
 				<div class="col-2 mb-4">
 					<!-- this will be the user's mugshot -->
-					<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo"></a>
+					{{ if .ProfileURL}}
+					<a href="{{- .ProfileURL -}}" target="_blank">
+					{{ end }}
+					{{ if .ProfileImage }}
+					<img src="{{- .ProfileImage -}}" alt="{{- .Username -}}" height="256" width="256">
+					{{ else }}
+					<img src="{{- .Libravatar -}}" alt="{{ .Username }}" height="256" width="256">
+					{{ end }}
+					{{ if .ProfileURL}}
+					</a>
+					{{ end }}
 				</div>
 				<div class="col-lg-10 mb-4">
 					{{- if .Username -}}<h2>{{- .Username -}} Profile</h2>{{- end -}}
 					<p>One day, your profile will be here!</p>
-					{{ if .ProfileData }}<p>{{- .ProfileData }}</p>{{- end -}}
+					{{ if .ProfileData }}
+					<pre>{{- .ProfileData }}</pre>{{- end -}}
 				</div>
 			</div> <!-- /.row -->
 			<div class="row">
