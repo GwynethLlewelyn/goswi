@@ -291,7 +291,7 @@ func main() {
 		log.Fatal(router.Run(*config["local"]))
 	}
 	// if we are here, router.Run() failed with an error
-	log.Fatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know")
+	log.Fatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know)")
 }
 
 /*

@@ -111,7 +111,7 @@ func isUserValid(username, password string) (bool, string, string) {
 	// compare and see if it matches
 	if passwordHash == hashed {
 		// authenticated! now set session cookie and do all the magic
-		log.Printf("[INFO] User %q (%v) authenticated (email: <%s>).", username, principalID, email)
+		log.Printf("[INFO] User %q authenticated.", username)
 		return true, email,	principalID
 	} else {
 		log.Printf("[WARN] Invalid authentication for %q — either user not found or password is wrong", username)
@@ -171,26 +171,35 @@ func performLogin(c *gin.Context) {
 		// warning: this will expose a password!!
 		log.Printf("[INFO] User: %q Password: %q Remember me? %q", oneUser.Username, oneUser.Password, oneUser.RememberMe)
 	}
-	if ok, email, uuid := isUserValid(oneUser.Username, oneUser.Password); ok {
+	if ok, email, principalID := isUserValid(oneUser.Username, oneUser.Password); ok {
 		session.Set("Username", oneUser.Username)
-		session.Set("UUID", uuid)
+		session.Set("UUID", principalID)
 		session.Set("Token", generateSessionToken())
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO] User valid with username: %q UUID: %s Email: <%s> Token: %s", oneUser.Username, principalID, email, session.Get("Token"))
+		}
 
 		if email != "" {
 //			avt.SetSecureFallbackHost("unicornify.pictures")	// possibly not needed, we'll implement it locally
 			avt := libravatar.New()
 			avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
 			avt.SetUseHTTPS(true)
-			avt.SetSecureFallbackHost("unicornify.pictures")
+//			avt.SetSecureFallbackHost("unicornify.pictures")
 			if avatar_url, err := avt.FromEmail(email); err == nil {
 				session.Set("Libravatar", avatar_url)
 			} else {
+				if *config["ginMode"] == "debug" {
+					log.Println("[WARN]: Libravatar returned error:", err)
+				}
 				// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
 				session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
 				session.Set("Email", email)	// who knows, it might be useful at some point
 			}
 		} else {
 			// if we don't have a valid email, get an Unicorn!
+			if *config["ginMode"] == "debug" {
+				log.Println("[WARN]: Empty email on database, attempting to get a Unicorn")
+			}
 			session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
 		}
 		session.Set("RememberMe", oneUser.RememberMe)

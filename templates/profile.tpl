@@ -16,13 +16,13 @@
 				<div class="col">
 					<!-- Welcome Text -->
 					<div class="text-center">
-						<h1><i class="fas fa-user fa-sm fa-fw"></i>Your Profile</h1>
+						<h1><i class="fas fa-user fa-sm fa-fw"></i><h2>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->
 			<!-- Content Row -->
 			<div class="row">
-				<div class="col-2 mb-4">
+				<div class="col-4 mb-4">
 					<!-- this will be the user's mugshot -->
 					{{ if .ProfileURL}}
 					<a href="{{- .ProfileURL -}}" target="_blank">
@@ -36,11 +36,14 @@
 					</a>
 					{{ end }}
 				</div>
-				<div class="col-lg-10 mb-4">
-					{{- if .Username -}}<h2>{{- .Username -}} Profile</h2>{{- end -}}
-					<p>One day, your profile will be here!</p>
+				<div class="col-lg-8 mb-4">
+					<p>
 					{{ if .ProfileData }}
-					<pre>{{- .ProfileData }}</pre>{{- end -}}
+					{{- .ProfileData -}}
+					{{- else -}}
+					One day, your profile will be here!
+					{{- end -}}
+					</p>
 				</div>
 			</div> <!-- /.row -->
 			<div class="row">
