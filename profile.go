@@ -89,7 +89,6 @@ func GetProfile(c *gin.Context) {
 		"ProfilePartner"		: profileData.ProfilePartner,
 		"ProfileAllowPublish"	: profileData.ProfileAllowPublish,
 		"ProfileMaturePublish"	: profileData.ProfileMaturePublish,
-		"ProfileURL"		: profileData.ProfileURL,
 		"ProfileWantToMask"	: profileData.ProfileWantToMask,
 		"ProfileWantToText"	: profileData.ProfileWantToText,
 		"ProfileSkillsMask"	: profileData.ProfileSkillsMask,

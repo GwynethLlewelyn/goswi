@@ -6,7 +6,8 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	_ "github.com/philippgille/gokv/syncmap"
+	_ "github.com/philippgille/gokv"
+	"github.com/philippgille/gokv/syncmap"
 	"github.com/vharitonsky/iniflags"
 //	"html/template"
 //	"io"
@@ -26,7 +27,7 @@ import (
 var (
 	wLog, _		= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
-	GOSWIstore Store
+	GOSWIstore syncmap.Store
 )
 
 var config = map[string]*string	{// just a place to keep them all together
@@ -281,7 +282,7 @@ func main() {
 	//  for now, we will not really need that, since it only stores relatively 'temporary' things, and, if all else fails,
 	//  you can redo those things again (e.g. tokens for password reset)
 
-	GOSWIstore = Store.NewStore()
+	GOSWIstore = syncmap.NewStore(syncmap.DefaultOptions)
 	defer GOSWIstore.Close()	// according to the developer, stores should be closed when not in usage, since certain store implementations may require an explicit close to deallocate memory, free database resources, etc. (20200705)
 
 	// Deal with the way gOSWI was called, namely if it uses a default port, uses TLS (=HTTPS), etc.

@@ -4,11 +4,13 @@ package main
 
 import (
 	"database/sql"
-//	"fmt"
+	"fmt"
 	"github.com/gin-contrib/sessions"
 // 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+//	"github.com/philippgille/gokv"
+//	"github.com/philippgille/gokv/syncmap"
 //	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
@@ -38,8 +40,6 @@ type ResetPasswordForm struct {
 	Email string `json:"email" form:"email" binding:"required"`
 	GPG string	`json:"gpg" form:"gpg"`	// GPG fingerprint to encrypt email, if provided (gwyneth 20200705)
 }
-
-
 
 // isUserValid checks the database for a valid user/pass combination. It returns a boolean. the email and the UUID. Yes, it's ugly.
 // TODO(gwyneth): Figure out a better way to extract the email data and store it safely.
@@ -299,8 +299,9 @@ func changePassword(c *gin.Context) {
 
 // ResetPasswordTokens are stored in a KV store
 type ResetPasswordTokens struct {
-	Selector string // 15 chars
-	Verifier string // 18 chars
+	Selector	string		`json:"selector"`	// 15 chars
+	Verifier	string		`json:"verifier"`	// 18 chars
+	Timestamp	time.Time	`json:"timestamp"`
 }
 
 // resetPassword is called with a POST from the form; we act upon it here.
@@ -324,6 +325,11 @@ func resetPassword(c *gin.Context) {
 
 		return
 	}
+
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] aPasswordReset: %+v", aPasswordReset)
+	}
+
 	// check if this email address is in the database
 	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
@@ -337,8 +343,9 @@ func resetPassword(c *gin.Context) {
 	err = db.QueryRow("SELECT PrincipalID, Email FROM UserAccounts WHERE Email = ?", aPasswordReset.Email).Scan(&principalID, &email)	// there can be only one, or our database is corrupted
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG]: email address %q not in database, but we're not telling. Error was: %v", aPasswordReset.Email, err)
-		}	}
+			log.Printf("[DEBUG] email address %q not in database, but we're not telling. Error was: %v", aPasswordReset.Email, err)
+		}
+	}
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] Password reset: We have email <%q> from user (empty means: not in database) and UUID %q (empty means: not in database)", email, principalID)
 	}
@@ -351,25 +358,35 @@ func resetPassword(c *gin.Context) {
 		selector := randomBase64String(15)
 		verifier := randomBase64String(18)
 
-
 		GOSWIstore.Set(principalID, ResetPasswordTokens{
 			Selector: selector,
 			Verifier: verifier,	// this will have to be changed to a SHA256 hash of the verifier
+			Timestamp: time.Now(),
 		})
 		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG] What we just stored: %q", GOSWIstore.Get(principalID))
+			var someTokens ResetPasswordTokens
+			found, err := GOSWIstore.Get(principalID, &someTokens)
+			if err == nil {
+				if found {
+					log.Printf("[DEBUG] What we just stored: %+v", someTokens)
+				} else {
+					log.Println("[DEBUG]", principalID, "not found in store")
+				}
+			} else {
+				log.Println("[WARN] Nothing stored for", principalID, "error was", err)
+			}
 		}
 		// Now send email!
 	}
 	c.HTML(http.StatusOK, "reset-password-confirmation.tpl", gin.H{
-		"Content"		: fmt.Sprintf("Please check your email address %q for a password reset link;<br />If your email address is in our database, you should get it shortly.", email)
+		"Content"		: fmt.Sprintf("Please check your email address %q for a password reset link; if your email address is in our database, you should get it shortly.", email),
 		"now"			: formatAsYear(time.Now()),
 		"author"		: *config["author"],
 		"description"	: *config["description"],
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Email sent!",
 		"logintemplate"	: true,
-	}
+	})
 }
 
 // isUsernameAvailable simply checks the OpenSimulator database table 'UserAccounts' to see if a user exists with this username; note that OpenSimulator considers the username to have two distinct parts, 'first name' and 'last name'.
