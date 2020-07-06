@@ -9,7 +9,6 @@ import (
 // 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/google/uuid"
 //	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
@@ -37,12 +36,10 @@ type ChangePasswordForm struct {
 
 type ResetPasswordForm struct {
 	Email string `json:"email" form:"email" binding:"required"`
+	GPG string	`json:"gpg" form:"gpg"`	// GPG fingerprint to encrypt email, if provided (gwyneth 20200705)
 }
 
-// generateSessionToken uses the same approach as OpenSimulator, which is to return a newly created UUID.
-func generateSessionToken() string {
-	return uuid.New().String()
-}
+
 
 // isUserValid checks the database for a valid user/pass combination. It returns a boolean. the email and the UUID. Yes, it's ugly.
 // TODO(gwyneth): Figure out a better way to extract the email data and store it safely.
@@ -300,6 +297,13 @@ func changePassword(c *gin.Context) {
 	}
 }
 
+// ResetPasswordTokens are stored in a KV store
+type ResetPasswordTokens struct {
+	Selector string // 15 chars
+	Verifier string // 18 chars
+}
+
+// resetPassword is called with a POST from the form; we act upon it here.
 func resetPassword(c *gin.Context) {
 //email string) (*UserForm, error) {
 	var aPasswordReset ResetPasswordForm
@@ -319,6 +323,52 @@ func resetPassword(c *gin.Context) {
 		log.Println("No form data posted")
 
 		return
+	}
+	// check if this email address is in the database
+	if *config["dsn"] == "" {
+		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+	}
+	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
+	checkErrFatal(err)
+
+	defer db.Close()
+
+	var principalID, email string
+	err = db.QueryRow("SELECT PrincipalID, Email FROM UserAccounts WHERE Email = ?", aPasswordReset.Email).Scan(&principalID, &email)	// there can be only one, or our database is corrupted
+	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG]: email address %q not in database, but we're not telling. Error was: %v", aPasswordReset.Email, err)
+		}	}
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] Password reset: We have email <%q> from user (empty means: not in database) and UUID %q (empty means: not in database)", email, principalID)
+	}
+
+	if (principalID != "" && email != "") {
+		// let's test our KV store by pushing some garbage into it!
+		// TODO(gwyneth): this has to be done much more carefully...
+		// Use Cryptographically Secure Randomly Generated Split-Tokens as shown on the P.I.E. algorithm found here https://paragonie.com/blog/2016/09/untangling-forget-me-knot-secure-account-recovery-made-simple#secure-password-reset-tokens (gwyneth 20200706)
+
+		selector := randomBase64String(15)
+		verifier := randomBase64String(18)
+
+
+		GOSWIstore.Set(principalID, ResetPasswordTokens{
+			Selector: selector,
+			Verifier: verifier,	// this will have to be changed to a SHA256 hash of the verifier
+		})
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG] What we just stored: %q", GOSWIstore.Get(principalID))
+		}
+		// Now send email!
+	}
+	c.HTML(http.StatusOK, "reset-password-confirmation.tpl", gin.H{
+		"Content"		: fmt.Sprintf("Please check your email address %q for a password reset link;<br />If your email address is in our database, you should get it shortly.", email)
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"Debug"			: false,
+		"titleCommon"	: *config["titleCommon"] + "Email sent!",
+		"logintemplate"	: true,
 	}
 }
 
@@ -354,64 +404,3 @@ func isUsernameAvailable(username string) bool {
 	return false
 }
 
-/***
-*	Middleware for dealing with login/session cookies
-*/
-
-// ensureLoggedIn tests if the user is logged in, reading in from the context to see if a flag is set.
-// Note that this flag is not a boolean any more, I'm using this pseudo-flag to store the username
-func ensureLoggedIn() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		loggedInInterface := session.Get("Username")
-		if loggedInInterface == nil || loggedInInterface == "" {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user")
-			}
-			c.AbortWithStatus(http.StatusUnauthorized)
-		} else {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
-			}
-		}
-	}
-}
-
-// ensureNotLoggedIn tests if the user is NOT logged in, reading in from the context to see if a flag is set.
-func ensureNotLoggedIn() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		loggedInInterface := session.Get("Username")
-		if loggedInInterface != nil && loggedInInterface != "" {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
-			}
-			c.AbortWithStatus(http.StatusUnauthorized)
-		} else {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user")
-			}
-		}
-	}
-}
-
-// setUserStatus gets loaded for each page, and sees if the cookie is set. This seems to be the 'correct' way to do this under Gin.
-func setUserStatus() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		// Note that all the things below may set everything to empty strings, which is FINE! (gwyneth 20200628)
-		c.Set("Username",	session.Get("Username"))
-		c.Set("Email", 		session.Get("Email"))
-		c.Set("Libravatar",	session.Get("Libravatar"))
-		c.Set("Token",		session.Get("Token"))
-		c.Set("UUID",		session.Get("UUID"))
-		c.Set("RememberMe",	session.Get("RememberMe"))
-
-		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO]: setUserStatus(): Authenticated? %q (username) Cookie token: %q Libravatar: %q", session.Get("Username"), session.Get("Token"), session.Get("Libravatar"))
-		}
-	}
-}
