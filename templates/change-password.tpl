@@ -37,10 +37,10 @@
 											<input type="password" class="form-control form-control-user" id="oldpassword" name="oldpassword" placeholder="Old Password" value="{{- .WrongOldPassword -}}" required>
 										</div>
 										<div class="form-group">
-											<input type="password" class="form-control form-control-user" id="newpassword" name="newpassword" placeholder="New Password" value="{{- .WrongNewPassword -}}" min="8" max="20" required>
+											<input type="password" class="form-control form-control-user" id="newpassword" name="newpassword" placeholder="New Password" value="{{- .WrongNewPassword -}}" minlength="8" minlength="20" required>
 										</div>
 										<div class="form-group">
-											<input type="password" class="form-control form-control-user" id="confirmnewpassword" name="confirmnewpassword" placeholder="Confirm New Password" value="{{- .WrongConfirmNewPassword -}}" min="8" max="20" required>
+											<input type="password" class="form-control form-control-user" id="confirmnewpassword" name="confirmnewpassword" placeholder="Confirm New Password" value="{{- .WrongConfirmNewPassword -}}" minlength="8" minlength="20" required>
 										</div>
 										<input type="submit" value="Change Password" class="btn btn-primary btn-user btn-block">
 									</form>

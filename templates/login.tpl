@@ -27,7 +27,7 @@
 									{{end}}
 									<form class="user" action="/user/login" method="POST">
 										<div class="form-group">
-											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username..." value="{{- .WrongUsername -}}" required>
+											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username..." value="{{- .WrongUsername -}}" title="The avatar name is a first name, one space, and a last name" pattern="\w*\s\w*" required>
 										</div>
 										<div class="form-group">
 												<input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password" value="{{- .WrongPassword -}}" required>
