@@ -85,7 +85,20 @@ func GetProfile(c *gin.Context) {
 		"titleCommon"	: *config["titleCommon"] + profileData.UserUUID + " Profile",
 		"ProfileData"	: fmt.Sprintf("%+v", profileData),
 		"ProfileURL"	: profileData.ProfileURL, // TODO(gwyneth): This ought to be sanitized!!
-		"ProfileImage"	: profileData.ProfileImage,
+		"UserUUID"				: profileData.UserUUID,
+		"ProfilePartner"		: profileData.ProfilePartner,
+		"ProfileAllowPublish"	: profileData.ProfileAllowPublish,
+		"ProfileMaturePublish"	: profileData.ProfileMaturePublish,
+		"ProfileURL"		: profileData.ProfileURL,
+		"ProfileWantToMask"	: profileData.ProfileWantToMask,
+		"ProfileWantToText"	: profileData.ProfileWantToText,
+		"ProfileSkillsMask"	: profileData.ProfileSkillsMask,
+		"ProfileSkillsText"	: profileData.ProfileSkillsText,
+		"ProfileLanguages"	: profileData.ProfileLanguages,
+		"ProfileImage"		: profileData.ProfileImage,			// OpenSimulator/Second Life image
+		"ProfileAboutText"	: profileData.ProfileAboutText,
+		"ProfileFirstImage"	: profileData.ProfileFirstImage,	// Real life, i.e. 'First Life' image
+		"ProfileFirstText"	: profileData.ProfileFirstText,
 		"Username"		: username,
 		"Libravatar"	: libravatar,
 	})
