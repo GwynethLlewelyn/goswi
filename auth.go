@@ -348,7 +348,7 @@ func resetPassword(c *gin.Context) {
 		}
 	}
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] Password reset: We have email <%q> from user (empty means: not in database) and UUID %q (empty means: not in database)", email, principalID)
+		log.Printf("[DEBUG] Password reset: We have email %q from user (empty means: not in database) and UUID %q (empty means: not in database)", email, principalID)
 	}
 
 	if (principalID != "" && email != "") {
@@ -380,36 +380,38 @@ func resetPassword(c *gin.Context) {
 		// Now send email!
 		// using example from https://riptutorial.com/go/example/20761/sending-email-with-smtp-sendmail-- (gwyneth 20200706)
 		if email != "" {
-			from := "grid@" + *config["local"]	// local email, will be part of the configuration
+			// Build the actual URL for token
+			tokenURL := c.Request.URL.Scheme + "//" + c.Request.URL.Host + "/user/token/" + selector + verifier
 
-			// server we are authorised to send email through
-			host := "localhost"	// localhost *should* work in most cases
+			// The grid manager's email is stored in *config["gOSWIemail"]
+
+			// server we are authorised to send email through is stored in *config["SMTPhost"]
 
 			// Create the authentication for the SendMail()
 			// using PlainText, but other authentication methods are encouraged
-			auth := smtp.PlainAuth("", from, "password", host)
+			auth := smtp.PlainAuth("", *config["gOSWIemail"], "", *config["SMTPhost"])
 
 			// NOTE: Using the backtick here ` works like a heredoc, which is why all the
 			// rest of the lines are forced to the beginning of the line, otherwise the
 			// formatting is wrong for the RFC 822 style
 			// TODO(gwyneth): use a template instead?
 			message := `To: "Someone" <` + email + `>
-From: "` + *config["author"] + `
+From: "` + *config["author"] + `" <` + *config["gOSWIemail"] + `>
 Subject: Password reset link
 
 Someone asked for your password to be reset.
 
-If it was you, click on <a href="` + `https://opensim.betatechnologies.info/user/token/` + selector + verifier + `">` + `https://opensim.betatechnologies.info/user/token/` + selector + verifier + `</a>.
+If it was you, click on <a href="` + tokenURL + `">` + tokenURL + `</a>.
 		`
 			if *config["ginMode"] == "debug" {
-				fmt.Printf("[DEBUG] Message to be sent: %q", message)
+				fmt.Printf("[DEBUG] Message to be sent: %q\n", message)
 			}
-			if err := smtp.SendMail(host+":25", auth, from, []string{email}, []byte(message)); err != nil {
-				fmt.Printf("[ERROR] Sending reset link email to <%s> failed: %v", email, err)
+			if err := smtp.SendMail(*config["SMTPhost"]+":25", auth, *config["gOSWIemail"], []string{email}, []byte(message)); err != nil {
+				fmt.Printf("[ERROR] Sending reset link email to <%s> via SMTP host %q failed: %v\n", email, *config["SMTPhost"], err)
 				//os.Exit(1)
 			}
 			if *config["ginMode"] == "debug" {
-				fmt.Printf("[INFO] Success in sending reset link to", email)
+				fmt.Println("[INFO] Success in sending reset link to", email)
 			}
 		}
 	}
@@ -421,6 +423,25 @@ If it was you, click on <a href="` + `https://opensim.betatechnologies.info/user
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Email sent!",
 		"logintemplate"	: true,
+	})
+}
+
+// checkTokenForPasswordReset is called when the user clicks the link for resetting their password, and we need to check if the token is a valid token to allow authentication
+func checkTokenForPasswordReset(c *gin.Context) {
+	var token string
+
+	if err := c.ShouldBindUri(&token); err != nil {
+			c.JSON(400, gin.H{"msg": err})
+			return
+	}
+
+	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"titleCommon"	: *config["titleCommon"] + " - 404",
+		"errortext"		: "Token incorrect",
+		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", ),
 	})
 }
 

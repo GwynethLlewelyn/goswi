@@ -27,7 +27,7 @@ import (
 var (
 	wLog, _		= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
-	GOSWIstore syncmap.Store
+	GOSWIstore syncmap.Store	// this stores tokens for password reset links
 )
 
 var config = map[string]*string	{// just a place to keep them all together
@@ -40,7 +40,9 @@ var config = map[string]*string	{// just a place to keep them all together
 	"author"		: flag.String("author", "--nobody--", "Author name"),
 	"description"	: flag.String("description", "gOSWI", "Description for each page"),
 	"titleCommon"	: flag.String("titleCommon", "gOSWI", "Common part of the title for each page (usually the brand)"),
-	"cookieStore"	: flag.String("cookieStore", "", "Secret random string required for the cookie store; mandatory!"),
+	"cookieStore"	: flag.String("cookieStore", randomBase64String(64), "Secret random string required for the cookie store (will be generated randomly if unset)"),
+	"SMTPhost"		: flag.String("SMTPhost", "localhost", "Hostname of the SMTP server (for sending password reset tokens via email)"),
+	"gOSWIemail"	: flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
 }
 
 // goswiSession represents our encapsulated session. We need to store a bit more than just a string token, so this needs to be encoded later.
@@ -83,7 +85,7 @@ func main() {
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
 	// we might also check for weak security strings on the configuration
 	if *config["cookieStore"] == "" {
-		log.Fatal("Make sure that a random string for 'cookieStore' is set either on the .INI file or pass it via a flag!\nAborting for security reasons.")
+		log.Fatal("[ERROR] Empty random string for 'cookieStore'; please set it either on the .INI file or pass it via a flag!\nAborting for security reasons.")
 	}
 
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
@@ -229,6 +231,7 @@ func main() {
 				"Libravatar"	: session.Get("Libravatar"),
 			})
 		})
+		userRoutes.GET("/token/:token", ensureNotLoggedIn(), checkTokenForPasswordReset)
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
 		userRoutes.GET("/login", 	ensureNotLoggedIn(), func(c *gin.Context) {
 			session := sessions.Default(c)
