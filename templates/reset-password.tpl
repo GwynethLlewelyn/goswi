@@ -27,9 +27,11 @@
 									</div> <!-- ./text-center -->
 									<form class="user" action="/user/reset-password" method="POST">
 										<div class="form-group">
-											<input type="email" class="form-control form-control-user" id="email" name="email" aria-describedby="emailHelp" placeholder="Enter Email Address..." value="{{- .WrongEmail -}}">
+											<input type="email" class="form-control form-control-user" id="email" name="email" aria-describedby="emailHelp" placeholder="Enter Email Address..." value="{{- .WrongEmail -}}" required>
+										</div>
+										<label for="gpg">If you wish to receive an encrypted email, enter your public GPG key fingerprint below:</label>
+										<div class="form-group">
 											<input type="text" class="form-control form-control-user" id="gpg" name="gpg" placeholder="GPG public key fingerprint..." value="{{- .WrongGPG -}}">
-											<label class="custom-control-label" for="gpg">If you wish to receive an encrypted email, enter your public GPG key fingerprint below:</label>
 										</div>
 										<input type="submit" class="btn btn-primary btn-user btn-block" value="Reset Password">
 									</form>

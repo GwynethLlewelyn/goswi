@@ -10,10 +10,8 @@
 				<div class="card o-hidden border-0 shadow-lg my-5">
 					<div class="card-body p-0">
 						<!-- Nested Row within Card Body -->
-
 						<div class="row">
 							<div class="col-lg-6 d-none d-lg-block bg-login-image"></div>
-
 							<div class="col-lg-6">
 								<div class="p-5">
 									<div class="text-center">
@@ -29,11 +27,10 @@
 									{{end}}
 									<form class="user" action="/user/login" method="POST">
 										<div class="form-group">
-											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username..." value="{{- .WrongUsername -}}">
+											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username..." value="{{- .WrongUsername -}}" required>
 										</div>
-
 										<div class="form-group">
-												<input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password" value="{{- .WrongPassword -}}">
+												<input type="password" class="form-control form-control-user" id="password" name="password" placeholder="Password" value="{{- .WrongPassword -}}" required>
 <!--										    <div class="input-group" id="show_hide_password">
 												<div class="input-group-addon">
 													<a href=""><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
