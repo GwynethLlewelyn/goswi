@@ -2,9 +2,13 @@ package main
 
 import (
 	"crypto/md5"
+	"crypto/rand"
 	"encoding/hex"
+	"encoding/base64"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
+	"math"
 	"os"
 	osUser "os/user"
 	"path/filepath"
@@ -39,19 +43,36 @@ func checkErr(err error) {
 // expandPath expands the tilde as the user's home directory.
 //  found at http://stackoverflow.com/a/43578461/1035977
 func expandPath(path string) (string, error) {
-    if len(path) == 0 || path[0] != '~' {
-        return path, nil
-    }
+	if len(path) == 0 || path[0] != '~' {
+		return path, nil
+	}
 
-    usr, err := osUser.Current()
-    if err != nil {
-        return "", err
-    }
-    return filepath.Join(usr.HomeDir, path[1:]), nil
+	usr, err := osUser.Current()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(usr.HomeDir, path[1:]), nil
 }
+
+/**
+*	Cryptographic helper functions
+**/
 
 // GetMD5Hash calculated the MD5 hash of any string. See aviv's solution on SO: https://stackoverflow.com/a/25286918/1035977
 func GetMD5Hash(text string) string {
 	hash := md5.Sum([]byte(text))
 	return hex.EncodeToString(hash[:])
+}
+
+// generateSessionToken uses the same approach as OpenSimulator, which is to return a newly created UUID.
+func generateSessionToken() string {
+	return uuid.New().String()
+}
+
+// randomBase64String is Steven Soroka's simple solution to generate a cryptographically secure random string with base64 encoding (see https://stackoverflow.com/a/55860599/1035977) (gwyneth 20200706)
+func randomBase64String(l int) string {
+    buff := make([]byte, int(math.Round(float64(l)/float64(1.33333333333))))
+    rand.Read(buff)
+    str := base64.RawURLEncoding.EncodeToString(buff)
+    return str[:l] // strip 1 extra character we get from odd length results
 }
