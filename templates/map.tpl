@@ -10,7 +10,7 @@
 							<div class="card-body">
 								<!-- Grid Map will be shown below, using LeafletJS -->
 								<div id="gridMap"></div>
-								<!-- 
+								<!--
 ==============================================================================
 Parts of the map code have been inspired/changed from the code that Linden Lab
 uses on their own maps website (https://maps.secondlife.com(),
