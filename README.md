@@ -34,6 +34,8 @@ The fonts used are, per [Google's v.1.9.5 guidelines for Go-related things](http
 
 The template used, [SB Admin 2](https://startbootstrap.com/template-overviews/sb-admin-2/), has been developed by [Start Bootstrap](http://startbootstrap.com/) — created and maintained by [David Miller](http://davidmiller.io/) — and is based on the [Bootstrap](http://getbootstrap.com/) framework created by [Mark Otto](https://twitter.com/mdo) and [Jacob Thorton](https://twitter.com/fat). It is released under a [MIT license](vendor/startbootstrap-sb-admin-2/LICENSE).
 
+I've tried to stick to the original files for as long as I could (merely linking to them), but, over time, I had to make more and more changes to them. CSS was getting so many exceptions that I had to create my own file. It's not minified, since I use all sorts of caches and proxies in front of my setup — namely Cloudflare and Google's PageSpeed module for `nginx` — so I don't worry a lot about 'minification'.
+
 Most colours come from the awesome [Nord colour palette](https://www.nordtheme.com/), released under a [MIT license](https://github.com/arcticicestudio/nord/blob/develop/LICENSE.md). I have to admit that I'm in love with that colour scheme, and abuse and overuse it pretty much everywhere. Fortunately, if you hate it, it should be quite easy to change to something else!
 
 Some code was _inspired_ on [OpenSim Web Interface Redux](https://github.com/BigManzai/opensimwiredux) (OpenSimWIRedux) as well as the connection to the Remote Admin XML-RPC as provided by [Marcel Edward](https://github.com/MarcelEdward/OpenSim-RemoteAdmin). At the time of writing this, OpenSimWIRedux is currently going through a code rewrite and not fully operational, but you can still look at its files.
