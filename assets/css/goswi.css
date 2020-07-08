@@ -1586,6 +1586,34 @@ pre code {
 	border-top: 2px solid var(--gray);
 }
 
+.table-compact th,
+.table-compact td {
+	padding: 0.2rem;
+	font-size: 0.7rem;
+	line-height: 1;
+}
+
+.table-compact thead .sorting,
+.table-compact thead .sorting_asc,
+.table-compact thead .sorting_desc,
+.table-compact thead .sorting_asc_disabled,
+.table-compact thead .sorting_desc_disabled {
+	padding: 0.2rem;
+}
+
+.dataTable .table-compact thead .sorting:before,
+.dataTable .table-compact thead .sorting_asc:before,
+.dataTable .table-compact thead .sorting_desc:before,
+.dataTable .table-compact thead .sorting_asc_disabled:before,
+.dataTable .table-compact thead .sorting_desc_disabled:before,
+.dataTable .table-compact thead .sorting:after,
+.dataTable .table-compact thead .sorting_asc:after,
+.dataTable .table-compact thead .sorting_desc:after,
+.dataTable .table-compact thead .sorting_asc_disabled:after,
+.dataTable .table-compact thead .sorting_desc_disabled:after {
+	bottom: 0.2rem;
+}
+
 .table-sm th,
 .table-sm td {
 	padding: 0.3rem;

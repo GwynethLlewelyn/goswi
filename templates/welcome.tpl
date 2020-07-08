@@ -70,8 +70,8 @@
 						<div class="collapse show" id="regionList">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered table-striped" id="regionsTable" width="100%" cellspacing="0"
-										data-order='[]' data-page-length='25'>
+									<table class="table table-bordered table-striped table-compact" id="regionsTable" width="100%" cellspacing="0"
+										data-order='[]' data-page-length='35'>
 										<thead>
 											<tr>
 												<th>regionName</th>

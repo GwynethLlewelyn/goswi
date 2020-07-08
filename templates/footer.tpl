@@ -59,11 +59,11 @@
 	// Call the dataTables jQuery plugin
 		$(document).ready(function() {
 			$('#viewerInfo').dataTable( {
-					searching:	false,
-					ordering:	false,
-					paging:		false,
-					scrollCollapse: true,
-					info:		false,
+				"searching":	false,
+				"ordering":		false,
+				"paging":		false,
+				"scrollCollapse": true,
+				"info":			false,
 				"data": {{ .viewerInfo -}},
 				"columns": [
 					{ "data": "channel" },
@@ -73,9 +73,12 @@
 					{ "data": "os" },
 					{ "data": "sourceid" },
 					{ "data": "version" }
-				]						
+				]
 			});
 			$('#regionsTable').dataTable( {
+				"searching":	false,
+				"paging": 		false,
+				"info":			false,
 				"data": {{ .regionsTable -}},
 				"columns": [
 					{ "data": "regionName" },
