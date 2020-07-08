@@ -15,6 +15,11 @@
 
 /* CC Symbol font, which gets us the Creative Commons symbols (until they are fully implemented on all possible fonts, which will not happen from one day to the other) (gwyneth 20200707) */
 
+/* Colour settings for main components of SB Admin 2. We're replacing them with Nord colours!
+See nord.css for license information */
+
+@import url(/assets/css/nord.css);
+
 @font-face {
 	font-display: swap;
 	font-family: CCSymbols;
@@ -53,10 +58,6 @@
 	src:local('Segoe UI Bold Italic'),url('../fonts/Segoe UI Bold Italic.woff') format("woff");
 }
 
-/* Colour settings for main components of SB Admin 2. We're replacing them with Nord colours!
- See nord.css for license information */
-
-@import url("/assets/css/nord.css");
 :root {
 /*
 	--blue: var(--nord10);
