@@ -36,7 +36,7 @@
 						<div class="collapse show" id="vieweInfo">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered" id="viewerInfo" width="100%" cellspacing="0"
+									<table class="table table-bordered table-striped" id="viewerInfo" width="100%" cellspacing="0"
 										data-order='[]' data-page-length='25'>
 										<thead>
 											<tr>
@@ -70,7 +70,7 @@
 						<div class="collapse show" id="regionList">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered" id="regionsTable" width="100%" cellspacing="0"
+									<table class="table table-bordered table-striped" id="regionsTable" width="100%" cellspacing="0"
 										data-order='[]' data-page-length='25'>
 										<thead>
 											<tr>
@@ -97,13 +97,13 @@
 						<div class="collapse show" id="onlineUsersCard">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered" id="usersOnline" width="100%" cellspacing="0"
+									<table class="table table-bordered table-striped" id="usersOnline" width="100%" cellspacing="0"
 										data-order='[]' data-page-length='25'>
 										<thead>
 											<tr>
 												<th>Avatar Name</th>
 											</tr>
-										</thead>								
+										</thead>
 									</table>
 								</div>
 							</div>

@@ -59,50 +59,28 @@ See nord.css for license information */
 }
 
 :root {
-/*
-	--blue: var(--nord10);
-	--indigo: var(--nord2);
-	--purple: var(--nord3);
-	--pink: var(--nord15);
-	--red: var(--nord11);
-	--orange: var(--nord12);
-	--yellow: var(--nord13);
-	--green: var(--nord14);
-	--teal: var(--nord7);
-	--cyan: var(--nord9);
-	--white: var(--nord6);
-	--gray: var(--nord3);
-	--gray-dark: var(--nord2);
-	--primary: var(--nord10);
-	--secondary: var(--nord3);
-	--success: var(--nord14);
-	--info: var(--nord9);
-	--warning: var(--nord13);
-	--danger: var(--nord11);
-	--light: var(--nord6);
-	--dark: var(--nord0);
-*/
-	--blue: #5e81ac;
-	--indigo: #434c5e;
-	--purple: #4c566a;
-	--pink: #b48ead;
-	--red: #bf616a;
-	--orange: #d08770;
-	--yellow: #ebcb8b;
-	--green: #a3be8c;
-	--teal: #8fbcbb;
-	--cyan: #81a1c1;
-	--white: #eceff4;
-	--gray: #4c566a;
-	--gray-dark: #434c5e;
-	--primary: #5e81ac;
-	--secondary: #4c566a;
-	--success: #a3be8c;
-	--info: #81a1c1;
-	--warning: #ebcb8b;
-	--danger: #bf616a;
-	--light: #eceff4;
-	--dark: #2e3440;
+
+	--blue: var(--nord10);		/* #5e81ac */
+	--indigo: var(--nord2);		/* #434c5e */
+	--purple: var(--nord3);		/* #4c566a */
+	--pink: var(--nord15);		/* #b48ead */
+	--red: var(--nord11);		/* #bf616a */
+	--orange: var(--nord12);	/* #d08770 */
+	--yellow: var(--nord13);	/* #ebcb8b */
+	--green: var(--nord14);		/* #a3be8c */
+	--teal: var(--nord7);		/* #8fbcbb */
+	--cyan: var(--nord9);		/* #81a1c1 */
+	--white: var(--nord6);		/* #eceff4 */
+	--gray: var(--nord3);		/* #4c566a */
+	--gray-dark: var(--nord2);	/* #434c5e */
+	--primary: var(--nord10);	/* #5e81ac */
+	--secondary: var(--nord3);	/* #4c566a */
+	--success: var(--nord14);	/* #a3be8c */
+	--info: var(--nord9);		/* #81a1c1 */
+	--warning: var(--nord13);	/* #ebcb8b */
+	--danger: var(--nord11);	/* #bf616a */
+	--light: var(--nord6);		/* #eceff4 */
+	--dark: var(--nord0);		/* #2e3440 */
 	--breakpoint-xs: 0;
 	--breakpoint-sm: 576px;
 	--breakpoint-md: 768px;
@@ -119,7 +97,8 @@ See nord.css for license information */
 }
 
 html {
-	font-family: sans-serif;
+	/* font-family: sans-serif; */
+	font-family: var(--font-family-sans-serif);
 	line-height: 1.15;
 	-webkit-text-size-adjust: 100%;
 	-webkit-tap-highlight-color: var(--dark);
@@ -131,7 +110,9 @@ article, aside, figcaption, figure, footer, header, hgroup, main, nav, section {
 
 body {
 	margin: 0;
-	font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	font-family: var(--font-family-sans-serif);
+/*	font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
+
 	font-size: 1rem;
 	font-weight: 400;
 	line-height: 1.5;
@@ -254,7 +235,8 @@ pre,
 code,
 kbd,
 samp {
-	font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+	/* font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; */
+	font-family: var(--font-family-monospace);
 	font-size: 1em;
 }
 
@@ -1592,16 +1574,16 @@ pre code {
 .table td {
 	padding: 0.75rem;
 	vertical-align: top;
-	border-top: 1px solid var(--light);
+	border-top: 1px solid var(--gray);
 }
 
 .table thead th {
 	vertical-align: bottom;
-	border-bottom: 2px solid var(--light);
+	border-bottom: 2px solid var(--gray);
 }
 
 .table tbody + tbody {
-	border-top: 2px solid var(--light);
+	border-top: 2px solid var(--gray);
 }
 
 .table-sm th,
@@ -1610,12 +1592,12 @@ pre code {
 }
 
 .table-bordered {
-	border: 1px solid var(--light);
+	border: 1px solid var(--gray);
 }
 
 .table-bordered th,
 .table-bordered td {
-	border: 1px solid var(--light);
+	border: 1px solid var(--gray);
 }
 
 .table-bordered thead th,
@@ -1649,16 +1631,16 @@ pre code {
 .table-primary td,
 .table-primary thead th,
 .table-primary tbody + tbody {
-	border-color: var(--info);
+	border-color: var(--primary);
 }
 
 .table-hover .table-primary:hover {
-	background-color: var(--info);
+	background-color: var(--light);
 }
 
 .table-hover .table-primary:hover > td,
 .table-hover .table-primary:hover > th {
-	background-color: var(--info);
+	background-color: var(--light);
 }
 
 .table-secondary,
@@ -1671,16 +1653,16 @@ pre code {
 .table-secondary td,
 .table-secondary thead th,
 .table-secondary tbody + tbody {
-	border-color: var(--secondary);
+	border-color: var(--gray-dark);
 }
 
 .table-hover .table-secondary:hover {
-	background-color: var(--light);
+	background-color: var(--gray);
 }
 
 .table-hover .table-secondary:hover > td,
 .table-hover .table-secondary:hover > th {
-	background-color: var(--light);
+	background-color: var(--gray);
 }
 
 .table-success,
@@ -5885,7 +5867,8 @@ a.close.disabled {
 	z-index: 1070;
 	display: block;
 	margin: 0;
-	font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	/* font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
+	font-family: var(--font-family-sans-serif);
 	font-style: normal;
 	font-weight: 400;
 	line-height: 1.5;
@@ -5998,7 +5981,8 @@ a.close.disabled {
 	z-index: 1060;
 	display: block;
 	max-width: 276px;
-	font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+	/* font-family: "Nunito", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; */
+	font-family: var(--font-family-sans-serif);
 	font-style: normal;
 	font-weight: 400;
 	line-height: 1.5;
@@ -9469,7 +9453,8 @@ button.bg-dark:focus {
 }
 
 .text-monospace {
-	font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+	/* font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important; */
+	font-family: var(--font-family-monospace);
 }
 
 .text-justify {
@@ -10302,11 +10287,11 @@ a:focus {
 }
 
 .topbar.navbar-light .navbar-nav .nav-item .nav-link {
-	color: var(--light);
+	color: var(--gray);
 }
 
 .topbar.navbar-light .navbar-nav .nav-item .nav-link:hover {
-	color: var(--gray);
+	color: var(--gray-dark);
 }
 
 .topbar.navbar-light .navbar-nav .nav-item .nav-link:active {
