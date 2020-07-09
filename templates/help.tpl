@@ -16,7 +16,7 @@
 				<div class="col">
 					<!-- Help -->
 					<div class="text-center">
-						<h1><i class="fas fa-fw fa-question-circle"></i>Help</h1>
+						<h1>Help</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->

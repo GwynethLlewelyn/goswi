@@ -16,7 +16,7 @@
 				<div class="col">
 					<!-- Welcome Text -->
 					<div class="text-center">
-						<h1><i class="fas fa-user fa-sm fa-fw"></i><h2>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h1>
+						<h1>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->

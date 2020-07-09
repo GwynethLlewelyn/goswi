@@ -10030,7 +10030,7 @@ a:focus {
 }
 
 .text-gray-400 {
-	color: var(--light) !important;
+	color: var(--gray) !important;
 }
 
 .text-gray-500 {

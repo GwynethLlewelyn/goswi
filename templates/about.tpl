@@ -16,7 +16,7 @@
 				<div class="col">
 					<!-- About -->
 					<div class="text-center">
-						<h1><i class="fas fa-fw fa-address-card"></i>About the {{ .description }}</h1>
+						<h1>About the {{ .description }}</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->
