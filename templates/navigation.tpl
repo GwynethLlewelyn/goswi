@@ -1,6 +1,6 @@
 {{ define "navigation.tpl" }}
 	<!-- Sidebar -->
-	<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion{{- if .sidebarCollapsed == "false" -}} toggled{{- end -}}" id="accordionSidebar">
+	<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion{{- if eq .sidebarCollapsed "false" -}} data-toggled{{- end -}}" id="accordionSidebar">
 
 	  <!-- Sidebar - Brand -->
 	  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">

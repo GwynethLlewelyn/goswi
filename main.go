@@ -45,7 +45,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"gOSWIemail"	: flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
 	"logo"			: flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
 	"logoTitle"		: flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
-	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "=false for a collapsed sidebar on startup"),
+	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
 }
 
 // formatAsDate is a function for the templating system, which will be registered below.

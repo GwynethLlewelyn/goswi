@@ -85,7 +85,7 @@
 	{{ end }}
 </head>
 {{- if not .logintemplate -}}
-<body id="page-top" {{- if .sidebarCollapsed == "false" -}}class="sidebar sidebar-toggled toggled"{{- end --}}>
+<body id="page-top">
 
 	<!-- Page Wrapper -->
 	<div id="wrapper">
