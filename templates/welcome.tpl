@@ -16,17 +16,13 @@
 				<div class="col">
 					<!-- Welcome Text -->
 					<div class="text-center">
-						<h1><i class="fas fa-fw fa-door-open"></i>Welcome to the Beta Technologies OpenSimulator Grid!</h1>
+						<h1>{{- .description -}}</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->
 			<!-- Content Row -->
 			<div class="row">
-				<div class="col-2 mb-4">
-					<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo"></a>
-				</div>
-				<div class="col-lg-10 mb-4">
-					<p>We still don't have much to show here... it's all under construction!</p>
+				<div class="col mb-4">
 					<!-- DataTables for Viewer Info -->
 					{{ if .viewerInfo }}
 					<div class="card shadow mb-4">
@@ -36,7 +32,7 @@
 						<div class="collapse show" id="vieweInfo">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered table-striped" id="viewerInfo" width="100%" cellspacing="0"
+									<table class="table table-bordered table-compact table-striped" id="viewerInfo" width="100%" cellspacing="0"
 										data-order='[]' data-page-length='25'>
 										<thead>
 											<tr>
@@ -97,7 +93,7 @@
 						<div class="collapse show" id="onlineUsersCard">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered table-striped" id="usersOnline" width="100%" cellspacing="0"
+									<table class="table table-bordered table-compact table-striped" id="usersOnline" width="100%" cellspacing="0"
 										data-order='[]' data-page-length='25'>
 										<thead>
 											<tr>

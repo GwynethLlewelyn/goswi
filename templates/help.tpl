@@ -23,9 +23,6 @@
 			<!-- Content Row -->
 			<div class="row">
 				<div class="col mb-4">
-					<a href="https://betatechnologies.info" target=_blank><img src="https://betatechnologies.info/wp-content/uploads/2020/05/Beta-Technologies-Vertical-Logo-2008.svg" alt="Beta Technologies Logo" align="left" width="250"></a>
-				</div>
-				<div class="col-lg-8 mb-4">
 					<p>We understand that you need help, but we're not finished with writing the content of this page yet.</p>
 				</div>
 			</div> <!-- /.row -->

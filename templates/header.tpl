@@ -18,6 +18,45 @@
 	{{ if .needsTables }}
 	<!-- Custom styles for this page -->
 	<link href="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.css" rel="stylesheet" type="text/css">
+	<!-- change the style above for more compact tables -->
+	<style>
+	table.dataTable.table-compact thead .sorting:before,
+	table.dataTable.table-compact thead .sorting:after,
+	table.dataTable.table-compact thead .sorting_asc:before,
+	table.dataTable.table-compact thead .sorting_asc:after,
+	table.dataTable.table-compact thead .sorting_desc:before,
+	table.dataTable.table-compact thead .sorting_desc:after,
+	table.dataTable.table-compact thead .sorting_asc_disabled:before,
+	table.dataTable.table-compact thead .sorting_asc_disabled:after,
+	table.dataTable.table-compact thead .sorting_desc_disabled:before,
+	table.dataTable.table-compact thead .sorting_desc_disabled:after {
+		    position: absolute;
+		    bottom: 0.025rem;
+		    display: block;
+		    opacity: 0.3;
+	}
+	table.dataTable.table-compact thead th,
+	table.dataTable.table-compact thead td {
+		padding: 0.1rem;
+		font-size: 0.7rem;
+		line-height: 1;
+		// padding: 1px;
+	}
+	table.dataTable.table-compact tfoot th,
+	table.dataTable.table-compact tfoot td {
+		padding: 0.1rem;
+		font-size: 0.7rem;
+		line-height: 1;
+		// padding: 1px;
+	}
+	table.dataTable.table-compact tbody th,
+	table.dataTable.table-compact tbody td {
+		padding: 0.1rem;
+		font-size: 0.7rem;
+		line-height: 1;
+		// padding: 1px;
+	}
+	</style>
 	{{ end }}
 	{{ if .needsMap }}
 		<!-- Leaflet -->
@@ -46,7 +85,7 @@
 	{{ end }}
 </head>
 {{- if not .logintemplate -}}
-<body id="page-top">
+<body id="page-top" class="sidebar sidebar-toggled toggled">
 
 	<!-- Page Wrapper -->
 	<div id="wrapper">

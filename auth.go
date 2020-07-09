@@ -139,6 +139,9 @@ func performLogin(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "What?",
 			"logintemplate"	: true,
@@ -154,6 +157,9 @@ func performLogin(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Oh, No!",
 			"logintemplate"	: true,
@@ -212,6 +218,9 @@ func performLogin(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Oh, No!",
 			"logintemplate"	: true,
@@ -248,6 +257,9 @@ func registerNewUser(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "What?",
 			"logintemplate"	: true,
@@ -288,6 +300,9 @@ func changePassword(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Say what?",
 			"logintemplate"	: true,
@@ -298,9 +313,9 @@ func changePassword(c *gin.Context) {
 	}
 }
 
-// ResetPasswordTokens are stored in a KV store
+// ResetPasswordTokens are stored in a KV store, the key of which is the Selector.
 type ResetPasswordTokens struct {
-	Selector	string		`json:"selector"`	// 15 chars
+	UserUUID	string		`json:"uuid"`
 	Verifier	string		`json:"verifier"`	// 18 chars
 	Timestamp	time.Time	`json:"timestamp"`
 }
@@ -318,6 +333,9 @@ func resetPassword(c *gin.Context) {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Whut?",
 			"logintemplate"	: true,
@@ -359,22 +377,22 @@ func resetPassword(c *gin.Context) {
 		selector := randomBase64String(15)
 		verifier := randomBase64String(18)
 
-		GOSWIstore.Set(principalID, ResetPasswordTokens{
-			Selector: selector,
+		GOSWIstore.Set(selector, ResetPasswordTokens{
+			UserUUID: principalID,
 			Verifier: verifier,	// this will have to be changed to a SHA256 hash of the verifier
 			Timestamp: time.Now(),
 		})
 		if *config["ginMode"] == "debug" {
 			var someTokens ResetPasswordTokens
-			found, err := GOSWIstore.Get(principalID, &someTokens)
+			found, err := GOSWIstore.Get(selector, &someTokens)
 			if err == nil {
 				if found {
 					log.Printf("[DEBUG] What we just stored: %+v", someTokens)
 				} else {
-					log.Println("[DEBUG]", principalID, "not found in store")
+					log.Println("[DEBUG]", selector, "not found in store")
 				}
 			} else {
-				log.Println("[WARN] Nothing stored for", principalID, "error was", err)
+				log.Println("[WARN] Nothing stored for", selector, "error was", err)
 			}
 		}
 		// Now send email!
@@ -430,9 +448,37 @@ If it was you, click on <a href="` + tokenURL + `">` + tokenURL + `</a>.
 func checkTokenForPasswordReset(c *gin.Context) {
 	var token string
 
+	// token = c.Param("token")	// Wouldn't this be more obvious?
 	if err := c.ShouldBindUri(&token); err != nil {
 			c.JSON(400, gin.H{"msg": err})
 			return
+	}
+	// split token
+	selector = token[:14]
+	verifier = token[15:]
+	if *config["ginMode"] == "debug" {
+		fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q\n", token, selector, verifier)
+	}
+
+	var someTokens ResetPasswordTokens
+	found, err := GOSWIstore.Get(selector, &someTokens)
+	if err == nil {
+		if found {
+			log.Printf("[INFO] What we just stored: %+v", someTokens)
+			// check if it is still valid
+			if time.Since(someTokens.Timestamp) < 2 * time.Hour {
+				// valid, log user in, move to password change template
+
+
+			} else {
+				log.Println("[ERROR] Token expired!")
+			}
+
+		} else {
+			log.Println("[ERROR]", selector, "not found in store")
+		}
+	} else {
+		log.Println("[ERROR] Nothing stored for", selector, "error was", err)
 	}
 
 	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
@@ -441,7 +487,7 @@ func checkTokenForPasswordReset(c *gin.Context) {
 		"description"	: *config["description"],
 		"titleCommon"	: *config["titleCommon"] + " - 404",
 		"errortext"		: "Token incorrect",
-		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", ),
+		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", token),
 	})
 }
 
