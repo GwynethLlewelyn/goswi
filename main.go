@@ -43,17 +43,10 @@ var config = map[string]*string	{// just a place to keep them all together
 	"cookieStore"	: flag.String("cookieStore", randomBase64String(64), "Secret random string required for the cookie store (will be generated randomly if unset)"),
 	"SMTPhost"		: flag.String("SMTPhost", "localhost", "Hostname of the SMTP server (for sending password reset tokens via email)"),
 	"gOSWIemail"	: flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
+	"logo"			: flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
+	"logoTitle"		: flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
+	"sidebarCollapsed"	: flag.Bool("sidebarCollapsed", false, "=false for a collapsed sidebar on startup"),
 }
-
-// goswiSession represents our encapsulated session. We need to store a bit more than just a string token, so this needs to be encoded later.
-/*
-type goswiSession struct {
-	Username string `form:"username" json:"username"`,
-	Email string `form:"email" json:"email"`,
-	Libravatar string `form:"libravatar" json:"libravatar"`,
-	Token string, // probably never exported
-}
-*/
 
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
@@ -125,6 +118,9 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Home",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -139,7 +135,10 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
-//			"needsTables"	: true,	// not really needed? (gwyneth 20200612)
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"logo"			: *config["logo"],//			"needsTables"	: true,	// not really needed? (gwyneth 20200612)
 			"titleCommon"	: *config["titleCommon"] + " - About",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -152,6 +151,9 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Help",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -165,6 +167,9 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Economy",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -177,6 +182,9 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Economy",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -258,6 +266,9 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - 404",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -270,6 +281,9 @@ func main() {
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"			: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - 404",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
