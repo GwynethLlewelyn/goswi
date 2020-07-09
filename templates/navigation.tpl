@@ -1,13 +1,13 @@
 {{ define "navigation.tpl" }}
 	<!-- Sidebar -->
-	<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+	<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
 
 	  <!-- Sidebar - Brand -->
 	  <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
 		<div class="sidebar-brand-icon">
-			<img src="/assets/logos/gOSWI%20logo.svg">
+			<img src="{{- .logo -}}">
 		</div>
-		<div class="sidebar-brand-text mx-3">gOSWI</sup></div>
+		<div class="sidebar-brand-text mx-3">{{- .logoTitle -}}</div>
 	  </a>
 
 	  <!-- Divider -->
