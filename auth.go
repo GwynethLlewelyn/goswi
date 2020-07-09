@@ -454,8 +454,8 @@ func checkTokenForPasswordReset(c *gin.Context) {
 			return
 	}
 	// split token
-	selector = token[:14]
-	verifier = token[15:]
+	selector := token[:14]
+	verifier := token[15:]
 	if *config["ginMode"] == "debug" {
 		fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q\n", token, selector, verifier)
 	}

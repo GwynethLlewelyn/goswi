@@ -45,7 +45,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"gOSWIemail"	: flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
 	"logo"			: flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
 	"logoTitle"		: flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
-	"sidebarCollapsed"	: flag.Bool("sidebarCollapsed", false, "=false for a collapsed sidebar on startup"),
+	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "=false for a collapsed sidebar on startup"),
 }
 
 // formatAsDate is a function for the templating system, which will be registered below.
@@ -138,7 +138,6 @@ func main() {
 			"logo"			: *config["logo"],
 			"logoTitle"		: *config["logoTitle"],
 			"sidebarCollapsed" : *config["sidebarCollapsed"],
-			"logo"			: *config["logo"],//			"needsTables"	: true,	// not really needed? (gwyneth 20200612)
 			"titleCommon"	: *config["titleCommon"] + " - About",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
@@ -185,7 +184,7 @@ func main() {
 			"logo"			: *config["logo"],
 			"logoTitle"		: *config["logoTitle"],
 			"sidebarCollapsed" : *config["sidebarCollapsed"],
-			"titleCommon"	: *config["titleCommon"] + " - Economy",
+			"titleCommon"	: *config["titleCommon"] + " - Search results",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
 		})
@@ -205,6 +204,9 @@ func main() {
 				"now"			: formatAsYear(time.Now()),
 				"author"		: *config["author"],
 				"description"	: *config["description"],
+				"logo"			: *config["logo"],
+				"logoTitle"		: *config["logoTitle"],
+				"sidebarCollapsed" : *config["sidebarCollapsed"],
 				"titleCommon"	: *config["titleCommon"] + " - Register new user",
 				"logintemplate"	: false,
 				"Username"		: session.Get("Username"),
