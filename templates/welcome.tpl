@@ -20,6 +20,47 @@
 					</div>
 				</div>
 			</div> <!-- /.row -->
+			<!-- Content Row for carousel-->
+			<div class="row">
+				<div class="col">
+					<a href="#collapseCarousel" role="button" class="btn btn-primary close" aria-label="Collapse" data-toggle="collapse"  aria-expanded="false" aria-controls="collapseCarousel">
+						<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
+					</a>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col mb-4">
+					<div class="collapse show" id="collapseCarousel">
+						<!-- Carousel -->
+						<div id="welcomeSlideshow" class="carousel slide" data-ride="carousel">
+							<ol class="carousel-indicators">
+								<li data-target="#welcomeSlideshow" data-slide-to="0" class="active"></li>
+								<li data-target="#welcomeSlideshow" data-slide-to="1"></li>
+								<li data-target="#welcomeSlideshow" data-slide-to="2"></li>
+							</ol>
+							<div class="carousel-inner">
+								<div class="carousel-item active">
+									<img class="d-block w-100" src="https://source.unsplash.com/K4mSJ7kc0As/700x350" alt="First slide">
+								</div>
+								<div class="carousel-item">
+									<img class="d-block w-100" src="https://source.unsplash.com/Mv9hjnEUHR4/700x350" alt="Second slide">
+								</div>
+								<div class="carousel-item">
+									<img class="d-block w-100" src="https://source.unsplash.com/oWTW-jNGl9I/700x350" alt="Third slide">
+								</div>
+							</div>
+							<a class="carousel-control-prev" href="#welcomeSlideshow" role="button" data-slide="prev">
+								<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+								<span class="sr-only">Previous</span>
+							</a>
+							<a class="carousel-control-next" href="#welcomeSlideshow" role="button" data-slide="next">
+								<span class="carousel-control-next-icon" aria-hidden="true"></span>
+								<span class="sr-only">Next</span>
+							</a>
+						</div> <!-- ./carousel -->
+					</div> <!-- ./collapse -->
+				</div> <!-- ./col -->
+			</div> <!-- /.row -->
 			<!-- Content Row -->
 			<div class="row">
 				<div class="col mb-4">

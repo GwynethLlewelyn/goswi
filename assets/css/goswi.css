@@ -10871,6 +10871,11 @@ a:focus {
 	background-position: center;
 	background-size: cover;
 }
+.bg-change-password-image {
+	background: url("https://source.unsplash.com/mAP861GvH6k/600x800");
+	background-position: center;
+	background-size: cover;
+}
 
 form.user .custom-checkbox.small label {
 	line-height: 1.5rem;

@@ -9,13 +9,6 @@
 					<div class="card-body p-0">
 					<!-- Nested Row within Card Body -->
 						<div class="row">
-							<style>
-								.bg-change-password-image {
-									background: url("https://source.unsplash.com/mAP861GvH6k/600x800");
-									background-position: center;
-									background-size: cover;
-								}
-							</style>
 							<div class="col-lg-6 d-none d-lg-block bg-change-password-image"></div>
 							<div class="col-lg-6">
 								<div class="p-5">
