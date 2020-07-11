@@ -34,20 +34,16 @@
 						<!-- Carousel -->
 						<div id="welcomeSlideshow" class="carousel slide" data-ride="carousel">
 							<ol class="carousel-indicators">
-								<li data-target="#welcomeSlideshow" data-slide-to="0" class="active"></li>
-								<li data-target="#welcomeSlideshow" data-slide-to="1"></li>
-								<li data-target="#welcomeSlideshow" data-slide-to="2"></li>
+								{{- range $index, $slideURL := .slideshow -}}
+								<li data-target="#welcomeSlideshow" data-slide-to="{{- $index -}}"{{- if eq $index 0 -}} class="active"{{- end -}}></li>
+								{{- end -}}
 							</ol>
 							<div class="carousel-inner">
-								<div class="carousel-item active">
-									<img class="d-block w-100" src="https://source.unsplash.com/K4mSJ7kc0As/700x350" alt="First slide">
+								{{- range $index, $slideURL := .slideshow -}}
+								<div class="carousel-item{{- if eq $index 0 -}} active{{- end -}}">
+									<img class="d-block w-100" src="{{- $slideURL -}}" alt="Slide {{- $index -}}">
 								</div>
-								<div class="carousel-item">
-									<img class="d-block w-100" src="https://source.unsplash.com/Mv9hjnEUHR4/700x350" alt="Second slide">
-								</div>
-								<div class="carousel-item">
-									<img class="d-block w-100" src="https://source.unsplash.com/oWTW-jNGl9I/700x350" alt="Third slide">
-								</div>
+								{{- end -}}
 							</div>
 							<a class="carousel-control-prev" href="#welcomeSlideshow" role="button" data-slide="prev">
 								<span class="carousel-control-prev-icon" aria-hidden="true"></span>

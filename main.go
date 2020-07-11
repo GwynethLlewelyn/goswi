@@ -15,7 +15,7 @@ import (
 //	"net"
 	"net/http"
 //	"net/http/fcgi"
-	"os"
+//	"os"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -46,7 +46,11 @@ var config = map[string]*string	{// just a place to keep them all together
 	"logo"			: flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
 	"logoTitle"		: flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
 	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
+	"slides"		: flag.String("slides", "", "Comma-separated list of URLs for slideshow images"),
 }
+// slideshow is a slice of strings representing all images for the splash-screen slideshow.
+var slideshow []string
+// Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
 
 // formatAsDate is a function for the templating system, which will be registered below.
 func formatAsDate(t time.Time) string {
@@ -67,13 +71,25 @@ func main() {
 	_, callerFile, _, _ := runtime.Caller(0)
 	PathToStaticFiles := filepath.Dir(callerFile)
 	if *config["ginMode"] == "debug" {
-		fmt.Fprintln(os.Stderr, "[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
+		log.Println("[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
 	}
 
 	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to
 	iniflags.SetConfigFile(path.Join(PathToStaticFiles, "/config.ini"))
 	// start parsing configuration
 	iniflags.Parse()
+	// initialise slideshow (all the URLs should be at the end of the commandline)
+	slideshow = strings.Split(*config["slides"], ",")
+	if (len(slideshow) == 0) {
+		slideshow = append(slideshow, "https://source.unsplash.com/K4mSJ7kc0As/700x300", "https://source.unsplash.com/Mv9hjnEUHR4/700x300", "https://source.unsplash.com/oWTW-jNGl9I/700x300")
+	} else {
+		for i := 0; i < len(slideshow); i++ {
+			slideshow[i] = strings.TrimSpace(slideshow[i])	// this will respect the order
+		}
+	}
+	if *config["ginMode"] == "debug" {
+		log.Printf("List of %i slide(s) has been set to: %+v", len(slideshow), slideshow)
+	}
 
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
 	// we might also check for weak security strings on the configuration
