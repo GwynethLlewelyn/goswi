@@ -81,6 +81,9 @@ func GetProfile(c *gin.Context) {
 		"needsMap"		: false,
 		"author"		: *config["author"],
 		"description"	: *config["description"],
+		"logo"			: *config["logo"],
+		"logoTitle"		: *config["logoTitle"],
+		"sidebarCollapsed" : *config["sidebarCollapsed"],
 		"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 		"titleCommon"	: *config["titleCommon"] + profileData.UserUUID + " Profile",
 		"ProfileData"	: fmt.Sprintf("%+v", profileData),
