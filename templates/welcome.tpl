@@ -6,163 +6,146 @@
 
 		<!-- Main Content -->
 		<div id="content">
-
 {{ template "topbar.tpl" .}}
-
-		<!-- Begin Page Content -->
-		<div class="container-fluid">
-			<!-- Content Row -->
-			<div class="row">
-				<div class="col">
-					<!-- Welcome Text -->
-					<div class="text-center">
-						<h1>{{- .description -}}</h1>
-					</div>
-				</div>
-			</div> <!-- /.row -->
-			<!-- Content Row for carousel-->
-			<div class="row">
-				<div class="col">
-					<a href="#collapseCarousel" role="button" class="btn btn-primary close" aria-label="Collapse" data-toggle="collapse"  aria-expanded="false" aria-controls="collapseCarousel">
-						<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
-					</a>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col mb-4">
-					<div class="collapse show" id="collapseCarousel">
-						<!-- Carousel -->
-						<div id="welcomeSlideshow" class="carousel slide" data-ride="carousel">
-							<ol class="carousel-indicators">
-								{{- range $index, $slideURL := .slideshow -}}
-								<li data-target="#welcomeSlideshow" data-slide-to="{{- $index -}}"{{- if eq $index 0 -}} class="active"{{- end -}}></li>
-								{{- end -}}
-							</ol>
-							<div class="carousel-inner">
-								{{- range $index, $slideURL := .slideshow -}}
-								<div class="carousel-item{{- if eq $index 0 -}} active{{- end -}}">
-									<img class="d-block w-100" src="{{- $slideURL -}}" alt="Slide {{- $index -}}">
-								</div>
-								{{- end -}}
-							</div>
-							<a class="carousel-control-prev" href="#welcomeSlideshow" role="button" data-slide="prev">
-								<span class="carousel-control-prev-icon" aria-hidden="true"></span>
-								<span class="sr-only">Previous</span>
-							</a>
-							<a class="carousel-control-next" href="#welcomeSlideshow" role="button" data-slide="next">
-								<span class="carousel-control-next-icon" aria-hidden="true"></span>
-								<span class="sr-only">Next</span>
-							</a>
-						</div> <!-- ./carousel -->
-					</div> <!-- ./collapse -->
-				</div> <!-- ./col -->
-			</div> <!-- /.row -->
-			<!-- Content Row -->
-			<div class="row">
-				<div class="col mb-4">
-					<!-- DataTables for Viewer Info -->
-					{{ if .viewerInfo }}
-					<div class="card shadow mb-4">
-						<a href="#viewerInfo" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="viewerInfo">
-							<h6 class="m-0 font-weight-bold text-primary">Your Viewer Info</h6>
+			<!-- Begin Page Content -->
+			<div class="container-fluid">
+				<!-- Content Row for carousel-->
+				<div class="row">
+					<div class="card shadow col mb-4">
+						<a href="#collapseCarousel" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCarousel">
+							<h6 class="m-0 font-weight-bold text-primary">{{- .description -}}</h6>
 						</a>
-						<div class="collapse show" id="vieweInfo">
-							<div class="card-body">
-								<div class="table-responsive">
-									<table class="table table-bordered table-compact table-striped" id="viewerInfo" width="100%" cellspacing="0"
-										data-order='[]' data-page-length='25'>
-										<thead>
-											<tr>
-												<th>ViewerName</th>
-												<th>Grid</th>
-												<th>Language</th>
-												<th>LoginContentVersion</th>
-												<th>OS</th>
-												<th>SourceID</th>
-												<th>Version</th>
-											</tr>
-										</thead>
-									</table>
+						<div class="col mb-4">
+							<div class="collapse show" id="collapseCarousel">
+								<!-- Carousel -->
+								<div id="welcomeSlideshow" class="carousel slide" data-ride="carousel" data-interval="2000">
+									<ol class="carousel-indicators">
+										{{ range $index, $slideURL := .slideshow -}}
+										<li data-target="#welcomeSlideshow" data-slide-to="{{- $index -}}"{{- if eq $index 0 }} class="active"{{- end -}}></li>
+										{{ end }}
+									</ol> <!-- ./carousel-indicators -->
+									<div class="carousel-inner">
+										{{ range $index, $slideURL := .slideshow -}}
+										<div class="carousel-item{{- if eq $index 0 }} active{{- end -}}">
+											<img class="d-block w-100" src="{{- $slideURL -}}" alt="Slide {{ $index -}}">
+										</div>
+										{{ end }}
+									</div> <!-- ./carousel-inner -->
+									<a class="carousel-control-prev" href="#welcomeSlideshow" role="button" data-slide="prev">
+										<span class="carousel-control-prev-icon" aria-hidden="true"></span>
+										<span class="sr-only">Previous</span>
+									</a>
+									<a class="carousel-control-next" href="#welcomeSlideshow" role="button" data-slide="next">
+										<span class="carousel-control-next-icon" aria-hidden="true"></span>
+										<span class="sr-only">Next</span>
+									</a>
+								</div>	<!-- ./carousel -->
+							</div>	<!-- ./collapse -->
+						</div>	<!-- ./col -->
+					</div>	<!-- ./card shadow -->
+					<div class="col-4 mb-4">
+						<!-- DataTables for Region list -->
+						<div class="card shadow mb-4">
+							<a href="#regionList" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="regionList">
+								<h6 class="m-0 font-weight-bold text-primary">List of Regions</h6>
+							</a>
+							<div class="collapse show" id="regionList">
+								<div class="card-body">
+									<div class="table-responsive">
+										<table class="table table-bordered table-striped table-compact" id="regionsTable" width="100%" cellspacing="0" data-order='[]' data-page-length='35'>
+											<thead>
+												<tr>
+													<th>regionName</th>
+													<th>locX</th>
+													<th>locY</th>
+												</tr>
+											</thead>
+										</table>
+									</div>	<!-- ./table-responsive -->
+								</div>	<!-- ./card-body -->
+							</div>	<!-- ./collapse -->
+						</div>	<!-- ./card shadow -->
+					</div>	<!-- ./col -->
+				</div> <!-- /.row -->
+				{{- if .viewerInfo -}}
+				<!-- Content Row -->
+				<div class="row">
+					<div class="col-8 mb-4">
+						<!-- DataTables for Viewer Info -->
+						<div class="card shadow mb-4">
+							<a href="#viewerInfo" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="viewerInfo">
+								<h6 class="m-0 font-weight-bold text-primary">Your Viewer Info</h6>
+							</a>
+							<div class="collapse show" id="vieweInfo">
+								<div class="card-body">
+									<div class="table-responsive">
+										<table class="table table-bordered table-compact table-striped" id="viewerInfo" width="100%" cellspacing="0"
+											data-order='[]' data-page-length='25'>
+											<thead>
+												<tr>
+													<th>ViewerName</th>
+													<th>Grid</th>
+													<th>Language</th>
+													<th>LoginContentVersion</th>
+													<th>OS</th>
+													<th>SourceID</th>
+													<th>Version</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
 								</div>
+								<!-- ./card-body -->
 							</div>
-							<!-- ./card-body -->
+							<!-- ./collapse -->
 						</div>
-						<!-- ./collapse -->
+					</div>
+				</div> <!-- /.row -->
+				{{- end -}}
+				<!-- Content Row -->
+				<div class="row">
+					{{ if .usersOnline }}
+					<div class="col mb-4">
+						<!-- DataTables for online Users -->
+						<div class="card shadow mb-4">
+							<a href="#onlineUsersCard" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="onlineUsersCard">
+								<h6 class="m-0 font-weight-bold text-primary">Users online</h6>
+							</a>
+							<div class="collapse show" id="onlineUsersCard">
+								<div class="card-body">
+									<div class="table-responsive">
+										<table class="table table-bordered table-compact table-striped" id="usersOnline" width="100%" cellspacing="0"
+											data-order='[]' data-page-length='25'>
+											<thead>
+												<tr>
+													<th>Avatar Name</th>
+												</tr>
+											</thead>
+										</table>
+									</div>
+								</div>
+								<!-- ./card-body -->
+							</div>
+							<!-- ./collapse -->
+						</div>
 					</div>
 					{{ end }}
-				</div>
-			</div> <!-- /.row -->
-			<!-- Content Row -->
-			<div class="row">
-				<div class="col mb-4">
-					<!-- DataTables for Region list -->
-					<div class="card shadow mb-4">
-						<a href="#regionList" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="regionList">
-							<h6 class="m-0 font-weight-bold text-primary">List of Regions</h6>
-						</a>
-						<div class="collapse show" id="regionList">
-							<div class="card-body">
-								<div class="table-responsive">
-									<table class="table table-bordered table-striped table-compact" id="regionsTable" width="100%" cellspacing="0"
-										data-order='[]' data-page-length='35'>
-										<thead>
-											<tr>
-												<th>regionName</th>
-												<th>locX</th>
-												<th>locY</th>
-											</tr>
-										</thead>
-									</table>
-								</div>
-							</div>
-							<!-- ./card-body -->
-						</div>
-						<!-- ./collapse -->
-					</div>
-				</div>
-				{{ if .usersOnline }}
-				<div class="col mb-4">
-					<!-- DataTables for online Users -->
-					<div class="card shadow mb-4">
-						<a href="#onlineUsersCard" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="onlineUsersCard">
-							<h6 class="m-0 font-weight-bold text-primary">Users online</h6>
-						</a>
-						<div class="collapse show" id="onlineUsersCard">
-							<div class="card-body">
-								<div class="table-responsive">
-									<table class="table table-bordered table-compact table-striped" id="usersOnline" width="100%" cellspacing="0"
-										data-order='[]' data-page-length='25'>
-										<thead>
-											<tr>
-												<th>Avatar Name</th>
-											</tr>
-										</thead>
-									</table>
-								</div>
-							</div>
-							<!-- ./card-body -->
-						</div>
-						<!-- ./collapse -->
+				</div> <!-- /.row -->
+				{{ if .Debug }}
+				<div class="row">
+					<div class="col">
+						<h2>Debug info:</h2>
+						<p><b>viewerInfo:</b>&nbsp;{{ .viewerInfo -}}</p><hr />
+						<p><b>regionsTable:</b>&nbsp;{{ .regionsTable -}}</p><hr />
+						<p><b>usersOnline:</b>&nbsp;{{ .usersOnline -}}</p>
 					</div>
 				</div>
 				{{ end }}
-			</div> <!-- /.row -->
-			{{ if .Debug }}
-			<div class="row">
-				<div class="col">
-					<h2>Debug info:</h2>
-					<p><b>viewerInfo:</b>&nbsp;{{ .viewerInfo -}}</p><hr />
-					<p><b>regionsTable:</b>&nbsp;{{ .regionsTable -}}</p><hr />
-					<p><b>usersOnline:</b>&nbsp;{{ .usersOnline -}}</p>
-				</div>
+				{{ template "map.tpl" }}
+				{{ template "back.tpl"}}
 			</div>
-			{{ end }}
-			{{ template "map.tpl" }}
-			{{ template "back.tpl"}}
+			<!-- /.container-fluid -->
 		</div>
-		<!-- /.container-fluid -->
-
-	</div>
-	<!-- End of Main Content -->
+		<!-- End of Main Content -->
 {{ template "footer.tpl" .}}
 {{ end }}

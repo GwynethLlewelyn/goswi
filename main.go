@@ -88,7 +88,7 @@ func main() {
 		}
 	}
 	if *config["ginMode"] == "debug" {
-		log.Printf("List of %i slide(s) has been set to: %+v", len(slideshow), slideshow)
+		log.Printf("List of %d slide(s) has been set to: %+v", len(slideshow), slideshow)
 	}
 
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
