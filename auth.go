@@ -407,7 +407,7 @@ func resetPassword(c *gin.Context) {
 
 			// Create the authentication for the SendMail()
 			// using PlainText, but other authentication methods are encouraged
-			auth := smtp.PlainAuth("", *config["gOSWIemail"], "", *config["SMTPhost"])
+			auth := smtp.PlainAuth("", *config["gOSWIemail"], *config["gOSWIpassword"],*config["SMTPhost"])
 
 			// NOTE: Using the backtick here ` works like a heredoc, which is why all the
 			// rest of the lines are forced to the beginning of the line, otherwise the
@@ -466,7 +466,7 @@ func checkTokenForPasswordReset(c *gin.Context) {
 		if found {
 			log.Printf("[INFO] What we just stored: %+v", someTokens)
 			// check if it is still valid
-			if time.Since(someTokens.Timestamp) < 2 * time.Hour {
+			if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
 				// valid, log user in, move to password change template
 
 

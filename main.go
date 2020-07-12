@@ -43,6 +43,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"cookieStore"	: flag.String("cookieStore", randomBase64String(64), "Secret random string required for the cookie store (will be generated randomly if unset)"),
 	"SMTPhost"		: flag.String("SMTPhost", "localhost", "Hostname of the SMTP server (for sending password reset tokens via email)"),
 	"gOSWIemail"	: flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
+	"gOSWIpassword"	: flag.String("gOSWIpassword", "", "Password for the grid manager (must be valid and accepted by SMTPhost)"),
 	"logo"			: flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
 	"logoTitle"		: flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
 	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
