@@ -21,7 +21,7 @@
 												<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
 											</button>
 										</div>
-										{{ else }}
+										{{ end }}
 										{{ if not .someTokens }}
 										<p class="mb-4">Please enter your old password, the new one and confirm the new one</p>
 										{{ else }}
