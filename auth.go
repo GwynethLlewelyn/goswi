@@ -560,7 +560,11 @@ func resetPassword(c *gin.Context) {
 				log.Printf("[DEBUG] Request: %+v\n", c.Request)
 			}
 			// Build the actual URL for token
-			tokenURL := c.Request.URL.Scheme + "//" + c.Request.URL.Host + "/user/token/" + selector + verifier
+			scheme := "https:"
+			if c.Request.TLS == nil {
+				scheme = "http:"
+			}
+			tokenURL := scheme + "//" + c.Request.Host + "/user/token/" + selector + verifier
 
 			// The grid manager's email is stored in *config["gOSWIemail"]
 			//
