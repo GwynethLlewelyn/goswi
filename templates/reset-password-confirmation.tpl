@@ -13,7 +13,7 @@
 							<div class="col-lg-6">
 								<div class="p-5">
 									<div class="text-center">
-										<h1 class="h4 text-gray-900 mb-2">{{- if .ErrorTitle -}}Oh, snap!{{- else -}}Ok!{{- end -}}</h1>
+										<h1 class="h4 text-gray-900 mb-2">{{- if .BoxTitle -}}Oh, snap!{{- else -}}Ok!{{- end -}}</h1>
 										<p>{{- .Content -}}</p>
 									</div> <!-- ./text-center -->
 									<hr>

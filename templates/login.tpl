@@ -15,16 +15,11 @@
 							<div class="col-lg-6">
 								<div class="p-5">
 									<div class="text-center">
-										<h1 class="h4 text-gray-900 mb-4">{{- if .ErrorTitle -}}Oh, no!{{- else -}}Welcome Back!{{- end -}}</h1>
+										<h1 class="h4 text-gray-900 mb-4">{{- if .BoxTitle -}}Oh, no!{{- else -}}Welcome Back!{{- end -}}</h1>
 									</div>
-									{{ if .ErrorTitle}}
-									<div class="alert alert-danger bg-gradient-danger text-white alert-warning alert-dismissible fade show" role="alert">
-										<i class="fas fa-exclamation-triangle text-white"></i>&nbsp;<strong>{{.ErrorTitle}}:</strong>{{.ErrorMessage}}
-										<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-											<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
-										</button>
-									</div>
-									{{end}}
+									{{- if .BoxTitle -}}
+									{{ template "infobox.tpl" .}}
+									{{- end -}}
 									<form class="user" action="/user/login" method="POST">
 										<div class="form-group">
 											<input type="username" class="form-control form-control-user" id="username" name="username" aria-describedby="usernameHelp" placeholder="Your Avatar username..." value="{{- .WrongUsername -}}" title="The avatar name is a first name, one space, and a last name" pattern="\w*\s\w*" required>

@@ -3,12 +3,9 @@
 {{ template "navigation.tpl" .}}
 	<!-- Content Wrapper -->
 	<div id="content-wrapper" class="d-flex flex-column">
-
 		<!-- Main Content -->
 		<div id="content">
-
 {{ template "topbar.tpl" .}}
-
 		<!-- Begin Page Content -->
 		<div class="container-fluid">
 			<!-- Content Row -->
@@ -26,12 +23,11 @@
 					<p>We understand that you need help, but we're not finished with writing the content of this page yet.</p>
 				</div>
 			</div> <!-- /.row -->
-			{{ template "back.tpl"}}
+			{{- template "back.tpl" -}}
 		</div>
 		<!-- /.container-fluid -->
 
 	</div>
 	<!-- End of Main Content -->
-
 {{ template "footer.tpl" .}}
 {{ end }}

@@ -13,29 +13,24 @@
 							<div class="col-lg-6">
 								<div class="p-5">
 									<div class="text-center">
-										<h1 class="h4 text-gray-900 mb-2">{{- if .ErrorTitle -}}Oops!{{- else -}}Change password{{- end -}}</h1>
-										{{ if .ErrorTitle}}
-										<div class="alert alert-danger bg-gradient-danger text-white alert-warning alert-dismissible fade show" role="alert">
-											<i class="fas fa-exclamation-triangle text-white"></i>&nbsp;<strong>{{.ErrorTitle}}:</strong>{{.ErrorMessage}}
-											<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-												<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
-											</button>
-										</div>
-										{{ end }}
-										{{ if not .someTokens }}
+										<h1 class="h4 text-gray-900 mb-2">{{- if .BoxTitle -}}Oops!{{- else -}}Change password{{- end -}}</h1>
+										{{- if .BoxTitle}}
+										{{- template "infobox.tpl" .}}
+										{{- end }}
+										{{- if not .someTokens }}
 										<p class="mb-4">Please enter your old password, the new one and confirm the new one</p>
-										{{ else }}
+										{{- else -}}
 										<p class="mb-4">Please enter a new password and confirm it</p>
-										{{ end }}
+										{{- end -}}
 									</div> <!-- ./text-center -->
 									<form class="user" action="/user/change-password" method="POST">
-										{{ if not .someTokens }}
+										{{- if not .someTokens -}}
 										<div class="form-group">
 											<input type="password" class="form-control form-control-user" id="oldpassword" name="oldpassword" placeholder="Old Password" value="{{- .WrongOldPassword -}}" required>
 										</div>
-										{{ else }}
+										{{- else -}}
 											<input type="hidden" id="t" value="{{- .someTokens -}}">
-										{{ end }}
+										{{- end -}}
 										<div class="form-group">
 											<input type="password" class="form-control form-control-user" id="newpassword" name="newpassword" placeholder="New Password" value="{{- .WrongNewPassword -}}" minlength="8" minlength="20" required>
 										</div>

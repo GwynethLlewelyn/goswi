@@ -142,8 +142,9 @@ func performLogin(c *gin.Context) {
 	if c.Bind(&oneUser) != nil { // nil means no errors
 //	if err := c.ShouldBind(&oneUser); err != nil {	// this should be working; it's the 'prefered' way. But it doesn't! D'uh! (gwyneth 20200623)
 		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
-			"ErrorTitle"	: "Login Failed",
-			"ErrorMessage"	: "No form data posted",
+			"BoxTitle"		: "Login Failed",
+			"BoxMessage"	: "No form data posted",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -160,8 +161,9 @@ func performLogin(c *gin.Context) {
 	}
 	if strings.TrimSpace(oneUser.Password) == "" {	// this should not happen, as we put the password as 'required' on the decorations
 		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
-			"ErrorTitle"	: "Login Failed",
-			"ErrorMessage"	: "Empty password, please try again",
+			"BoxTitle"		: "Login Failed",
+			"BoxMessage"	: "Empty password, please try again",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -220,8 +222,9 @@ func performLogin(c *gin.Context) {
 		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
 
 		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
-			"ErrorTitle"	: "Login Failed",
-			"ErrorMessage"	: "Invalid credentials provided",
+			"BoxTitle"		: "Login Failed",
+			"BoxMessage"	: "Invalid credentials provided",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -259,8 +262,9 @@ func registerNewUser(c *gin.Context) {
 
 	if c.Bind(&oneUser) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "register.tpl", gin.H{
-			"ErrorTitle"	: "Registration Failed",
-			"ErrorMessage"	: "No form data posted",
+			"BoxTitle"		: "Registration Failed",
+			"BoxMessage"	: "No form data posted",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -279,8 +283,9 @@ func registerNewUser(c *gin.Context) {
 	log.Printf("[INFO] Not implemented yet")
 
 	c.HTML(http.StatusBadRequest, "register.tpl", gin.H{
-		"ErrorTitle"	: "Registration Failed",
-		"ErrorMessage"	: "No new users allowed!",
+		"BoxTitle"		: "Registration Failed",
+		"BoxMessage"	: "No new users allowed!",
+		"BoxType"		: "danger",
 		"now"			: formatAsYear(time.Now()),
 		"author"		: *config["author"],
 		"description"	: *config["description"],
@@ -310,8 +315,9 @@ func changePassword(c *gin.Context) {
 
 	if c.Bind(&aPasswordChange) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"ErrorTitle"	: "Password change failed!",
-			"ErrorMessage"	: "No form data posted",
+			"BoxTitle"		: "Password change failed!",
+			"BoxMessage"	: "No form data posted",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -329,8 +335,9 @@ func changePassword(c *gin.Context) {
 	// Ok, we got a form; so do simple checks first
 	if aPasswordChange.NewPassword != aPasswordChange.ConfirmNewPassword {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"ErrorTitle"	: "Password change failed!",
-			"ErrorMessage"	: "Confirmation password does not match new password",
+			"BoxTitle"		: "Password change failed!",
+			"BoxMessage"	: "Confirmation password does not match new password",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -347,8 +354,9 @@ func changePassword(c *gin.Context) {
 	}
 	if aPasswordChange.t == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"ErrorTitle"	: "Password change failed!",
-			"ErrorMessage"	: "New password must be different from the old one",
+			"BoxTitle"		: "Password change failed!",
+			"BoxMessage"	: "New password must be different from the old one",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -407,10 +415,17 @@ func changePassword(c *gin.Context) {
 		var UUID string
 		if someTokens.UserUUID != "" {
 			UUID = someTokens.UserUUID
+			if *config["dsn"] == "" {
+				log.Println("[DEBUG] Password change request via token, UUID is", UUID)
+			}
 		} else if UUID, ok := c.Get("UUID"); ok {
-			/* no-op */
-		} else if UUID = session.Get("UUID"); UUID != nil || UUID != "" {
-			/* no-op */
+			if *config["dsn"] == "" {
+				log.Println("[DEBUG] Password change request via logged-in user, context seems to be fine, UUID is", UUID)
+			}
+		} else if UUID = session.Get("UUID"); UUID != nil && UUID != "" {
+			if *config["dsn"] == "" {
+				log.Println("[DEBUG] Password change request via logged-in user, retrieved from session cookie, UUID is", UUID)
+			}
 		} else {
 			log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
 
@@ -449,19 +464,27 @@ func changePassword(c *gin.Context) {
 			hashedPassword, interior, hashed)
 		}
 
-
-		res, err := db.Exec(`UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?"`, hashed, passwordSalt, UUID)
+		result, err := db.Exec("UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?", hashed, passwordSalt, UUID)
 		checkErr(err)
 
-		numRowsAffected, err := res.RowsAffected()
-		checkErr(err)
-
-		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG] Changing password resulted in %d row(s) affected\n", numRowsAffected)
+		if numRowsAffected, err := result.RowsAffected(); err != nil {
+			log.Printf("[ERROR] Updating database with new password for %q failed\n", UUID)
+		} else {
+			log.Printf("[INFO] Success updating database with new password for %q; %d row(s) affected\n", UUID, numRowsAffected)
 		}
-		// we're finished here, redirect to the Dashboard
-		c.Redirect(http.StatusTemporaryRedirect, "/")
 
+		c.HTML(http.StatusOK, "index.tpl", gin.H{
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"titleCommon"	: *config["titleCommon"] + " - Home",
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
+			"Content"		: "Your password has been successfully changed!",
+		})
 		return
 	}
 
@@ -496,8 +519,9 @@ func resetPassword(c *gin.Context) {
 
 	if c.Bind(&aPasswordReset) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "reset-password.tpl", gin.H{
-			"ErrorTitle"	: "Password reset failed",
-			"ErrorMessage"	: "No form data posted for password reset",
+			"BoxTitle"		: "Password reset failed",
+			"BoxMessage"	: "No form data posted for password reset",
+			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],

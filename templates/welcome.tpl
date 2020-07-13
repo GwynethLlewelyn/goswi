@@ -3,7 +3,6 @@
 {{ template "navigation.tpl" .}}
 	<!-- Content Wrapper -->
 	<div id="content-wrapper" class="d-flex flex-column">
-
 		<!-- Main Content -->
 		<div id="content">
 {{ template "topbar.tpl" .}}
@@ -104,7 +103,7 @@
 				{{- end -}}
 				<!-- Content Row -->
 				<div class="row">
-					{{ if .usersOnline }}
+					{{- if .usersOnline -}}
 					<div class="col mb-4">
 						<!-- DataTables for online Users -->
 						<div class="card shadow mb-4">
@@ -129,9 +128,9 @@
 							<!-- ./collapse -->
 						</div>
 					</div>
-					{{ end }}
+					{{- end -}}
 				</div> <!-- /.row -->
-				{{ if .Debug }}
+				{{- if .Debug -}}
 				<div class="row">
 					<div class="col">
 						<h2>Debug info:</h2>
@@ -140,9 +139,9 @@
 						<p><b>usersOnline:</b>&nbsp;{{ .usersOnline -}}</p>
 					</div>
 				</div>
-				{{ end }}
-				{{ template "map.tpl" }}
-				{{ template "back.tpl"}}
+				{{- end -}}
+				{{ template "map.tpl" .}}
+				{{ template "back.tpl" .}}
 			</div>
 			<!-- /.container-fluid -->
 		</div>

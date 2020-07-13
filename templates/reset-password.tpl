@@ -13,17 +13,12 @@
 							<div class="col-lg-6">
 								<div class="p-5">
 									<div class="text-center">
-										<h1 class="h4 text-gray-900 mb-2">{{- if .ErrorTitle -}}Oops!{{- else -}}Forgot Your Password?{{- end -}}</h1>
-										{{ if .ErrorTitle}}
-										<div class="alert alert-danger bg-gradient-danger text-white alert-warning alert-dismissible fade show" role="alert">
-											<i class="fas fa-exclamation-triangle text-white"></i>&nbsp;<strong>{{.ErrorTitle}}:</strong>{{.ErrorMessage}}
-											<button type="button" class="close" data-dismiss="alert" aria-label="Close">
-												<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
-											</button>
-										</div>
-										{{else}}
+										<h1 class="h4 text-gray-900 mb-2">{{- if .BoxTitle -}}Oops!{{- else -}}Forgot Your Password?{{- end -}}</h1>
+										{{- if .BoxTitle -}}
+										{{ template "infobox.tpl" .}}
+										{{- else -}}
 										<p class="mb-4">We get it, stuff happens. Just enter your email address below and we'll send you a way to reset your password!</p>
-										{{ end }}
+										{{- end -}}
 									</div> <!-- ./text-center -->
 									<form class="user" action="/user/reset-password" method="POST">
 										<div class="form-group">
