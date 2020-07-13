@@ -315,7 +315,7 @@ func changePassword(c *gin.Context) {
 
 	if c.Bind(&aPasswordChange) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"BoxTitle"		: "Password change failed!",
+			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "No form data posted",
 			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
@@ -335,7 +335,7 @@ func changePassword(c *gin.Context) {
 	// Ok, we got a form; so do simple checks first
 	if aPasswordChange.NewPassword != aPasswordChange.ConfirmNewPassword {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"BoxTitle"		: "Password change failed!",
+			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "Confirmation password does not match new password",
 			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
@@ -354,7 +354,7 @@ func changePassword(c *gin.Context) {
 	}
 	if aPasswordChange.t == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"BoxTitle"		: "Password change failed!",
+			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "New password must be different from the old one",
 			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
@@ -408,11 +408,12 @@ func changePassword(c *gin.Context) {
 			log.Printf("[WARN] Deleting %q from the store threw an error\n", err)
 		}
 	}
+	var UUID string	// I think we have a scope issue... (gwyneth 20200714)
+
 	if isCurrentPasswordValid {
 		// We now need to figure out who is the user requesting this!
 		// 1) Either this is called via the token sent by email, and it means that someTokens.UserUUID has been set;
 		// 2) or this was called by a logged-in user changing their password, and c.Get(UUID) or session.Get(UUID) will have the UUID.
-		var UUID string
 		if someTokens.UserUUID != "" {
 			UUID = someTokens.UserUUID
 			if *config["ginMode"] == "debug" {
@@ -483,7 +484,7 @@ func changePassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + " - Home",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
-			"BoxTitle"		: "Password changed!",
+			"BoxTitle"		: "Password changed",
 			"BoxType"		: "success",
 			"BoxMessage"	: "Now don't forget the new one!",
 			"Content"		: "Your password has been successfully changed!",
