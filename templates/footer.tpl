@@ -10,20 +10,13 @@
 					<span><i class="fab fa-creative-commons fa-fw"></i> {{.now }} by gOSWI and {{.author}}. Some rights reserved. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
 				</div>
 			</div>
-		</footer>
-		<!-- End of Footer -->
-
-	</div>
-	<!-- End of Content Wrapper -->
-
-	</div>
-	<!-- End of Page Wrapper -->
-
+		</footer>	<!-- End of Footer -->
+	</div>	<!-- End of Content Wrapper -->
+	</div>	<!-- End of Page Wrapper -->
 	<!-- Scroll to Top Button-->
 	<a class="scroll-to-top rounded" href="#page-top">
 	<i class="fas fa-angle-up"></i>
 	</a>
-
 	<!-- Logout Modal-->
 	<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
