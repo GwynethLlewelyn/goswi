@@ -30,6 +30,9 @@
 						<p>Nothing yet... please be patient!</p>
 					</div>
 {{- end -}}
+{{- if .BoxMessage -}}
+{{- template "infobox.tpl" . -}}
+{{- end -}}
 				</div> <!-- /.row -->
 			</div> <!-- /.container-fluid -->
 		</div> <!-- End of Main Content -->

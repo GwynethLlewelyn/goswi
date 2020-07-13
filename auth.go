@@ -415,16 +415,16 @@ func changePassword(c *gin.Context) {
 		var UUID string
 		if someTokens.UserUUID != "" {
 			UUID = someTokens.UserUUID
-			if *config["dsn"] == "" {
-				log.Println("[DEBUG] Password change request via token, UUID is", UUID)
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Password change request via token, UUID is %q\n", UUID)
 			}
 		} else if UUID, ok := c.Get("UUID"); ok {
-			if *config["dsn"] == "" {
-				log.Println("[DEBUG] Password change request via logged-in user, context seems to be fine, UUID is", UUID)
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Password change request via logged-in user, context seems to be fine, UUID is %q\n", UUID)
 			}
 		} else if UUID = session.Get("UUID"); UUID != nil && UUID != "" {
-			if *config["dsn"] == "" {
-				log.Println("[DEBUG] Password change request via logged-in user, retrieved from session cookie, UUID is", UUID)
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Password change request via logged-in user, retrieved from session cookie, UUID is %q\n", UUID)
 			}
 		} else {
 			log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
@@ -459,7 +459,7 @@ func changePassword(c *gin.Context) {
 		interior = hashedPassword + ":" + passwordSalt
 		hashed = GetMD5Hash(interior)
 
-		if *config["ginMode"] == "debug" {
+		if *config["ginMode"] == "ginMode" {
 			log.Printf("[DEBUG] md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q",
 			hashedPassword, interior, hashed)
 		}
