@@ -4,13 +4,10 @@ go 1.14
 
 require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
-	github.com/gin-contrib/multitemplate v0.0.0-20200514145638-4955c9347179
 	github.com/gin-contrib/sessions v0.0.3
-	github.com/gin-gonic/contrib v0.0.0-20191209060500-d6e26eeaa607
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/google/uuid v1.1.1
-	github.com/json-iterator/go v1.1.9
 	github.com/philippgille/gokv v0.0.0-20191001201555-5ac9a20de634
 	github.com/philippgille/gokv/syncmap v0.6.0
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
