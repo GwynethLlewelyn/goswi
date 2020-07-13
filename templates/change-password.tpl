@@ -21,14 +21,21 @@
 												<span aria-hidden="true"><i class="fas fa-times-circle text-white"></i></span>
 											</button>
 										</div>
-										{{else}}
+										{{ else }}
+										{{ if not .someTokens }}
 										<p class="mb-4">Please enter your old password, the new one and confirm the new one</p>
+										{{ else }}
+										<p class="mb-4">Please enter a new password and confirm it</p>
 										{{ end }}
 									</div> <!-- ./text-center -->
 									<form class="user" action="/user/change-password" method="POST">
+										{{ if not .someTokens }}
 										<div class="form-group">
 											<input type="password" class="form-control form-control-user" id="oldpassword" name="oldpassword" placeholder="Old Password" value="{{- .WrongOldPassword -}}" required>
 										</div>
+										{{ else }}
+											<input type="hidden" id="t" value="{{- .someTokens -}}">
+										{{ end }}
 										<div class="form-group">
 											<input type="password" class="form-control form-control-user" id="newpassword" name="newpassword" placeholder="New Password" value="{{- .WrongNewPassword -}}" minlength="8" minlength="20" required>
 										</div>

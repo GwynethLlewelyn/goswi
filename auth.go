@@ -3,6 +3,8 @@
 package main
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"database/sql"
 	"fmt"
 	"github.com/gin-contrib/sessions"
@@ -35,6 +37,7 @@ type ChangePasswordForm struct {
 	OldPassword string `json:"-" form:"oldpassword" binding:"required"`
 	NewPassword string `json:"-" form:"newpassword" binding:"required"`
 	ConfirmNewPassword string `json:"-" form:"confirmnewpassword" binding:"required"`
+	t string `form:"t"`	// this field is only used when someone changes the password via email-sent link: it includes the link token
 }
 
 type ResetPasswordForm struct {
@@ -57,7 +60,7 @@ func isUserValid(username, password string) (bool, string, string) {
 	avatarFirstName	:= theUsername[0]
 	avatarLastName	:= theUsername[1]
 
-	// check if user exists; we'll do password checking later, as soon as we figure out how
+	// check if user exists
 	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
@@ -288,14 +291,19 @@ func registerNewUser(c *gin.Context) {
 	return
 }
 
+// changePassword asks for the current password (unless it comes from an email link) and a new one (plus validation). Not done yet.
 func changePassword(c *gin.Context) {
-//(oldpassword, newpassword, newpasswordverify string) (*UserForm, error) {
 	var aPasswordChange ChangePasswordForm
-	// session := sessions.Default(c)
+	var token string
+
+	// Note: this can be called either by a logged-in user which has authenticated themselves properly
+	// OR it can come from a user who has a valid token from an email to reset the link, and can thus enter without password
+
+	session := sessions.Default(c)
 
 	if c.Bind(&aPasswordChange) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
-			"ErrorTitle"	: "Password change failed",
+			"ErrorTitle"	: "Password change failed!",
 			"ErrorMessage"	: "No form data posted",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
@@ -307,16 +315,163 @@ func changePassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "Say what?",
 			"logintemplate"	: true,
 		})
-		log.Println("No form data posted")
+		log.Println("[WARN] No form data posted for password change")
 
 		return
 	}
+	// Ok, we got a form; so do simple checks first
+	if aPasswordChange.NewPassword != aPasswordChange.ConfirmNewPassword {
+		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+			"ErrorTitle"	: "Password change failed!",
+			"ErrorMessage"	: "Confirmation password does not match new password",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"Debug"			: false,
+			"titleCommon"	: *config["titleCommon"] + "No way, José!",
+			"logintemplate"	: true,
+		})
+		log.Println("[WARN] Confirmation password does not match new password")
+
+		return
+	}
+	if aPasswordChange.t == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
+		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+			"ErrorTitle"	: "Password change failed!",
+			"ErrorMessage"	: "New password must be different from the old one",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"Debug"			: false,
+			"titleCommon"	: *config["titleCommon"] + "No deal!",
+			"logintemplate"	: true,
+		})
+		log.Println("[WARN] New password must be different from the old one")
+
+		return
+	}
+	var someTokens ResetPasswordTokens	// this will be used to retrieve data from the KV store; we will check later on (scope issues!) if we have a valid token or not
+
+	isCurrentPasswordValid := false
+	if aPasswordChange.t == "" {	// do we have a token here?
+		// no token; so we assume that the password is valid and we can proceed to change <script charset="utf-8">
+		isCurrentPasswordValid = true
+	} else {
+		// we still have a token, but to make things more secure, we validate the token again
+		// again, first split the token
+		token 	 := aPasswordChange.t
+		selector := token[:14]
+		verifier := token[14:]
+		sha256	 := sha256.Sum256([]byte(verifier))
+		if *config["ginMode"] == "debug" {
+			fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
+		}
+		found, err := GOSWIstore.Get(selector, &someTokens)
+		if err == nil {
+			if found {
+				log.Printf("[INFO] What we just stored: %+v", someTokens)
+				// check if it is still valid
+				if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
+					// valid, log user in, move to password change template
+					if subtle.ConstantTimeCompare(sha256[:], someTokens.Verifier[:]) == 1 {
+						log.Printf("[INFO] Token still valid for user %q (%q)!", someTokens.Username, someTokens.UserUUID)
+						isCurrentPasswordValid = true
+					}
+				}
+			}
+		}
+		// whatever happened, consume the token, that is, delete it from the store, so it can't be reused
+		if err := GOSWIstore.Delete(selector); err != nil {
+			// this will rarely happen (unless selector == "", which should not occur) since Store.Delete() will NOT throw
+			//  errors if the key doesn't exist
+			log.Printf("[WARN] Deleting %q from the store threw an error\n", err)
+		}
+	}
+	if isCurrentPasswordValid {
+		// We now need to figure out who is the user requesting this!
+		// 1) Either this is called via the token sent by email, and it means that someTokens.UserUUID has been set;
+		// 2) or this was called by a logged-in user changing their password, and c.Get(UUID) or session.Get(UUID) will have the UUID.
+		var UUID string
+		if someTokens.UserUUID != "" {
+			UUID = someTokens.UserUUID
+		} else if UUID, ok := c.Get("UUID"); ok {
+			/* no-op */
+		} else if UUID = session.Get("UUID"); UUID != nil || UUID != "" {
+			/* no-op */
+		} else {
+			log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
+
+			c.HTML(http.StatusForbidden, "404.tpl", gin.H{
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"titleCommon"	: *config["titleCommon"] + " - 403",
+				"errorcode"		: "403",
+				"errortext"		: "User not found",
+				"errorbody"		: "Unknown or invalid user, cannot proceed, please try later.",
+			})
+			return
+		}
+		// ok, we ought to have a valid UUID, at last we can update the password!
+		if *config["dsn"] == "" {
+			log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		}
+		db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
+		checkErrFatal(err)
+
+		defer db.Close()
+		// using the same variables as in isUserValid(), because of the Principle of Least Surprise
+		var hashedPassword, passwordSalt, hashed, interior string
+		// generate salt
+		passwordSalt = randomBase64String(32)
+		hashedPassword = GetMD5Hash(aPasswordChange.NewPassword)
+		interior = hashedPassword + ":" + passwordSalt
+		hashed = GetMD5Hash(interior)
+
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG] md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q",
+			hashedPassword, interior, hashed)
+		}
+
+
+		res, err := db.Exec(`UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?"`, hashed, passwordSalt, UUID)
+		checkErr(err)
+
+		numRowsAffected, err := res.RowsAffected()
+		checkErr(err)
+
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG] Changing password resulted in %d row(s) affected\n", numRowsAffected)
+		}
+		// we're finished here, redirect to the Dashboard
+		c.Redirect(http.StatusTemporaryRedirect, "/")
+
+		return
+	}
+
+	c.HTML(http.StatusForbidden, "404.tpl", gin.H{
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"titleCommon"	: *config["titleCommon"] + " - 403",
+		"errorcode"		: "403",
+		"errortext"		: "Token incorrect",
+		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", token),	// token may be empty
+	})
 }
 
 // ResetPasswordTokens are stored in a KV store, the key of which is the Selector.
 type ResetPasswordTokens struct {
 	UserUUID	string		`json:"uuid"`
-	Verifier	string		`json:"verifier"`	// 18 chars
+	Username	string		`json:"username"`
+	Email		string		`json:"email"`
+	Verifier	[32]byte	`json:"verifier"`	// 18 chars encoded to 32-byte SHA256 hash
 	Timestamp	time.Time	`json:"timestamp"`
 }
 
@@ -358,15 +513,15 @@ func resetPassword(c *gin.Context) {
 
 	defer db.Close()
 
-	var principalID, email string
-	err = db.QueryRow("SELECT PrincipalID, Email FROM UserAccounts WHERE Email = ?", aPasswordReset.Email).Scan(&principalID, &email)	// there can be only one, or our database is corrupted
+	var principalID, email, firstName, lastName string
+	err = db.QueryRow("SELECT PrincipalID, Email, FirstName, LastName FROM UserAccounts WHERE Email = ?", aPasswordReset.Email).Scan(&principalID, &email, &firstName, &lastName)	// there can be only one, or our database is corrupted
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
 			log.Printf("[DEBUG] email address %q not in database, but we're not telling. Error was: %v", aPasswordReset.Email, err)
 		}
 	}
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] Password reset: We have email %q from user (empty means: not in database) and UUID %q (empty means: not in database)", email, principalID)
+		log.Printf("[DEBUG] Password reset: We have email %q (empty means: not in database) from user %q [UUID %q] (empty means: not in database)", email, firstName + " " + lastName, principalID)
 	}
 
 	if (principalID != "" && email != "") {
@@ -376,18 +531,21 @@ func resetPassword(c *gin.Context) {
 
 		selector := randomBase64String(15)
 		verifier := randomBase64String(18)
+		sha256	 := sha256.Sum256([]byte(verifier))
 
 		GOSWIstore.Set(selector, ResetPasswordTokens{
-			UserUUID: principalID,
-			Verifier: verifier,	// this will have to be changed to a SHA256 hash of the verifier
-			Timestamp: time.Now(),
+			UserUUID:	principalID,
+			Username:	firstName + " " + lastName,
+			Email:		email,
+			Verifier:	sha256,
+			Timestamp:	time.Now(),
 		})
 		if *config["ginMode"] == "debug" {
 			var someTokens ResetPasswordTokens
 			found, err := GOSWIstore.Get(selector, &someTokens)
 			if err == nil {
 				if found {
-					log.Printf("[DEBUG] What we just stored: %+v", someTokens)
+					log.Printf("[DEBUG] What we just stored: %+v\n", someTokens)
 				} else {
 					log.Println("[DEBUG]", selector, "not found in store")
 				}
@@ -398,13 +556,16 @@ func resetPassword(c *gin.Context) {
 		// Now send email!
 		// using example from https://riptutorial.com/go/example/20761/sending-email-with-smtp-sendmail-- (gwyneth 20200706)
 		if email != "" {
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Request: %+v\n", c.Request)
+			}
 			// Build the actual URL for token
 			tokenURL := c.Request.URL.Scheme + "//" + c.Request.URL.Host + "/user/token/" + selector + verifier
 
 			// The grid manager's email is stored in *config["gOSWIemail"]
-
+			//
 			// server we are authorised to send email through is stored in *config["SMTPhost"]
-
+			//
 			// Create the authentication for the SendMail()
 			// using PlainText, but other authentication methods are encouraged
 			auth := smtp.PlainAuth("", *config["gOSWIemail"], *config["gOSWIpassword"],*config["SMTPhost"])
@@ -413,7 +574,7 @@ func resetPassword(c *gin.Context) {
 			// rest of the lines are forced to the beginning of the line, otherwise the
 			// formatting is wrong for the RFC 822 style
 			// TODO(gwyneth): use a template instead?
-			message := `To: "Someone" <` + email + `>
+			message := `To: "` + firstName + " " + lastName + `" <` + email + `>
 From: "` + *config["author"] + `" <` + *config["gOSWIemail"] + `>
 Subject: Password reset link
 
@@ -455,9 +616,10 @@ func checkTokenForPasswordReset(c *gin.Context) {
 	}
 	// split token
 	selector := token[:14]
-	verifier := token[15:]
+	verifier := token[14:]
+	sha256	 := sha256.Sum256([]byte(verifier))
 	if *config["ginMode"] == "debug" {
-		fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q\n", token, selector, verifier)
+		fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
 	}
 
 	var someTokens ResetPasswordTokens
@@ -468,12 +630,61 @@ func checkTokenForPasswordReset(c *gin.Context) {
 			// check if it is still valid
 			if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
 				// valid, log user in, move to password change template
+				if subtle.ConstantTimeCompare(sha256[:], someTokens.Verifier[:]) == 1 {
+					log.Printf("[INFO] Token valid for user %q (%q)!", someTokens.Username, someTokens.UserUUID)
+					// user authenticated, get them a session cookie! (gwyneth 20200712)
+					session := sessions.Default(c)
+					session.Set("Username", someTokens.Username)
+					session.Set("UUID", someTokens.UserUUID)
+					session.Set("Token", generateSessionToken())
+					if *config["ginMode"] == "debug" {
+						log.Printf("[INFO] Password change link: User valid with username: %q UUID: %s Email: <%s> Token: %s", someTokens.Username, someTokens.UserUUID, someTokens.Email, session.Get("Token"))
+					}
+					if someTokens.Email != "" {
+						//			avt.SetSecureFallbackHost("unicornify.pictures")	// possibly not needed, we'll implement it locally
+						avt := libravatar.New()
+						avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
+						avt.SetUseHTTPS(true)
+						//			avt.SetSecureFallbackHost("unicornify.pictures")
+						if avatar_url, err := avt.FromEmail(someTokens.Email); err == nil {
+							session.Set("Libravatar", avatar_url)
+						} else {
+							if *config["ginMode"] == "debug" {
+								log.Println("[WARN]: Libravatar returned error:", err)
+							}
+							// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
+							session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(someTokens.Username) + "?s=60")
+							session.Set("Email", someTokens.Email)	// who knows, it might be useful at some point
+						}
+					} else {
+						// if we don't have a valid email, get an Unicorn!
+						if *config["ginMode"] == "debug" {
+							log.Println("[WARN]: Empty email on database, attempting to get a Unicorn")
+						}
+						session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(someTokens.Username) + "?s=60")
+					}
+//						session.Set("RememberMe", ???)	// we may not be able to set this here
+					session.Save()
 
-
+					// move user to password change template
+					c.HTML(http.StatusOK, "change-password.tpl", gin.H{
+						"now"			: formatAsYear(time.Now()),
+						"author"		: *config["author"],
+						"description"	: *config["description"],
+						"logo"			: *config["logo"],
+						"logoTitle"		: *config["logoTitle"],
+						"sidebarCollapsed" : *config["sidebarCollapsed"],
+						"Debug"			: false,
+						"titleCommon"	: *config["titleCommon"] + "New password!",
+						"logintemplate"	: true,
+						"someTokens"	: someTokens,	// this will allow us to ignore the 'old' password and just ask for new ones.
+					})
+					// that's all, folks!
+					return
+				}
 			} else {
 				log.Println("[ERROR] Token expired!")
 			}
-
 		} else {
 			log.Println("[ERROR]", selector, "not found in store")
 		}
@@ -481,11 +692,12 @@ func checkTokenForPasswordReset(c *gin.Context) {
 		log.Println("[ERROR] Nothing stored for", selector, "error was", err)
 	}
 
-	c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+	c.HTML(http.StatusForbidden, "404.tpl", gin.H{
 		"now"			: formatAsYear(time.Now()),
 		"author"		: *config["author"],
 		"description"	: *config["description"],
-		"titleCommon"	: *config["titleCommon"] + " - 404",
+		"titleCommon"	: *config["titleCommon"] + " - 403",
+		"errorcode"		: "403",
 		"errortext"		: "Token incorrect",
 		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", token),
 	})

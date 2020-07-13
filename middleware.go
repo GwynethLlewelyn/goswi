@@ -56,7 +56,7 @@ func setUserStatus() gin.HandlerFunc {
 
 		// Note that all the things below may set everything to empty strings, which is FINE! (gwyneth 20200628)
 		c.Set("Username",	session.Get("Username"))
-		c.Set("Email",		 session.Get("Email"))
+		c.Set("Email",		session.Get("Email"))
 		c.Set("Libravatar",	session.Get("Libravatar"))
 		c.Set("Token",		session.Get("Token"))
 		c.Set("UUID",		session.Get("UUID"))
