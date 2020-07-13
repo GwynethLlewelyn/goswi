@@ -371,8 +371,8 @@ func changePassword(c *gin.Context) {
 		// we still have a token, but to make things more secure, we validate the token again
 		// again, first split the token
 		token 	 := aPasswordChange.t
-		selector := token[:14]
-		verifier := token[14:]
+		selector := token[:15]
+		verifier := token[15:]
 		sha256	 := sha256.Sum256([]byte(verifier))
 		if *config["ginMode"] == "debug" {
 			fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
@@ -556,7 +556,7 @@ func resetPassword(c *gin.Context) {
 			found, err := GOSWIstore.Get(selector, &someTokens)
 			if err == nil {
 				if found {
-					log.Printf("[DEBUG] What we just stored: %+v\n", someTokens)
+					log.Printf("[DEBUG] What we just stored for selector %q: %+v\n", selector, someTokens)
 				} else {
 					log.Println("[DEBUG]", selector, "not found in store")
 				}
@@ -662,8 +662,8 @@ func checkTokenForPasswordReset(c *gin.Context) {
 
 	}
 	// split token
-	selector := token[:14]
-	verifier := token[14:]
+	selector := token[:15]
+	verifier := token[15:]
 	sha256	 := sha256.Sum256([]byte(verifier))
 	if *config["ginMode"] == "debug" {
 		fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
