@@ -7,7 +7,7 @@
 		<footer class="sticky-footer bg-white">
 			<div class="container my-auto">
 				<div class="copyright text-center my-auto">
-					<span><!--<span style="font-family:CCSymbols;">&#x1f16d;</span>--><i class="fas fa-creative-commons fa-fw"></i> {{.now }} by gOSWI and {{.author}}. Some rights reserved. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
+					<span><i class="fab fa-creative-commons fa-fw"></i> {{.now }} by gOSWI and {{.author}}. Some rights reserved. Uses <a href="https://startbootstrap.com/themes/sb-admin-2/" target=_blank>SB Admin 2</a> templates inside <a href="https://golang.org/" target=_blank>Go.</a></span>
 				</div>
 			</div>
 		</footer>
