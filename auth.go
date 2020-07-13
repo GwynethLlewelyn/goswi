@@ -45,6 +45,11 @@ type ResetPasswordForm struct {
 	GPG string	`json:"gpg" form:"gpg"`	// GPG fingerprint to encrypt email, if provided (gwyneth 20200705)
 }
 
+// Token is required by the ShouldBindURI() call, it cannot be a simple string for some reason...
+type Token struct {
+	Payload string `uri:"token"`
+}
+
 // isUserValid checks the database for a valid user/pass combination. It returns a boolean. the email and the UUID. Yes, it's ugly.
 // TODO(gwyneth): Figure out a better way to extract the email data and store it safely.
 // TODO(gwyneth): Probably, this ought to return (string, string, bool) to be a bit more consistent...
@@ -612,11 +617,37 @@ If it was you, click on <a href="` + tokenURL + `">` + tokenURL + `</a>.
 // checkTokenForPasswordReset is called when the user clicks the link for resetting their password, and we need to check if the token is a valid token to allow authentication
 func checkTokenForPasswordReset(c *gin.Context) {
 	var token string
+	var params Token
 
 	// token = c.Param("token")	// Wouldn't this be more obvious?
-	if err := c.ShouldBindUri(&token); err != nil {
-			c.JSON(400, gin.H{"msg": err})
-			return
+	if err := c.ShouldBindUri(&params); err != nil {	// this should never fail, but... 	(gwyneth 20200713)
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - 404",
+			"errorcode"		: "404",
+			"errortext"		: "Token not sent",
+			"errorbody"		: fmt.Sprintf("Invalid token or token not sent. Error was: %v", err),
+		})
+		log.Println("[ERROR] Invalid token or token not sent. Error was:", err)
+		return
+	}
+	// assign token with the content of the parameter...
+	token = params.Payload
+	if token == "" { // one of those errors that should never happen... (gwyneth 20200713)
+		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"titleCommon"	: *config["titleCommon"] + " - 404",
+			"errorcode"		: "404",
+			"errortext"		: "Empty token payload",
+			"errorbody"		: "Invalid token or empty token payload.",
+		})
+		log.Println("[ERROR] Invalid token or empty token payload.")
+		return
+
 	}
 	// split token
 	selector := token[:14]
