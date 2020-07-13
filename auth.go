@@ -483,6 +483,9 @@ func changePassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + " - Home",
 			"Username"		: session.Get("Username"),
 			"Libravatar"	: session.Get("Libravatar"),
+			"BoxTitle"		: "Password changed!",
+			"BoxType"		: "success",
+			"BoxMessage"	: "Now don't forget the new one!",
 			"Content"		: "Your password has been successfully changed!",
 		})
 		return
