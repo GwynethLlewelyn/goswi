@@ -595,7 +595,7 @@ Subject: Password reset link
 
 Someone asked for your password to be reset.
 
-If it was you, click on <a href="` + tokenURL + `">` + tokenURL + `</a>.
+If it was you, use the following link: ` + tokenURL + `
 		`
 			if *config["ginMode"] == "debug" {
 				fmt.Printf("[DEBUG] Message to be sent: %q\n", message)
