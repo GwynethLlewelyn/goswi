@@ -79,13 +79,6 @@
 		<div class="text-center d-none d-md-inline">
 			<button class="rounded-circle border-0" id="sidebarToggle"></button>
 		</div>
-		{{ if not (eq .sidebarCollapsed "false") }}
-		<script>
-		$(document).ready(function() {
-			$("#accordionSidebar").addClass("toggled");
-		})
-		</script>
-		{{ end }}
 	</ul>
 	<!-- End of Sidebar -->
 {{ end }}
