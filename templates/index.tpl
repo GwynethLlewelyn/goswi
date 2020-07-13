@@ -31,7 +31,7 @@
 					</div>
 {{- end -}}
 {{- if .BoxMessage -}}
-{{- template "infobox.tpl" . -}}
+{{ template "infobox.tpl" . }}
 {{- end -}}
 				</div> <!-- /.row -->
 			</div> <!-- /.container-fluid -->
