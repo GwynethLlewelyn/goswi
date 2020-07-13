@@ -154,7 +154,7 @@ func performLogin(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "What?",
 			"logintemplate"	: true,
 		})
-		log.Println("No form data posted")
+		log.Println("[ERROR] No form data posted for login")
 
 		return
 	}
@@ -174,10 +174,9 @@ func performLogin(c *gin.Context) {
 			"WrongUsername"	: oneUser.Username,
 			"WrongRememberMe" : oneUser.RememberMe,
 		})
+		log.Println("[ERROR] The password can't be empty")
 
 		return
-
-		log.Println("The password can't be empty")
 	}
 	if *config["ginMode"] == "debug" {
 		// warning: this will expose a password!!
@@ -188,7 +187,7 @@ func performLogin(c *gin.Context) {
 		session.Set("UUID", principalID)
 		session.Set("Token", generateSessionToken())
 		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO] User valid with username: %q UUID: %s Email: <%s> Token: %s", oneUser.Username, principalID, email, session.Get("Token"))
+			log.Printf("[INFO] User valid with username: %q UUID: %q Email: <%s> Token: %q", oneUser.Username, principalID, email, session.Get("Token"))
 		}
 
 		if email != "" {
@@ -272,7 +271,7 @@ func registerNewUser(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "What?",
 			"logintemplate"	: true,
 		})
-		log.Println("No form data posted")
+		log.Println("[ERROR] No form data posted to register a new user")
 
 		return
 	}
@@ -285,6 +284,9 @@ func registerNewUser(c *gin.Context) {
 		"now"			: formatAsYear(time.Now()),
 		"author"		: *config["author"],
 		"description"	: *config["description"],
+		"logo"			: *config["logo"],
+		"logoTitle"		: *config["logoTitle"],
+		"sidebarCollapsed" : *config["sidebarCollapsed"],
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Sorry!",
 		"logintemplate"	: true,
@@ -320,7 +322,7 @@ func changePassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "Say what?",
 			"logintemplate"	: true,
 		})
-		log.Println("[WARN] No form data posted for password change")
+		log.Println("[ERROR] No form data posted for password change")
 
 		return
 	}
@@ -339,7 +341,7 @@ func changePassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "No way, José!",
 			"logintemplate"	: true,
 		})
-		log.Println("[WARN] Confirmation password does not match new password")
+		log.Println("[ERROR] Confirmation password does not match new password")
 
 		return
 	}
@@ -357,7 +359,7 @@ func changePassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "No deal!",
 			"logintemplate"	: true,
 		})
-		log.Println("[WARN] New password must be different from the old one")
+		log.Println("[ERROR] New password must be different from the old one")
 
 		return
 	}
@@ -380,7 +382,7 @@ func changePassword(c *gin.Context) {
 		found, err := GOSWIstore.Get(selector, &someTokens)
 		if err == nil {
 			if found {
-				log.Printf("[INFO] What we just stored: %+v", someTokens)
+				log.Printf("[INFO] What we just stored for selector %q: %+v", selector, someTokens)
 				// check if it is still valid
 				if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
 					// valid, log user in, move to password change template
@@ -495,7 +497,7 @@ func resetPassword(c *gin.Context) {
 	if c.Bind(&aPasswordReset) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "reset-password.tpl", gin.H{
 			"ErrorTitle"	: "Password reset failed",
-			"ErrorMessage"	: "No form data posted",
+			"ErrorMessage"	: "No form data posted for password reset",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -506,7 +508,7 @@ func resetPassword(c *gin.Context) {
 			"titleCommon"	: *config["titleCommon"] + "Whut?",
 			"logintemplate"	: true,
 		})
-		log.Println("No form data posted")
+		log.Println("[WARN] No form data posted for password reset")
 
 		return
 	}
@@ -614,6 +616,9 @@ If it was you, use the following link: ` + tokenURL + `
 		"now"			: formatAsYear(time.Now()),
 		"author"		: *config["author"],
 		"description"	: *config["description"],
+		"logo"			: *config["logo"],
+		"logoTitle"		: *config["logoTitle"],
+		"sidebarCollapsed" : *config["sidebarCollapsed"],
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Email sent!",
 		"logintemplate"	: true,
@@ -673,7 +678,7 @@ func checkTokenForPasswordReset(c *gin.Context) {
 	found, err := GOSWIstore.Get(selector, &someTokens)
 	if err == nil {
 		if found {
-			log.Printf("[INFO] What we just stored: %+v", someTokens)
+			log.Printf("[INFO] What we just stored for selector %q: %+v", selector, someTokens)
 			// check if it is still valid
 			if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
 				// valid, log user in, move to password change template
