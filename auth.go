@@ -506,9 +506,28 @@ func changePassword(c *gin.Context) {
 		if numRowsAffected, err := result.RowsAffected(); err != nil {
 			log.Printf("[ERROR] Updating database with new password for %q failed, error was %q\n", thisUUID, err)
 		} else {
-			log.Printf("[INFO] Success updating database with new password for %q; %d row(s) affected\n", thisUUID, numRowsAffected)
+			if numRowsAffected != 1 {
+				log.Printf("[WARN] Inconsistent database state after password change, numRowsAffected was %d which is unusual", numRowsAffected)
+				c.HTML(http.StatusOK, "index.tpl", gin.H{
+					"now"			: formatAsYear(time.Now()),
+					"author"		: *config["author"],
+					"description"	: *config["description"],
+					"logo"			: *config["logo"],
+					"logoTitle"		: *config["logoTitle"],
+					"sidebarCollapsed" : *config["sidebarCollapsed"],
+					"titleCommon"	: *config["titleCommon"] + " - Home",
+					"Username"		: session.Get("Username"),
+					"Libravatar"	: session.Get("Libravatar"),
+					"BoxTitle"		: "Password probably not changed",
+					"BoxType"		: "warning",
+					"BoxMessage"	: "You might need to try again",
+					"Content"		: fmt.Sprintf("Warning: your password change seems to have affected %d instances on the database, which is both surprising and unusual; please check if the change worked at all", numRowsAffected),
+				})
+				return
+			} else {
+				log.Printf("[INFO] Success updating database with new password for %q; %d rows affected\n", thisUUID, numRowsAffected)
+			}
 		}
-
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
