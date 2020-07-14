@@ -336,7 +336,7 @@ func changePassword(c *gin.Context) {
 	if aPasswordChange.NewPassword != aPasswordChange.ConfirmNewPassword {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
 			"BoxTitle"		: "Password change failed",
-			"BoxMessage"	: "Confirmation password does not match new password",
+			"BoxMessage"	: "Confirmation password does not match new password!",
 			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
@@ -355,7 +355,7 @@ func changePassword(c *gin.Context) {
 	if aPasswordChange.t == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
 			"BoxTitle"		: "Password change failed",
-			"BoxMessage"	: "New password must be different from the old one",
+			"BoxMessage"	: "New password must be different from the old one!",
 			"BoxType"		: "danger",
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
@@ -408,24 +408,24 @@ func changePassword(c *gin.Context) {
 			log.Printf("[WARN] Deleting %q from the store threw an error\n", err)
 		}
 	}
-	var UUID string	// I think we have a scope issue... (gwyneth 20200714)
+	var thisUUID string	// I think we have a scope issue... (gwyneth 20200714)
 
 	if isCurrentPasswordValid {
 		// We now need to figure out who is the user requesting this!
 		// 1) Either this is called via the token sent by email, and it means that someTokens.UserUUID has been set;
 		// 2) or this was called by a logged-in user changing their password, and c.Get(UUID) or session.Get(UUID) will have the UUID.
 		if someTokens.UserUUID != "" {
-			UUID = someTokens.UserUUID
+			thisUUID = someTokens.UserUUID
 			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Password change request via token, UUID is %q\n", UUID)
+				log.Printf("[DEBUG] Password change request via token, thisUUID is %q\n", thisUUID)
 			}
-		} else if UUID, ok := c.Get("UUID"); ok {
+		} else if thisUUID, ok := c.Get("UUID"); ok {
 			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Password change request via logged-in user, context seems to be fine, UUID is %q\n", UUID)
+				log.Printf("[DEBUG] Password change request via logged-in user, context seems to be fine, thisUUID is %q\n", thisUUID)
 			}
-		} else if UUID = session.Get("UUID"); UUID != nil && UUID != "" {
+		} else if thisUUID = session.Get("UUID"); ((thisUUID != nil) && (thisUUID != "")) {
 			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Password change request via logged-in user, retrieved from session cookie, UUID is %q\n", UUID)
+				log.Printf("[DEBUG] Password change request via logged-in user, retrieved from session cookie, thisUUID is %q\n", thisUUID)
 			}
 		} else {
 			log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
@@ -460,18 +460,18 @@ func changePassword(c *gin.Context) {
 		interior = hashedPassword + ":" + passwordSalt
 		hashed = GetMD5Hash(interior)
 
-		if *config["ginMode"] == "ginMode" {
-			log.Printf("[DEBUG] md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q",
-			hashedPassword, interior, hashed)
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG] UUID: %q, md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q",
+			thisUUID, hashedPassword, interior, hashed)
 		}
 
-		result, err := db.Exec("UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?", hashed, passwordSalt, UUID)
+		result, err := db.Exec("UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?", hashed, passwordSalt, thisUUID)
 		checkErr(err)
 
 		if numRowsAffected, err := result.RowsAffected(); err != nil {
-			log.Printf("[ERROR] Updating database with new password for %q failed\n", UUID)
+			log.Printf("[ERROR] Updating database with new password for %q failed, error was %q\n", thisUUID, err)
 		} else {
-			log.Printf("[INFO] Success updating database with new password for %q; %d row(s) affected\n", UUID, numRowsAffected)
+			log.Printf("[INFO] Success updating database with new password for %q; %d row(s) affected\n", thisUUID, numRowsAffected)
 		}
 
 		c.HTML(http.StatusOK, "index.tpl", gin.H{
