@@ -37,7 +37,7 @@ type ChangePasswordForm struct {
 	OldPassword string `json:"-" form:"oldpassword" binding:"required"`
 	NewPassword string `json:"-" form:"newpassword" binding:"required"`
 	ConfirmNewPassword string `json:"-" form:"confirmnewpassword" binding:"required"`
-	t string `form:"t"`	// this field is only used when someone changes the password via email-sent link: it includes the link token
+	T string `form:"t"`	// this field is only used when someone changes the password via email-sent link: it includes the link token
 }
 
 type ResetPasswordForm struct {
@@ -347,12 +347,13 @@ func changePassword(c *gin.Context) {
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "No way, José!",
 			"logintemplate"	: true,
+			"t"				: aPasswordChange.T,
 		})
 		log.Println("[ERROR] Confirmation password does not match new password")
 
 		return
 	}
-	if aPasswordChange.t == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
+	if aPasswordChange.T == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
 		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
 			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "New password must be different from the old one!",
@@ -366,6 +367,7 @@ func changePassword(c *gin.Context) {
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "No deal!",
 			"logintemplate"	: true,
+			"t"				: aPasswordChange.T,
 		})
 		log.Println("[ERROR] New password must be different from the old one")
 
@@ -376,7 +378,7 @@ func changePassword(c *gin.Context) {
 	var ok bool			// Same reason as above (gwyneth 20200714)
 
 	isCurrentPasswordValid := false
-	if aPasswordChange.t == "" {	// do we have a token here?
+	if aPasswordChange.T == "" {	// do we have a token here?
 		// no token; so we assume that the password is valid and we can proceed to change
 		// BUG(gwyneth): we actually need to check the password *again* to avoid someone else to change the password while
 		//  this user is still logged in
@@ -409,7 +411,7 @@ func changePassword(c *gin.Context) {
 	} else {
 		// we still have a token, but to make things more secure, we validate the token again
 		// again, first split the token
-		token 	 := aPasswordChange.t
+		token 	 := aPasswordChange.T
 		selector := token[:15]
 		verifier := token[15:]
 		sha256	 := sha256.Sum256([]byte(verifier))
