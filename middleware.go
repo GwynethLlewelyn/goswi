@@ -19,12 +19,12 @@ func ensureLoggedIn() gin.HandlerFunc {
 		loggedInInterface := session.Get("Username")
 		if loggedInInterface == nil || loggedInInterface == "" {
 			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user")
+				log.Printf("[INFO]: ensureLoggedIn(): No authenticated user")
 			}
 			c.AbortWithStatus(http.StatusUnauthorized)
 		} else {
 			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
+				log.Printf("[INFO]: ensureLoggedIn(): Username is %q", loggedInInterface)
 			}
 		}
 	}
