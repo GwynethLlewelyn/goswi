@@ -372,11 +372,39 @@ func changePassword(c *gin.Context) {
 		return
 	}
 	var someTokens ResetPasswordTokens	// this will be used to retrieve data from the KV store; we will check later on (scope issues!) if we have a valid token or not
+	var thisUUID string	// I think we have a scope issue... (gwyneth 20200714)
 
 	isCurrentPasswordValid := false
 	if aPasswordChange.t == "" {	// do we have a token here?
-		// no token; so we assume that the password is valid and we can proceed to change <script charset="utf-8">
-		isCurrentPasswordValid = true
+		// no token; so we assume that the password is valid and we can proceed to change
+		// BUG(gwyneth): we actually need to check the password *again* to avoid someone else to change the password while
+		//  this user is still logged in
+		if ok, _, thisUUID := isUserValid(session.Get("Username").(string), aPasswordChange.OldPassword); ok {
+			isCurrentPasswordValid = true
+		} else { // user probably mistyped password
+			// we do something similar to what was done for login, i.e. present error message and place the existing information back on the form (20200714)
+			log.Printf("[ERROR] Invalid current password for user UUID %q while trying to change it.", thisUUID)
+
+			c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+				"BoxTitle"		: "Login Failed",
+				"BoxMessage"	: "Incorrect current password",
+				"BoxType"		: "danger",
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"logo"			: *config["logo"],
+				"logoTitle"		: *config["logoTitle"],
+				"sidebarCollapsed" : *config["sidebarCollapsed"],
+				"Debug"			: false,
+				"titleCommon"	: *config["titleCommon"] + "Whoopsie!",
+				"logintemplate"	: true,
+				"WrongOldPassword"	: aPasswordChange.OldPassword,
+				"WrongNewPassword"	: aPasswordChange.NewPassword,
+				"WrongConfirmNewPassword"	: aPasswordChange.ConfirmNewPassword,
+			})
+
+			return
+		}
 	} else {
 		// we still have a token, but to make things more secure, we validate the token again
 		// again, first split the token
@@ -408,8 +436,6 @@ func changePassword(c *gin.Context) {
 			log.Printf("[WARN] Deleting %q from the store threw an error\n", err)
 		}
 	}
-	var thisUUID string	// I think we have a scope issue... (gwyneth 20200714)
-
 	if isCurrentPasswordValid {
 		// We now need to figure out who is the user requesting this!
 		// 1) Either this is called via the token sent by email, and it means that someTokens.UserUUID has been set;
@@ -504,6 +530,7 @@ func changePassword(c *gin.Context) {
 		"errortext"		: "Token incorrect",
 		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", token),	// token may be empty
 	})
+	log.Printf("[ERROR] User UUID %q tried to use token %q but it's not valid and/or expired\n", thisUUID, token)
 }
 
 // ResetPasswordTokens are stored in a KV store, the key of which is the Selector.
