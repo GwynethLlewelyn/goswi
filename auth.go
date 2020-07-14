@@ -373,13 +373,14 @@ func changePassword(c *gin.Context) {
 	}
 	var someTokens ResetPasswordTokens	// this will be used to retrieve data from the KV store; we will check later on (scope issues!) if we have a valid token or not
 	var thisUUID string	// I think we have a scope issue... (gwyneth 20200714)
+	var ok bool			// Same reason as above (gwyneth 20200714)
 
 	isCurrentPasswordValid := false
 	if aPasswordChange.t == "" {	// do we have a token here?
 		// no token; so we assume that the password is valid and we can proceed to change
 		// BUG(gwyneth): we actually need to check the password *again* to avoid someone else to change the password while
 		//  this user is still logged in
-		if ok, _, thisUUID := isUserValid(session.Get("Username").(string), aPasswordChange.OldPassword); ok {
+		if ok, _, thisUUID = isUserValid(session.Get("Username").(string), aPasswordChange.OldPassword); ok {
 			isCurrentPasswordValid = true
 		} else { // user probably mistyped password
 			// we do something similar to what was done for login, i.e. present error message and place the existing information back on the form (20200714)
@@ -445,30 +446,38 @@ func changePassword(c *gin.Context) {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[DEBUG] Password change request via token, thisUUID is %q\n", thisUUID)
 			}
-		} else if thisUUID, ok := c.Get("UUID"); ok {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Password change request via logged-in user, context seems to be fine, thisUUID is %q\n", thisUUID)
-			}
-		} else if thisUUID = session.Get("UUID"); ((thisUUID != nil) && (thisUUID != "")) {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Password change request via logged-in user, retrieved from session cookie, thisUUID is %q\n", thisUUID)
-			}
 		} else {
-			log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
+				// some things in Gin are really awful... (gwyneth 20200714)
+			if thisUUID2, ok2 := c.Get("UUID"); ok2 {
+				thisUUID = thisUUID2.(string)
+				if *config["ginMode"] == "debug" {
+					log.Printf("[DEBUG] Password change request via logged-in user, context seems to be fine, thisUUID is %q\n", thisUUID)
+				}
+			}
+		}
+		if thisUUID == "" {	// it's not on the token, it's not on the context, our last hope is that it's inside the session (gwyneth 20200714).
+			thisUUID, ok = session.Get("UUID").(string)
+			if ok && (thisUUID != "") {
+				if *config["ginMode"] == "debug" {
+					log.Printf("[DEBUG] Password change request via logged-in user succeeded, retrieved from session cookie, thisUUID is %q\n", thisUUID)
+				}
+			} else {
+				log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
 
-			c.HTML(http.StatusForbidden, "404.tpl", gin.H{
-				"now"			: formatAsYear(time.Now()),
-				"author"		: *config["author"],
-				"description"	: *config["description"],
-				"logo"			: *config["logo"],
-				"logoTitle"		: *config["logoTitle"],
-				"sidebarCollapsed" : *config["sidebarCollapsed"],
-				"titleCommon"	: *config["titleCommon"] + " - 403",
-				"errorcode"		: "403",
-				"errortext"		: "User not found",
-				"errorbody"		: "Unknown or invalid user, cannot proceed, please try later.",
-			})
-			return
+				c.HTML(http.StatusForbidden, "404.tpl", gin.H{
+					"now"			: formatAsYear(time.Now()),
+					"author"		: *config["author"],
+					"description"	: *config["description"],
+					"logo"			: *config["logo"],
+					"logoTitle"		: *config["logoTitle"],
+					"sidebarCollapsed" : *config["sidebarCollapsed"],
+					"titleCommon"	: *config["titleCommon"] + " - 403",
+					"errorcode"		: "403",
+					"errortext"		: "User not found",
+					"errorbody"		: "Unknown or invalid user, cannot proceed, please try later.",
+				})
+				return
+			}
 		}
 		// ok, we ought to have a valid UUID, at last we can update the password!
 		if *config["dsn"] == "" {
