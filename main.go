@@ -49,7 +49,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"slides"		: flag.String("slides", "", "Comma-separated list of URLs for slideshow images"),
 	"jp2convert"	: flag.String("jp2convert", "/usr/bin/opj_decompress -i %s -o %s", "External tool to provide JPEG2000 conversion"),
 	"jp2convertExt"	: flag.String("jp2convertExt", ".png", "Filename extension or type for cached resources (depends on the converter actually supporting this particular extension; if not, conversion will fail)"),
-	"cache"			: flag.String("cache", "./cache/", "Path to the assets cache"),
+	"cache"			: flag.String("cache", "./cache/", "File path to the assets cache"),
 	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to asset server (no trailing slash)"),
 }
 // slideshow is a slice of strings representing all images for the splash-screen slideshow.

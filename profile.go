@@ -39,9 +39,9 @@ type UserProfile struct {
 
 // downloadFile will create a file with the content of an URL.
 // See https://stackoverflow.com/a/33845771/1035977 by Pablo Jomer
-func downloadFile(filepath string, url string) (err error) {
+func downloadFile(filename string, url string) (err error) {
 	// Create the file
-	out, err := os.Create(filepath)
+	out, err := os.Create(filename)
 	if err != nil {
 		return err
 	}
@@ -112,7 +112,7 @@ func GetProfile(c *gin.Context) {
 	// cache check first!
 	imageAssetFileName := filepath.Join(*config["cache"], profileData.ProfileImage + ".jp2")
 	imageFileName := filepath.Join(*config["cache"], profileData.ProfileImage + *config["jp2convertExt"]) // name of converted file
-	imageAssetURL := path.Join(*config["assetServer"], "/assets/", profileData.ProfileImage, "/data")
+	imageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileImage, "/data")
 
 	fd, ferr := os.Open(imageAssetFileName)
 	defer fd.Close()
@@ -143,11 +143,11 @@ func GetProfile(c *gin.Context) {
 				log.Println("[DEBUG] Command string extracted from config.ini and parsed:", cmdString)
 			}
 			// now turn it into a []string
-				slc := strings.Split(cmdString , " ")
-				for i := range slc {
-					slc[i] = strings.TrimSpace(slc[i]) // trim whitespace, see
-				}
-
+			// code comes from https://stackoverflow.com/a/49429437/1035977 by @vahdet
+			slc := strings.Split(cmdString, " ")
+			for i := range slc {
+				slc[i] = strings.TrimSpace(slc[i]) // trim whitespace
+			}
 			cmd := exec.Command(slc[0], slc[1:]...)
 			if *config["ginMode"] == "debug" {
 				log.Println("[DEBUG] Converting command is", cmd)
@@ -157,7 +157,7 @@ func GetProfile(c *gin.Context) {
 				log.Println("[ERROR] Couldn't launch conversion command", err)
 			} else {
 				if *config["ginMode"] == "debug" {
-					log.Println("[DEBUG] Output from converting command was", output)
+					log.Printf("[DEBUG] Output from converting command was %q\n", output)
 				}
 			}
 			// ok, now we can set the image URL pointing to the cached file!
@@ -166,6 +166,11 @@ func GetProfile(c *gin.Context) {
 			// note that this is the same as imageFileName, but while imageFileName was constructed with filepath (since it points to a file using the filesystem), avatarProfileImage is constructed with path, since it's supposed to be an URL (gwyneth 20200719)
 			// TODO(gwyneth): add debugging on the handler for the cache to see if it is actually being called (nginx might be serving it statically); also, there should be a cache garbage collector if the user changed their profile image.
 			avatarProfileImage = path.Join(*config["cache"], profileData.ProfileImage + *config["jp2convertExt"])	// note that hopefully the router is set correctly on main()! (gwyneth 20200719)
+			// Because of the way path.Join() 'cleans up' links, we might end up without a leading slash; so we just need to check for that.
+
+			if avatarProfileImage[0] != '/' {
+				avatarProfileImage = "/" + avatarProfileImage
+			}
 
 			fd.Close()
 		}
