@@ -160,20 +160,27 @@ func GetProfile(c *gin.Context) {
 					log.Printf("[DEBUG] Output from converting command was %q\n", output)
 				}
 			}
-			// ok, now we can set the image URL pointing to the cached file!
-			// even if it doesn't exist, or failed to convert, we will always get something, namely, a broken image, but that's ok, it won't crash the application (gwyneth 20200719).
-			// TODO(gwyneth): if the image failed to convert, assign it to a default image (maybe a default image asset from OpenSimulator?) (gwyneth 20200719).
-			// note that this is the same as imageFileName, but while imageFileName was constructed with filepath (since it points to a file using the filesystem), avatarProfileImage is constructed with path, since it's supposed to be an URL (gwyneth 20200719)
-			// TODO(gwyneth): add debugging on the handler for the cache to see if it is actually being called (nginx might be serving it statically); also, there should be a cache garbage collector if the user changed their profile image.
-			avatarProfileImage = path.Join(*config["cache"], profileData.ProfileImage + *config["jp2convertExt"])	// note that hopefully the router is set correctly on main()! (gwyneth 20200719)
-			// Because of the way path.Join() 'cleans up' links, we might end up without a leading slash; so we just need to check for that.
-
-			if avatarProfileImage[0] != '/' {
-				avatarProfileImage = "/" + avatarProfileImage
-			}
-
+			// we're finished for now; the image is now on the cache; we can close everything
+			//  and move on!
 			fd.Close()
 		}
+	}
+	// ok, now we can set the image URL pointing to the cached file!
+	// even if it doesn't exist, or failed to convert, we will always get something, namely, a broken image, but that's ok, it won't crash the application (gwyneth 20200719).
+	// TODO(gwyneth): if the image failed to convert, assign it to a default image (maybe a default image asset from OpenSimulator?) (gwyneth 20200719).
+	// note that this is the same as imageFileName, but while imageFileName was constructed with filepath (since it points to a file using the filesystem), avatarProfileImage is constructed with path, since it's supposed to be an URL (gwyneth 20200719)
+	// TODO(gwyneth): add debugging on the handler for the cache to see if it is actually being called (nginx might be serving it statically); also, there should be a cache garbage collector if the user changed their profile image.
+	avatarProfileImage = path.Join(*config["cache"], profileData.ProfileImage + *config["jp2convertExt"])	// note that hopefully the router is set correctly on main()! (gwyneth 20200719)
+
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] After conversionProfileImage is now %q\n", avatarProfileImage)
+	}
+	// Because of the way path.Join() 'cleans up' links, we might end up without a leading slash; so we just need to check for that.
+	if avatarProfileImage[0] != '/' {
+		avatarProfileImage = "/" + avatarProfileImage
+	}
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] ProfileImage is now %q\n", avatarProfileImage)
 	}
 
 	c.HTML(http.StatusOK, "profile.tpl", gin.H{
