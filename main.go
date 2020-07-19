@@ -15,8 +15,7 @@ import (
 //	"net"
 	"net/http"
 //	"net/http/fcgi"
-//	"os"
-	"path"
+	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -25,7 +24,7 @@ import (
 )
 
 var (
-	wLog, _		= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
+	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 	GOSWIstore syncmap.Store	// this stores tokens for password reset links
 )
@@ -48,6 +47,10 @@ var config = map[string]*string	{// just a place to keep them all together
 	"logoTitle"		: flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
 	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
 	"slides"		: flag.String("slides", "", "Comma-separated list of URLs for slideshow images"),
+	"jp2convert"	: flag.String("jp2convert", "/usr/bin/opj_decompress -i %s -o %s", "External tool to provide JPEG2000 conversion"),
+	"jp2convertExt"	: flag.String("jp2convertExt", ".png", "Filename extension or type for cached resources (depends on the converter actually supporting this particular extension; if not, conversion will fail)"),
+	"cache"			: flag.String("cache", "./cache/", "Path to the assets cache"),
+	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to asset server (no trailing slash)"),
 }
 // slideshow is a slice of strings representing all images for the splash-screen slideshow.
 var slideshow []string
@@ -76,7 +79,7 @@ func main() {
 	}
 
 	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to
-	iniflags.SetConfigFile(path.Join(PathToStaticFiles, "/config.ini"))
+	iniflags.SetConfigFile(filepath.Join(PathToStaticFiles, "/config.ini"))
 	// start parsing configuration
 	iniflags.Parse()
 	// initialise slideshow (all the URLs should be at the end of the commandline)
@@ -115,18 +118,40 @@ func main() {
 		*config["templatePath"] = "/templates/"
 	}
 
-	router.LoadHTMLGlob(path.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
+	router.LoadHTMLGlob(filepath.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
 	store := cookie.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
 	router.Use(sessions.Sessions("goswisession", store))
 
+	// Prepare a directory for the cache (i.e. create it if it doesn't exist) (20200718 gwyneth)
+	err := os.MkdirAll(*config["cache"], os.ModePerm)
+	if err != nil {
+		log.Println("[WARN] Creating/accessing cache directory", *config["cache"], "returned error", err)
+		// we might not be able to use a cache if this doesn't work
+		// so we'll try creating a temporary cache instead
+		newCacheDir := filepath.Join(os.TempDir(), *config["cache"])
+		err = os.MkdirAll(newCacheDir, os.ModePerm)
+		if err == nil {
+			// ok, this worked, so let's inform the *config["cache"] and change *config["cache"]
+			*config["cache"] = newCacheDir
+		} else {
+			*config["cache"] = ""
+		}
+	}
+
 	// Static stuff (will probably do it via nginx)
-	router.Static("/lib", path.Join(PathToStaticFiles, "/lib"))
-	router.Static("/assets", path.Join(PathToStaticFiles, "/assets"))
-	router.StaticFile("/favicon.ico", path.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
-	router.StaticFile("/browserconfig.xml", path.Join(PathToStaticFiles, "/assets/favicons/browserconfig.xml"))
-	router.StaticFile("/site.webmanifest", path.Join(PathToStaticFiles, "/assets/favicons/site.webmanifest"))
+	router.Static("/lib", filepath.Join(PathToStaticFiles, "/lib"))
+	router.Static("/assets", filepath.Join(PathToStaticFiles, "/assets"))
+	if *config["cache"] != "" {
+		router.Static("/cache", *config["cache"])
+		log.Println("[INFO] Cache directory set up at", *config["cache"])
+	} else {
+		log.Println("[ERROR] Could not access or create cache directory, this means there will be trouble ahead... error was (possibly)", err)
+	}
+	router.StaticFile("/favicon.ico", filepath.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
+	router.StaticFile("/browserconfig.xml", filepath.Join(PathToStaticFiles, "/assets/favicons/browserconfig.xml"))
+	router.StaticFile("/site.webmanifest", filepath.Join(PathToStaticFiles, "/assets/favicons/site.webmanifest"))
 
 	router.GET("/", func(c *gin.Context) {
 		session := sessions.Default(c)

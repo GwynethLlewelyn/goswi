@@ -55,3 +55,4 @@ goswi.service
 
 # Dependency directories (remove the comment below to include it)
 lib/
+cache/
