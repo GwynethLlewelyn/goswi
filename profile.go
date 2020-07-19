@@ -173,7 +173,7 @@ func GetProfile(c *gin.Context) {
 	avatarProfileImage = path.Join(*config["cache"], profileData.ProfileImage + *config["jp2convertExt"])	// note that hopefully the router is set correctly on main()! (gwyneth 20200719)
 
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] After conversionProfileImage is now %q\n", avatarProfileImage)
+		log.Printf("[DEBUG] After conversion, ProfileImage is now %q\n", avatarProfileImage)
 	}
 	// Because of the way path.Join() 'cleans up' links, we might end up without a leading slash; so we just need to check for that.
 	if avatarProfileImage[0] != '/' {
