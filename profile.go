@@ -37,32 +37,6 @@ type UserProfile struct {
 	ProfileFirstText string		`form:"profileFirstText" json:"profileFirstText"`
 }
 
-// downloadFile will create a file with the content of an URL.
-// See https://stackoverflow.com/a/33845771/1035977 by Pablo Jomer
-func downloadFile(filename string, url string) (err error) {
-	// Create the file
-	out, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	// Get the data
-	resp, err := http.Get(url)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	// Writer the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 // GetProfile connects to the database, does its magic, and spews out a profile. That's the theory at least.
 func GetProfile(c *gin.Context) {
 	session		:= sessions.Default(c)
