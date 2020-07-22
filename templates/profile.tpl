@@ -40,12 +40,13 @@
 				<div class="col-lg-8 mb-4">
 					<p>
 					{{ if .ProfileData }}
-					Raw data: {{- .ProfileData -}}
-					{{ if .ProfileFirstImage }}
-						<img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128">
-						<p>{{- .ProfileFirstText -}}</p>
-					{{- else -}}
-					One day, your profile will be here!
+						Raw data: {{- .ProfileData -}}</p>
+						{{ if .ProfileFirstImage }}
+							<p><img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128"></p>
+							<p>{{- .ProfileFirstText -}}</p><p>
+						{{- else -}}
+						One day, your profile will be here!
+						{{- end -}}
 					{{- end -}}
 					</p>
 				</div>

@@ -212,7 +212,7 @@ func GetProfile(c *gin.Context) {
 	if cerr != nil {
 		if *config["ginMode"] == "debug" {
 			log.Println("[WARN] Cache download returned", firstLifeImage, "with error:", cerr)
-		}		
+		}
 	}
 
 	c.HTML(http.StatusOK, "profile.tpl", gin.H{
