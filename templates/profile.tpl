@@ -45,8 +45,10 @@
 							<p><img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128"></p>
 							<p>{{- .ProfileFirstText -}}</p><p>
 						{{- else -}}
-						One day, your profile will be here!
+						No profile image</p><p>
 						{{- end -}}
+					{{- else -}}
+					No profile data
 					{{- end -}}
 					</p>
 				</div>
