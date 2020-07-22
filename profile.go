@@ -3,11 +3,12 @@ package main
 import (
 	"database/sql"
 //	 "encoding/json"
+	"errors"
 	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"io"
+//	"io"
 //	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
@@ -82,7 +83,7 @@ func GetProfile(c *gin.Context) {
 		}
 	}
 
-	// TODO(gwyneth): for ProfileImage/ProfileFirstImage we need to convert them from JPEG2000 to something else.
+	// For ProfileImage/ProfileFirstImage we need to convert them from JPEG2000 to something else.
 	// cache check first!
 	imageAssetFileName := filepath.Join(*config["cache"], profileData.ProfileImage + ".jp2")
 	imageFileName := filepath.Join(*config["cache"], profileData.ProfileImage + *config["jp2convertExt"]) // name of converted file
@@ -157,6 +158,63 @@ func GetProfile(c *gin.Context) {
 		log.Printf("[DEBUG] ProfileImage is now %q\n", avatarProfileImage)
 	}
 
+	// use the cache mechanism for it
+	cache := Cache{func (imageFileName string) (string, error) {
+			// We launch an external command simply because there is no native Go library for JPEG2000 and we're trying to avoid using CGo (we could use it with ImageMagick)
+			if *config["jp2convert"] == "" {
+				// should not happen, unless a stupid user overwrote it
+				log.Println("[ERROR] Empty path to conversion utility! Please add a valid entry for 'jp2convert' in your config.ini")
+				return "", errors.New("Empty path to conversion utility")
+			} else {
+				// we know this exists and has an invalid extension; so we need to replace it later
+				// first we remove the old extension
+				var imageDestFileName string
+				i := strings.LastIndex(imageFileName, ".")
+				if i < 0 {
+					// no extension, so we create a filename with a new one
+					imageDestFileName = imageFileName + *config["jp2convertExt"]
+				} else {
+					imageDestFileName = imageFileName[:i] + *config["jp2convertExt"]
+				}
+				// then let's fill the %s with the actual filenames
+				cmdString := fmt.Sprintf(*config["jp2convert"], imageFileName, imageDestFileName)
+				if *config["ginMode"] == "debug" {
+					log.Println("[DEBUG] Command string extracted from config.ini and parsed:", cmdString)
+				}
+				// now turn it into a []string
+				// code comes from https://stackoverflow.com/a/49429437/1035977 by @vahdet
+				slc := strings.Split(cmdString, " ")
+				for i := range slc {
+					slc[i] = strings.TrimSpace(slc[i]) // trim whitespace
+				}
+				cmd := exec.Command(slc[0], slc[1:]...)
+				if *config["ginMode"] == "debug" {
+					log.Println("[DEBUG] Converting command is", cmd)
+				}
+				output, err := cmd.CombinedOutput()	// move
+				if err != nil {
+					log.Println("[ERROR] Couldn't launch conversion command", err)
+				} else {
+					if *config["ginMode"] == "debug" {
+						log.Printf("[DEBUG] Output from converting command was %q\n", output)
+					}
+				}
+				// we're finished for now; the image is now on the cache
+				return string(output), err
+			}
+			return "", nil
+		},
+		*config["cache"], *config["cache"],		// seems redundant, but this allows different options
+		".jp2", *config["jp2convertExt"],
+	}
+
+	firstLifeImage, cerr := cache.Download(*config["assetServer"] + path.Join("/assets/", profileData.ProfileFirstImage, "/data"))	// wicked!! (gwyneth 20200722)
+	if cerr != nil {
+		if *config["ginMode"] == "debug" {
+			log.Println("[WARN] Cache download returned", firstLifeImage, "with error:", cerr)
+		}		
+	}
+
 	c.HTML(http.StatusOK, "profile.tpl", gin.H{
 		"now"			: formatAsYear(time.Now()),
 		"needsTables"	: false,
@@ -181,7 +239,7 @@ func GetProfile(c *gin.Context) {
 		"ProfileLanguages"	: profileData.ProfileLanguages,
 		"ProfileImage"		: avatarProfileImage,				// OpenSimulator/Second Life profile image
 		"ProfileAboutText"	: profileData.ProfileAboutText,
-		"ProfileFirstImage"	: profileData.ProfileFirstImage,	// Real life, i.e. 'First Life' image
+		"ProfileFirstImage"	: firstLifeImage,	// Real life, i.e. 'First Life' image
 		"ProfileFirstText"	: profileData.ProfileFirstText,
 		"Username"		: username,
 		"Libravatar"	: libravatar,

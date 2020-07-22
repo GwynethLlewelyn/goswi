@@ -35,11 +35,15 @@
 					{{ if .ProfileURL}}
 					</a>
 					{{ end }}
+					<p>{{- .ProfileAboutText -}}</p>
 				</div>
 				<div class="col-lg-8 mb-4">
 					<p>
 					{{ if .ProfileData }}
-					{{- .ProfileData -}}
+					Raw data: {{- .ProfileData -}}
+					{{ if .ProfileFirstImage }}
+						<img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128">
+						<p>{{- .ProfileFirstText -}}</p>
 					{{- else -}}
 					One day, your profile will be here!
 					{{- end -}}
