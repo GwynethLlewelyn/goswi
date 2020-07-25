@@ -16,6 +16,11 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 
 ## Configuration
 
+- Because Second Life and OpenSimulator internally use JPEG2000 for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
+	- install ImageMagick according to https://github.com/gographics/imagick
+	- make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
+	- Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
+  My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external)
 - Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
 - Do *not* forget to set `cookieStore` to a randomly generated password!
 - Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
