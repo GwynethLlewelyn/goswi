@@ -2,13 +2,15 @@ package main
 
 import (
 	"flag"
-	"fmt"
+	// "fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	"github.com/peterbourgon/diskv/v3"
 	_ "github.com/philippgille/gokv"
 	"github.com/philippgille/gokv/syncmap"
 	"github.com/vharitonsky/iniflags"
+	"gopkg.in/gographics/imagick.v3/imagick"
 //	"html/template"
 //	"io"
 	"log"
@@ -27,6 +29,7 @@ var (
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 	GOSWIstore syncmap.Store	// this stores tokens for password reset links
+	imageCache *diskv.Diskv			// and this is the cache for images (gwyneth 20200726)
 )
 
 var config = map[string]*string	{// just a place to keep them all together
@@ -55,19 +58,6 @@ var config = map[string]*string	{// just a place to keep them all together
 // slideshow is a slice of strings representing all images for the splash-screen slideshow.
 var slideshow []string
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
-
-// formatAsDate is a function for the templating system, which will be registered below.
-func formatAsDate(t time.Time) string {
-	year, month, day := t.Date()
-	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
-}
-
-// formatAsYear is another function for the templating system, which will be registered below.
-func formatAsYear(t time.Time) string {
-	year, _, _ := t.Date()
-	return fmt.Sprintf("%d", year)
-}
-
 
 // main starts here.
 func main() {
@@ -123,6 +113,14 @@ func main() {
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
 	store := cookie.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
 	router.Use(sessions.Sessions("goswisession", store))
+
+	// Initialise the diskv storage on the cache directory (gwyneth 20200724)
+	imageCache = diskv.New(diskv.Options{
+		BasePath:		  *config["cache"],
+		AdvancedTransform: imageCacheTransform,	// currently defined on profile.go (gwyneth 20200724)
+		InverseTransform:  imageCacheInverseTransform,
+		CacheSizeMax:	  100 * 1024 * 1024,	// possibly will become a config.ini option
+	})
 
 	// Prepare a directory for the cache (i.e. create it if it doesn't exist) (20200718 gwyneth)
 	err := os.MkdirAll(*config["cache"], os.ModePerm)
@@ -345,6 +343,10 @@ func main() {
 
 	GOSWIstore = syncmap.NewStore(syncmap.DefaultOptions)
 	defer GOSWIstore.Close()	// according to the developer, stores should be closed when not in usage, since certain store implementations may require an explicit close to deallocate memory, free database resources, etc. (20200705)
+
+	// Initialise ImageMagick, which we use to convert JPEG2000 to PNG
+	imagick.Initialize()
+	defer imagick.Terminate()
 
 	// Deal with the way gOSWI was called, namely if it uses a default port, uses TLS (=HTTPS), etc.
 	if *config["local"] == "" {

@@ -8,7 +8,9 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-//	"io"
+	"github.com/peterbourgon/diskv/v3"
+	"gopkg.in/gographics/imagick.v3/imagick"
+	"io/ioutil"
 //	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
@@ -158,6 +160,7 @@ func GetProfile(c *gin.Context) {
 		log.Printf("[DEBUG] ProfileImage is now %q\n", avatarProfileImage)
 	}
 
+/*
 	// use the cache mechanism for it
 	cache := Cache{func (imageFileName string) (string, error) {
 			// We launch an external command simply because there is no native Go library for JPEG2000 and we're trying to avoid using CGo (we could use it with ImageMagick)
@@ -214,6 +217,58 @@ func GetProfile(c *gin.Context) {
 			log.Println("[WARN] Cache download returned", firstLifeImage, "with error:", cerr)
 		}
 	}
+*/
+
+	// attempting a new method!
+
+	// see if we have this image already
+	profileFirstImage := path.Join(*config["cache"], profileData.ProfileFirstImage + *config["jp2convertExt"])
+	if profileFirstImage[0] != '/' {
+		profileFirstImage = "/" + profileFirstImage
+	}
+	if !imageCache.Has(profileFirstImage) { // this URL is not in the cache yet!
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO] Cache miss on", profileFirstImage, " - attempting to download it...")
+		}
+		// get it!
+		profileFirstImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileFirstImage, "/data")
+		resp, err := http.Get(profileFirstImageAssetURL)
+		defer resp.Body.Close()
+		if err != nil {
+			// handle error
+			log.Println("[ERROR] Oops — cannot find", profileFirstImageAssetURL)
+		}
+		newImage, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL)
+		}
+		if len(newImage) == 0 {
+			log.Println("[ERROR] Image from", profileFirstImageAssetURL, "has zero bytes.")
+			// we might have to get out of here
+		} else {
+			if *config["ginMode"] == "debug" {
+				log.Println("[INFO] Image from", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
+			}
+		}
+		// Now use ImageMagick to convert this image!
+		// Note: I've avoided using ImageMagick because it's compiled with CGo, but I can't do better
+		//  than this. See also https://stackoverflow.com/questions/38950909/c-style-conditional-compilation-in-golang for a way to prevent ImageMagick to be used.
+
+		convertedImage, err := ImageConvert(newImage, 128, 128, 100)
+		if err != nil {
+			log.Println("[ERROR] Could not convert", profileFirstImageAssetURL, " - error was:", err)
+		}
+		if convertedImage == nil || len(convertedImage) == 0 {
+			log.Println("[ERROR] Converted image is empty")
+		}
+
+		// put it into KV cache:
+		imageCache.Write(profileFirstImage, convertedImage)
+
+		// note that the code will now assume that profileFirstImage does, indeed, have a valid
+		//  image URL, and will fail with a broken image (404 error on browser) if it doesn't; thus:
+		// TODO(gwyneth): get some sort of default image for when all of the above fails
+	}
 
 	c.HTML(http.StatusOK, "profile.tpl", gin.H{
 		"now"			: formatAsYear(time.Now()),
@@ -239,9 +294,85 @@ func GetProfile(c *gin.Context) {
 		"ProfileLanguages"	: profileData.ProfileLanguages,
 		"ProfileImage"		: avatarProfileImage,				// OpenSimulator/Second Life profile image
 		"ProfileAboutText"	: profileData.ProfileAboutText,
-		"ProfileFirstImage"	: firstLifeImage,	// Real life, i.e. 'First Life' image
+		"ProfileFirstImage"	: profileFirstImage,				// Real life, i.e. 'First Life' image
 		"ProfileFirstText"	: profileData.ProfileFirstText,
-		"Username"		: username,
-		"Libravatar"	: libravatar,
+		"Username"			: username,
+		"Libravatar"		: libravatar,
 	})
+}
+
+// Transformation functions
+// These will probably be moved to cache.go or something similar (gwyneth 20200724)
+
+func imageCacheTransform(s string) *diskv.PathKey {
+	return &diskv.PathKey{Path: []string{},
+		FileName: s,
+	}
+}
+
+func imageCacheInverseTransform(pathKey *diskv.PathKey) string {
+	return strings.Join(pathKey.Path, "/") + "/" + pathKey.FileName
+}
+
+// ImageConvert will take sequence of bytes of an image and convert it into a
+// another image with minimal compression, possibly resizing it.
+// Parameters are []byte of original image, height, width, compression quality
+// Returns []byte of converted image
+// See https://golangcode.com/convert-pdf-to-jpg/ (gwyneth 20200726)
+func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error) {
+	// some minor error checking on params
+	if height == 0 {
+		height = 256
+	}
+	if width == 0 {
+		width = height
+	}
+	if compression == 0 {
+		compression = 75
+	}
+	if aImage == nil || len(aImage) == 0 {
+		return nil, errors.New("Empty image passed to ImageConvert")
+	}
+	// Now that we have checked all parameters, it's time to setup ImageMagick:
+	mw := imagick.NewMagickWand()
+	defer mw.Destroy()
+
+    // Load the image into imagemagick
+    if err := mw.ReadImageBlob(aImage); err != nil {
+		return nil, err
+	}
+
+	if *config["ginMode"] == "debug" {
+		filename	:= mw.GetFilename()
+		format		:= mw.GetFormat()
+		x, y, _		:= mw.GetResolution()
+		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and resolution (%.2f, %.2f)\n", filename, format, x, y)
+	}
+
+	if err := mw.ResizeImage(height, width, imagick.FILTER_LANCZOS_SHARP); err != nil {
+		return nil, err
+	}
+
+    // Must be *after* ReadImage
+    // Flatten image and remove alpha channel, to prevent alpha turning black in jpg
+    if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OFF); err != nil {
+        return nil, err
+    }
+
+    // Set any compression (100 = max quality)
+    if err := mw.SetCompressionQuality(compression); err != nil {
+        return nil, err
+    }
+
+    // Convert into PNG
+	var formatType string = *config["jp2convertExt"]
+    if err := mw.SetFormat(formatType[1:]); err != nil {
+        return nil, err
+    }
+
+	// Move to first image
+	mw.SetIteratorIndex(0)
+
+    // Return []byte for this image
+    return mw.GetImageBlob(), nil
 }

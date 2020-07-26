@@ -13,6 +13,7 @@ import (
 	osUser "os/user"
 	"path/filepath"
 	"runtime"
+	"time"
 )
 
 // checkErrFatal logs a fatal error and does whatever log.Fatal() is supposed to do.
@@ -52,6 +53,18 @@ func expandPath(path string) (string, error) {
 		return "", err
 	}
 	return filepath.Join(usr.HomeDir, path[1:]), nil
+}
+
+// formatAsDate is a function for the templating system, which will be registered below.
+func formatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
+}
+
+// formatAsYear is another function for the templating system, which will be registered below.
+func formatAsYear(t time.Time) string {
+	year, _, _ := t.Date()
+	return fmt.Sprintf("%d", year)
 }
 
 /**
