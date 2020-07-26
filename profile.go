@@ -228,7 +228,7 @@ func GetProfile(c *gin.Context) {
 	}
 	if !imageCache.Has(profileFirstImage) { // this URL is not in the cache yet!
 		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO] Cache miss on", profileFirstImage, " - attempting to download it...")
+			log.Println("[INFO] Cache miss on", profileFirstImage, " - attempting to download it...")
 		}
 		// get it!
 		profileFirstImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileFirstImage, "/data")
