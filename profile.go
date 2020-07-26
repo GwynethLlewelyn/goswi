@@ -343,10 +343,13 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
 	}
 
 	if *config["ginMode"] == "debug" {
-		filename	:= mw.GetFilename()
-		format		:= mw.GetFormat()
-		x, y, _		:= mw.GetResolution()
-		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and resolution (%.2f, %.2f)\n", filename, format, x, y)
+		filename		:= mw.GetFilename()
+		format			:= mw.GetFormat()
+		resX, resY, _	:= mw.GetResolution()
+		x, y, _			:= mw.GetSize()
+		imageProfile	:= mw.GetImageProfile("IPTC")
+		length,	_		:= mw.GetImageLength()
+		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and size %.2f (%.f ppi), %.2f (%.f ppi), IPTC profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
 	}
 
 	if err := mw.ResizeImage(height, width, imagick.FILTER_LANCZOS_SHARP); err != nil {
@@ -364,14 +367,17 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
         return nil, err
     }
 
+	// Move to first image
+	mw.SetIteratorIndex(0)
+
     // Convert into PNG
 	var formatType string = *config["jp2convertExt"]
+	if *config["ginMode"] == "debug" {
+		log.Println("[DEBUG] Setting format type to", formatType[1:])
+	}
     if err := mw.SetFormat(formatType[1:]); err != nil {
         return nil, err
     }
-
-	// Move to first image
-	mw.SetIteratorIndex(0)
 
     // Return []byte for this image
     return mw.GetImageBlob(), nil
