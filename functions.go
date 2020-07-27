@@ -13,6 +13,7 @@ import (
 	osUser "os/user"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -114,3 +115,4 @@ func isValidExtension(lookup string) bool {
 		return true
 	}
 	return false
+}
