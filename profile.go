@@ -311,9 +311,12 @@ func GetProfile(c *gin.Context) {
 // Transformation functions
 // These will probably be moved to cache.go or something similar (gwyneth 20200724)
 
-func imageCacheTransform(s string) *diskv.PathKey {
-	return &diskv.PathKey{Path: []string{},
-		FileName: s,
+func imageCacheTransform(key string) *diskv.PathKey {
+	path := strings.Split(key, "/")
+	last := len(path) - 1
+	return &diskv.PathKey{
+		Path:     path[:last],
+		FileName: path[last],
 	}
 }
 
