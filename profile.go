@@ -222,10 +222,12 @@ func GetProfile(c *gin.Context) {
 	// attempting a new method!
 
 	// see if we have this image already
-	profileFirstImage := path.Join(*config["cache"], profileData.ProfileFirstImage + *config["jp2convertExt"])
+	profileFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + *config["jp2convertExt"])
+/*
 	if profileFirstImage[0] != '/' {
 		profileFirstImage = "/" + profileFirstImage
 	}
+*/
 	if !imageCache.Has(profileFirstImage) { // this URL is not in the cache yet!
 		if *config["ginMode"] == "debug" {
 			log.Println("[INFO] Cache miss on", profileFirstImage, " - attempting to download it...")
@@ -261,9 +263,14 @@ func GetProfile(c *gin.Context) {
 		if convertedImage == nil || len(convertedImage) == 0 {
 			log.Println("[ERROR] Converted image is empty")
 		}
+		if *config["ginMode"] == "debug" {
+			log.Println("[INFO] Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes.")
+		}
 
 		// put it into KV cache:
-		imageCache.Write(profileFirstImage, convertedImage)
+		if err := imageCache.Write(profileFirstImage, convertedImage); err != nil {
+			log.Println("[ERROR] Could not store converted", profileFirstImage, "in the cache, error was:", err)
+		}
 
 		// note that the code will now assume that profileFirstImage does, indeed, have a valid
 		//  image URL, and will fail with a broken image (404 error on browser) if it doesn't; thus:
@@ -347,9 +354,9 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
 		format			:= mw.GetFormat()
 		resX, resY, _	:= mw.GetResolution()
 		x, y, _			:= mw.GetSize()
-		imageProfile	:= mw.GetImageProfile("IPTC")
+		imageProfile	:= mw.GetImageProfile("generic")
 		length,	_		:= mw.GetImageLength()
-		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and size %.2f (%.f ppi), %.2f (%.f ppi), IPTC profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
+		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and size %d (%.f ppi), %d (%.f ppi), Generic profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
 	}
 
 	if err := mw.ResizeImage(height, width, imagick.FILTER_LANCZOS_SHARP); err != nil {
@@ -380,5 +387,6 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
     }
 
     // Return []byte for this image
-    return mw.GetImageBlob(), nil
+	blob := mw.GetImageBlob()
+    return blob, nil
 }

@@ -29,7 +29,7 @@ var (
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 	GOSWIstore syncmap.Store	// this stores tokens for password reset links
-	imageCache *diskv.Diskv			// and this is the cache for images (gwyneth 20200726)
+	imageCache *diskv.Diskv		// and this is the cache for images (gwyneth 20200726)
 )
 
 var config = map[string]*string	{// just a place to keep them all together
