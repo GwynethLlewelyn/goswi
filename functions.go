@@ -89,3 +89,28 @@ func randomBase64String(l int) string {
     str := base64.RawURLEncoding.EncodeToString(buff)
     return str[:l] // strip 1 extra character we get from odd length results
 }
+
+// isValidExtension looks up a file extension and checks if it is valid for using inside HTML <img>.
+// It's a switch because it's more efficient: https://stackoverflow.com/a/52710077/1035977
+func isValidExtension(lookup string) bool {
+	switch strings.ToLower(lookup) {
+		// A full list of valid extensions is here: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
+		// I've added .mp4 for the sake of convenience (gwyneth 20200722)
+		case
+		".bmp",
+		".cur",
+		".ico",
+		".jfif",
+		".pjp",
+		".pjpeg",
+		".apng",
+		".gif",
+		".jpeg",
+		".jpg",
+		".mp4",
+		".png",
+		".svg",
+		".webp":
+		return true
+	}
+	return false
