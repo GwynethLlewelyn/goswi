@@ -116,13 +116,15 @@ func main() {
 
 	// Initialise the diskv storage on the cache directory (gwyneth 20200724)
 	imageCache = diskv.New(diskv.Options{
-		BasePath:		  *config["cache"],
-		AdvancedTransform: imageCacheTransform,	// currently defined on profile.go (gwyneth 20200724)
-		InverseTransform:  imageCacheInverseTransform,
-		CacheSizeMax:	  100 * 1024 * 1024,	// possibly will become a config.ini option
+		// BasePath:		  *config["cache"],
+		BasePath:			PathToStaticFiles,
+		AdvancedTransform:	imageCacheTransform,	// currently defined on profile.go (gwyneth 20200724)
+		InverseTransform:	imageCacheInverseTransform,
+		CacheSizeMax:		100 * 1024 * 1024,	// possibly will become a config.ini option
 	})
 
 	// Prepare a directory for the cache (i.e. create it if it doesn't exist) (20200718 gwyneth)
+	// Note: in the future we might use diskv for the cache and pretty much ignore this
 	err := os.MkdirAll(*config["cache"], os.ModePerm)
 	if err != nil {
 		log.Println("[WARN] Creating/accessing cache directory", *config["cache"], "returned error", err)

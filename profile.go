@@ -222,15 +222,19 @@ func GetProfile(c *gin.Context) {
 	// attempting a new method!
 
 	// see if we have this image already
+	// Note: in the future, we might simplify the call by just using the UUID + file extension... (gwyneth 20200727)
 	profileFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + *config["jp2convertExt"])
 /*
 	if profileFirstImage[0] != '/' {
 		profileFirstImage = "/" + profileFirstImage
 	}
 */
+	// either this URL exists and is in the cache, or not, and we need to get the image from
+	//  OpenSimulator and attempt to convert it... we won't change the URL in the process.
+	// Note: Other usages of the diskv cache might not be so obvious... or maybe they all are? (gwyneth 20200727)
 	if !imageCache.Has(profileFirstImage) { // this URL is not in the cache yet!
 		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Cache miss on", profileFirstImage, " - attempting to download it...")
+			log.Println("[INFO] Cache miss on profileFirstImage:", profileFirstImage, " - attempting to download it...")
 		}
 		// get it!
 		profileFirstImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileFirstImage, "/data")
@@ -238,18 +242,18 @@ func GetProfile(c *gin.Context) {
 		defer resp.Body.Close()
 		if err != nil {
 			// handle error
-			log.Println("[ERROR] Oops — cannot find", profileFirstImageAssetURL)
+			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileFirstImageAssetURL)
 		}
 		newImage, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL)
+			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator")
 		}
 		if len(newImage) == 0 {
-			log.Println("[ERROR] Image from", profileFirstImageAssetURL, "has zero bytes.")
+			log.Println("[ERROR] Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has zero bytes.")
 			// we might have to get out of here
 		} else {
 			if *config["ginMode"] == "debug" {
-				log.Println("[INFO] Image from", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
+				log.Println("[INFO] Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
 			}
 		}
 		// Now use ImageMagick to convert this image!
@@ -271,11 +275,10 @@ func GetProfile(c *gin.Context) {
 		if err := imageCache.Write(profileFirstImage, convertedImage); err != nil {
 			log.Println("[ERROR] Could not store converted", profileFirstImage, "in the cache, error was:", err)
 		}
-
+	}
 		// note that the code will now assume that profileFirstImage does, indeed, have a valid
 		//  image URL, and will fail with a broken image (404 error on browser) if it doesn't; thus:
 		// TODO(gwyneth): get some sort of default image for when all of the above fails
-	}
 
 	c.HTML(http.StatusOK, "profile.tpl", gin.H{
 		"now"			: formatAsYear(time.Now()),
@@ -314,6 +317,10 @@ func GetProfile(c *gin.Context) {
 func imageCacheTransform(key string) *diskv.PathKey {
 	path := strings.Split(key, "/")
 	last := len(path) - 1
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] imageCacheTransform: got key %q transformed into path %v and filename %q\n",
+			key, path, path[last])
+	}
 	return &diskv.PathKey{
 		Path:     path[:last],
 		FileName: path[last],
@@ -321,7 +328,11 @@ func imageCacheTransform(key string) *diskv.PathKey {
 }
 
 func imageCacheInverseTransform(pathKey *diskv.PathKey) string {
-	return strings.Join(pathKey.Path, "/") + "/" + pathKey.FileName
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] imageCacheInverseTransform: got pathKey %v which will be returned as %q\n",
+			pathKey, strings.Join(pathKey.Path, "/") + pathKey.FileName) // inefficient but we're just debugging... (gwyneth 20200727)
+	}
+	return strings.Join(pathKey.Path, "/") + pathKey.FileName
 }
 
 // ImageConvert will take sequence of bytes of an image and convert it into a
