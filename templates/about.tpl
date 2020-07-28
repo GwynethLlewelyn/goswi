@@ -13,7 +13,7 @@
 				<div class="col">
 					<!-- About -->
 					<div class="text-center">
-						<h1>About the {{- .description -}}</h1>
+						<h1>About the {{ .description -}}</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->
