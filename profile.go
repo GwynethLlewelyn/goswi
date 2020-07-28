@@ -263,6 +263,7 @@ func GetProfile(c *gin.Context) {
 		"now"			: formatAsYear(time.Now()),
 		"needsTables"	: false,
 		"needsMap"		: false,
+		"moreValidation" : true,
 		"author"		: *config["author"],
 		"description"	: *config["description"],
 		"logo"			: *config["logo"],

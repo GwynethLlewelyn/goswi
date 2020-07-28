@@ -1,14 +1,11 @@
-{{ define "profile.tpl" }}
-{{ template "header.tpl" .}}
-{{ template "navigation.tpl" .}}
+{{- define "profile.tpl" -}}
+{{- template "header.tpl" . -}}
+{{- template "navigation.tpl" . -}}
 	<!-- Content Wrapper -->
 	<div id="content-wrapper" class="d-flex flex-column">
-
 		<!-- Main Content -->
 		<div id="content">
-
-{{ template "topbar.tpl" .}}
-
+{{- template "topbar.tpl" . -}}
 		<!-- Begin Page Content -->
 		<div class="container-fluid">
 			<!-- Content Row -->
@@ -17,13 +14,13 @@
 					<!-- this will be the user's mugshot -->
 					{{ if .ProfileURL}}
 					<a href="{{- .ProfileURL -}}" target="_blank">
-					{{ end }}
-					{{ if .ProfileImage }}
+					{{ end -}}
+					{{- if .ProfileImage }}
 					<img src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256">
 					{{ else }}
 					<img src="{{- .Libravatar -}}" alt="{{ .Username }} ({{- .UserUUID -}}" height="256" width="256">
-					{{ end }}
-					{{ if .ProfileURL}}
+					{{ end -}}
+					{{- if .ProfileURL}}
 					</a>
 					{{ end }}
 				</div>
@@ -175,5 +172,5 @@
 		<!-- /.container-fluid -->
 	</div>
 	<!-- End of Main Content -->
-{{ template "footer.tpl" .}}
-{{ end }}
+{{ template "footer.tpl" . -}}
+{{- end -}}

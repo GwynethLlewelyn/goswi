@@ -1,5 +1,5 @@
-{{ define "login.tpl" }}
-{{ template "header.tpl" .}}
+{{- define "login.tpl" -}}
+{{- template "header.tpl" . -}}
 <body>
 
 	<div class="container">
@@ -75,5 +75,5 @@
 			</div>
 		</div>
 	</div>
-	{{ template "footer.tpl" .}}
-{{ end }}
+	{{- template "footer.tpl" . }}
+{{- end -}}

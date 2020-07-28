@@ -87,7 +87,10 @@
 			});
 		});
 	</script>
+	{{- if .moreValidation }}
+	{{- template "more-validation.tpl" . -}}
+	{{ end -}}
 {{ end }}
 </body>
 </html>
-{{ end }}
+{{- end -}}
