@@ -58,7 +58,7 @@ func GetProfile(c *gin.Context) {
 
 	var (
 		profileData UserProfile
-		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719)
+//		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
 		allowPublish, maturePublish string // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
 	)
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
@@ -281,7 +281,7 @@ func GetProfile(c *gin.Context) {
 		"ProfileSkillsMask"	: profileData.ProfileSkillsMask,
 		"ProfileSkillsText"	: profileData.ProfileSkillsText,
 		"ProfileLanguages"	: profileData.ProfileLanguages,
-		"ProfileImage"		: avatarProfileImage,				// OpenSimulator/Second Life profile image
+		"ProfileImage"		: profileImage,						// OpenSimulator/Second Life profile image
 		"ProfileAboutText"	: profileData.ProfileAboutText,
 		"ProfileFirstImage"	: profileFirstImage,				// Real life, i.e. 'First Life' image
 		"ProfileFirstText"	: profileData.ProfileFirstText,

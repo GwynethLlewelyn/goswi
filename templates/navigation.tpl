@@ -50,28 +50,26 @@
 		</li>
 
 		<!-- Nav Item - Economy -->
-		<li class="nav-item disabled">
+		<li class="nav-item">
 			<a class="nav-link" href="/economy">
 				<i class="fas fa-fw fa-hand-holding-usd"></i>
 				<span>Economy</span></a>
 		</li>
 {{ if not .Username }}
+		<!-- Nav Item - Login -->
+		<li class="nav-item">
+			<a class="nav-link" href="/user/login">
+				<i class="fas fa-fw fa-sign-in-alt"></i>
+				<span>Log in</span>
+			</a>
+		</li>
 		<!-- Nav Item - Register -->
-		<li class="nav-item disabled">
+		<li class="nav-item">
 			<a class="nav-link" href="/user/register">
 				<i class="fas fa-fw fa-user-plus"></i>
 				<span>Register new resident</span></a>
 		</li>
 {{ end }}
-{{ if .Username }}
-	 <!-- Nav Item - Password -->
-		<li class="nav-item">
-			<a class="nav-link" href="/user/change-password">
-				<i class="fas fa-fw fa-unlock-alt"></i>
-				<span>Change password</span></a>
-		</li>
-{{ end }}
-
 		<!-- Divider -->
 		<hr class="sidebar-divider d-none d-md-block">
 

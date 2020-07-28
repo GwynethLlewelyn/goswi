@@ -13,45 +13,126 @@
 		<div class="container-fluid">
 			<!-- Content Row -->
 			<div class="row">
-				<div class="col">
-					<!-- Welcome Text -->
-					<div class="text-center">
-						<h1>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h1>
-					</div>
-				</div>
-			</div> <!-- /.row -->
-			<!-- Content Row -->
-			<div class="row">
 				<div class="col-4 mb-4">
 					<!-- this will be the user's mugshot -->
 					{{ if .ProfileURL}}
 					<a href="{{- .ProfileURL -}}" target="_blank">
 					{{ end }}
 					{{ if .ProfileImage }}
-					<img src="{{- .ProfileImage -}}" alt="{{- .Username -}}" height="256" width="256">
+					<img src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256">
 					{{ else }}
-					<img src="{{- .Libravatar -}}" alt="{{ .Username }}" height="256" width="256">
+					<img src="{{- .Libravatar -}}" alt="{{ .Username }} ({{- .UserUUID -}}" height="256" width="256">
 					{{ end }}
 					{{ if .ProfileURL}}
 					</a>
 					{{ end }}
-					<p>{{- .ProfileAboutText -}}</p>
 				</div>
 				<div class="col-lg-8 mb-4">
-					<p>
-					{{ if .ProfileData }}
-						Raw data: {{- .ProfileData -}}</p>
-						{{ if .ProfileFirstImage }}
-							<p><img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128"></p>
-							<p>{{- .ProfileFirstText -}}</p><p>
-						{{- else -}}
-						No profile image</p><p>
-						{{- end -}}
-					{{- else -}}
-					No profile data
-					{{- end -}}
-					</p>
-				</div>
+					<form class="well form-horizontal" action="/user/profile" method="post"  id="profileForm">
+						<fieldset>
+							<!-- Your Profile: UserName -->
+							<legend class="text-center"><h2>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h2></legend><br />
+							<!-- About -->
+							<div class="form-group">
+							<label class="col-md-4 control-label">About You</label>
+								<div class="col-md-4 inputGroupContainer">
+									<div class="input-group">
+										<span class="input-group-addon"><i class="fas fa-user"></i></span>
+										<input name="ProfileURL" placeholder="{{- .ProfileURL -}}" class="form-control" type="text">
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+    							<label for="AboutText">About</label>
+    							<textarea class="form-control" id="AboutText" rows="10">{{- .ProfileAboutText -}}</textarea>
+  							</div>
+							<!-- ProfileURL -->
+							<div class="form-group">
+								<label class="col-md-4 control-label">Profile URL</label>
+									<div class="col-md-4 inputGroupContainer">
+										<div class="input-group">
+										<span class="input-group-addon"><i class="fas fa-globe"></i></span>
+										<input name="ProfileURL" placeholder="{{- .ProfileURL -}}" class="form-control" type="text">
+									</div>
+								</div>
+							</div>
+							<!-- Partner -->
+							<div class="form-group">
+							<label class="col-md-4 control-label">Partner</label>
+								<div class="col-md-4 inputGroupContainer">
+									<div class="input-group">
+										<span class="input-group-addon"><i class="fas fa-user"></i></span>
+										<input name="ProfilePartner" placeholder="{{- .ProfilePartner -}}" class="form-control" type="text">
+									</div>
+								</div>
+							</div>
+							<!-- Select example
+							<div class="form-group">
+								<label class="col-md-4 control-label">Department / Office</label>
+								<div class="col-md-4 selectContainer">
+									<div class="input-group">
+										<span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
+										<select name="department" class="form-control selectpicker">
+											<option value="">Select your Department/Office</option>
+											<option>Department of Engineering</option>
+											<option>Department of Agriculture</option>
+											<option >Accounting Office</option>
+											<option >Tresurer's Office</option>
+											<option >MPDC</option>
+											<option >MCTC</option>
+											<option >MCR</option>
+											<option >Mayor's Office</option>
+											<option >Tourism Office</option>
+										</select>
+									</div>
+								</div>
+							</div> -->
+
+							<!-- Text input-->
+							<div class="form-group">
+								<label class="col-md-4 control-label">Languages spoken</label>
+								<div class="col-md-4 inputGroupContainer">
+									<div class="input-group">
+										<span class="input-group-addon"><i class="fas fa-language"></i></span>
+										<input name="ProfileLanguages" placeholder="{{- .ProfileLanguages -}}" class="form-control" type="text">
+									</div>
+								</div>
+							</div>
+
+							<!-- Text input-->
+							<div class="form-group">
+							<label class="col-md-4 control-label">Languages spoken</label>
+								<div class="col-md-4 inputGroupContainer">
+									<div class="input-group">
+										<span class="input-group-addon"><i class="fas fa-language"></i></span>
+										<input name="ProfileLanguages" placeholder="{{- .ProfileLanguages -}}" class="form-control" type="text">
+									</div>
+								</div>
+							</div>
+							<div class="col-2 mb-4">
+								{{ if .ProfileFirstImage -}}
+								<img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128"><br />
+								{{- end }}
+								<div class="form-group">
+									<label for="ProfileFirstText">About your real life</label>
+									<textarea class="form-control" id="ProfileFirstText" rows="10">{{- .ProfileFirstText -}}</textarea>
+								</div>
+							</div>
+							<!-- Success message -->
+							<div class="alert alert-success invisible" role="alert" id="success_message">Success<i class="fas fa-thumbs-up"></i>Success!</div>
+							<!-- Submit Button -->
+							<div class="form-group">
+								<label class="col-md-4 control-label"></label>
+								<div class="col-md-4"><br>
+									<button type="submit" class="btn btn-warning">Submit<span class="fas fa-paper-plane"></span></button>
+								</div>
+							</div>
+						</fieldset>
+					</form>
+					{{- if .ProfileData }}
+					<!-- Raw data: {{- .ProfileData -}}-->
+					{{ end -}}
+				</div> <!-- /.col -->
 			</div> <!-- /.row -->
 			<div class="row">
 				{{ if .usersOnline }}

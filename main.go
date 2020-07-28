@@ -300,6 +300,25 @@ func main() {
 		})
 		userRoutes.GET("/logout",	ensureLoggedIn(), logout)
 		userRoutes.GET("/profile",	ensureLoggedIn(), GetProfile)
+		userRoutes.POST("/profile",	ensureLoggedIn(),
+		func(c *gin.Context) {
+			session := sessions.Default(c)
+
+			c.HTML(http.StatusMethodNotAllowed, "404.tpl", gin.H{
+				"now"			: formatAsYear(time.Now()),
+				"author"		: *config["author"],
+				"description"	: *config["description"],
+				"logo"			: *config["logo"],
+				"logoTitle"		: *config["logoTitle"],
+				"sidebarCollapsed" : *config["sidebarCollapsed"],
+				"titleCommon"	: *config["titleCommon"] + " - 405",
+				"Username"		: session.Get("Username"),
+				"Libravatar"	: session.Get("Libravatar"),
+				"errorcode"		: "405",
+				"errortext"		: "Profile change not allowed",
+				"errorbody"		: "Sorry, we cannot save your profile, since that functionality is not implemented yet.",
+			})
+		})
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
