@@ -38,6 +38,7 @@
 {{ end }}
 	<!-- Bootstrap core JavaScript-->
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/jquery/jquery.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha256-/ijcOLwFf26xEYAjW75FizKVo5tnTYiQddPZoLUHHZ8=" crossorigin="anonymous"></script>
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 
 	<!-- Core plugin JavaScript-->
@@ -87,10 +88,16 @@
 			});
 		});
 	</script>
-	{{- if .moreValidation }}
-	{{- template "more-validation.tpl" . -}}
-	{{ end -}}
 {{ end }}
+	<script>
+	// Initialize Popper
+	$(function () {
+    	$('[data-toggle="tooltip"]').tooltip()
+	})
+	</script>
+{{- if .moreValidation }}
+{{- template "more-validation.tpl" . -}}
+{{ end -}}
 </body>
 </html>
 {{- end -}}
