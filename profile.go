@@ -162,7 +162,9 @@ func GetProfile(c *gin.Context) {
 
 	// see if we have this image already
 	// Note: in the future, we might simplify the call by just using the UUID + file extension... (gwyneth 20200727)
+	// Note 2: We *also* retrieve a Retina image and store it in the cache, but we do not specifically check for it. The idea is that proper HTML will deal with selecting the 'correct' image, we only need to check for one of them. Also, if the conversion to Retina fails for some reason, that's not a problem, we'll fall back to whatever has been downloaded so far...
 	profileImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileImage + *config["convertExt"])
+	profileRetinaImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileImage + "@2x" + *config["convertExt"]) // we need the path, but we won't check for it directly
 	/*
 	if profileImage[0] != '/' {
 		profileImage = "/" + profileImage
@@ -198,21 +200,26 @@ func GetProfile(c *gin.Context) {
 		// Now use ImageMagick to convert this image!
 		// Note: I've avoided using ImageMagick because it's compiled with CGo, but I can't do better
 		//  than this. See also https://stackoverflow.com/questions/38950909/c-style-conditional-compilation-in-golang for a way to prevent ImageMagick to be used.
-
-		convertedImage, err := ImageConvert(newImage, 256, 256, 100) // we might also generate a Retina image
+		convertedImage, retinaImage, err := ImageConvert(newImage, 256, 256, 100)
 		if err != nil {
 			log.Println("[ERROR] Could not convert", profileImageAssetURL, " - error was:", err)
 		}
 		if convertedImage == nil || len(convertedImage) == 0 {
 			log.Println("[ERROR] Converted image is empty")
 		}
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Image from", profileImageAssetURL, "has", len(convertedImage), "bytes.")
+		if retinaImage == nil || len(retinaImage) == 0 {
+			log.Println("[ERROR] Converted Retina image is empty")
 		}
-
+		if *config["ginMode"] == "debug" {
+			log.Println("[INFO] Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
+		}
 		// put it into KV cache:
 		if err := imageCache.Write(profileImage, convertedImage); err != nil {
 			log.Println("[ERROR] Could not store converted", profileImage, "in the cache, error was:", err)
+		}
+		// put Retina image into KV cache as well:
+		if err := imageCache.Write(profileRetinaImage, retinaImage); err != nil {
+			log.Println("[ERROR] Could not store retina image", retinaImage, "in the cache, error was:", err)
 		}
 	}
 	// note that the code will now assume that profileImage does, indeed, have a valid
@@ -222,6 +229,8 @@ func GetProfile(c *gin.Context) {
 
 	// Do the same for the profile image for First (=Real) Life. Comments as above!
 	profileFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + *config["convertExt"])
+	profileRetinaFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + "@2x" + *config["convertExt"])
+
 
 	if !imageCache.Has(profileFirstImage) {
 		if *config["ginMode"] == "debug" {
@@ -244,18 +253,25 @@ func GetProfile(c *gin.Context) {
 				log.Println("[INFO] Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
 			}
 		}
-		convertedImage, err := ImageConvert(newImage, 128, 128, 100)
+		convertedImage, retinaImage, err := ImageConvert(newImage, 128, 128, 100)
 		if err != nil {
 			log.Println("[ERROR] Could not convert", profileFirstImageAssetURL, " - error was:", err)
 		}
 		if convertedImage == nil || len(convertedImage) == 0 {
 			log.Println("[ERROR] Converted image is empty")
 		}
+		if retinaImage == nil || len(retinaImage) == 0 {
+			log.Println("[ERROR] Converted Retina image is empty")
+		}
 		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes.")
+			log.Println("[INFO] Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
 		}
 		if err := imageCache.Write(profileFirstImage, convertedImage); err != nil {
 			log.Println("[ERROR] Could not store converted", profileFirstImage, "in the cache, error was:", err)
+		}
+		// put Retina image into KV cache as well:
+		if err := imageCache.Write(profileRetinaFirstImage, retinaImage); err != nil {
+			log.Println("[ERROR] Could not store retina image", retinaImage, "in the cache, error was:", err)
 		}
 	}
 
@@ -283,8 +299,10 @@ func GetProfile(c *gin.Context) {
 		"ProfileSkillsText"	: profileData.ProfileSkillsText,
 		"ProfileLanguages"	: profileData.ProfileLanguages,
 		"ProfileImage"		: profileImage,						// OpenSimulator/Second Life profile image
+		"ProfileRetinaImage"	: profileRetinaImage,			// Generated Retina image
 		"ProfileAboutText"	: profileData.ProfileAboutText,
 		"ProfileFirstImage"	: profileFirstImage,				// Real life, i.e. 'First Life' image
+		"ProfileRetinaFirstImage"	: profileRetinaFirstImage,	// Another generated Retina image
 		"ProfileFirstText"	: profileData.ProfileFirstText,
 		"Username"			: username,
 		"Libravatar"		: libravatar,
@@ -320,7 +338,7 @@ func imageCacheInverseTransform(pathKey *diskv.PathKey) string {
 // Returns []byte of converted image
 // See https://golangcode.com/convert-pdf-to-jpg/ (gwyneth 20200726)
 // TODO(gwyneth): We might also generate a Retina image; how will it be saved? Through the KV store?
-func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error) {
+func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byte, error) {
 	// some minor error checking on params
 	if height == 0 {
 		height = 256
@@ -332,7 +350,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
 		compression = 75
 	}
 	if aImage == nil || len(aImage) == 0 {
-		return nil, errors.New("Empty image passed to ImageConvert")
+		return nil, nil, errors.New("Empty image passed to ImageConvert")
 	}
 	// Now that we have checked all parameters, it's time to setup ImageMagick:
 	mw := imagick.NewMagickWand()
@@ -340,7 +358,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
 
     // Load the image into imagemagick
     if err := mw.ReadImageBlob(aImage); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	if *config["ginMode"] == "debug" {
@@ -354,18 +372,18 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
 	}
 
 	if err := mw.ResizeImage(height, width, imagick.FILTER_LANCZOS_SHARP); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
     // Must be *after* ReadImage
     // Flatten image and remove alpha channel, to prevent alpha turning black in jpg
     if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OFF); err != nil {
-        return nil, err
+        return nil, nil, err
     }
 
     // Set any compression (100 = max quality)
     if err := mw.SetCompressionQuality(compression); err != nil {
-        return nil, err
+        return nil, nil, err
     }
 
 	// Move to first image
@@ -377,10 +395,18 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, error
 		log.Println("[DEBUG] Setting format type to", formatType[1:])
 	}
     if err := mw.SetFormat(formatType[1:]); err != nil {
-        return nil, err
+        return nil, nil, err
     }
 
     // Return []byte for this image
 	blob := mw.GetImageBlob()
-    return blob, nil
+
+	// now do the same for the Retina size
+	if err := mw.ResizeImage(height * 2, width * 2, imagick.FILTER_LANCZOS_SHARP); err != nil {
+		return blob, nil, err
+	}
+
+	blobRetina := mw.GetImageBlob()
+
+    return blob, blobRetina, nil
 }

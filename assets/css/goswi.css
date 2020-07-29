@@ -1952,6 +1952,12 @@ table.dataTable.table-compact tbody td {
 	border: 0;
 }
 
+.table-squeezed {
+	width: 100%;
+	border-spacing: 0;
+    border-collapse: collapse;
+}
+
 .form-control {
 	display: block;
 	width: 100%;

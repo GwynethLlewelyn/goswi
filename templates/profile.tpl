@@ -16,7 +16,7 @@
 					<a href="{{- .ProfileURL -}}" target="_blank">
 					{{ end -}}
 					{{- if .ProfileImage }}
-					<img src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256">
+					<img src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256" srcset="{{- .ProfileImage }} 1x, {{ .ProfileRetinaImage }} 2x">
 					{{ else }}
 					<img src="{{- .Libravatar -}}" alt="{{ .Username }} ({{- .UserUUID -}}" height="256" width="256">
 					{{ end -}}
@@ -28,38 +28,29 @@
 					<form class="well form-horizontal" action="/user/profile" method="post"  id="profileForm">
 						<fieldset>
 							<!-- Your Profile: UserName -->
-							<legend class="text-center"><h2>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h2></legend><br />
+							<legend class="text-center col-md-8"><h2>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h2></legend><br />
 							<!-- About -->
 							<div class="form-group">
-							<label class="col-md-4 control-label">About You</label>
-								<div class="col-md-4 inputGroupContainer">
-									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-user"></i></span>
-										<input name="ProfileURL" placeholder="{{- .ProfileURL -}}" class="form-control" type="text">
-									</div>
-								</div>
-							</div>
-							<div class="form-group">
-    							<label for="AboutText">About</label>
+    							<label for="AboutText" class="col-md-8 control-label">About</label>
     							<textarea class="form-control" id="AboutText" rows="10">{{- .ProfileAboutText -}}</textarea>
   							</div>
 							<!-- ProfileURL -->
 							<div class="form-group">
-								<label class="col-md-4 control-label">Profile URL</label>
-									<div class="col-md-4 inputGroupContainer">
+								<label for="ProfileURL" class="col-md-8 control-label">Profile URL</label>
+									<div class="col-md-8 inputGroupContainer">
 										<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-globe"></i></span>
-										<input name="ProfileURL" placeholder="{{- .ProfileURL -}}" class="form-control" type="text">
+										<span class="input-group-addon"><i class="fas fa-globe fa-fw"></i>&nbsp;</span>
+										<input id="ProfileURL" name="ProfileURL" placeholder="{{- .ProfileURL -}}" class="form-control" type="text">
 									</div>
 								</div>
 							</div>
 							<!-- Partner -->
 							<div class="form-group">
-							<label class="col-md-4 control-label">Partner</label>
-								<div class="col-md-4 inputGroupContainer">
+							<label for="ProfilePartner" class="col-md-8 control-label">Partner</label>
+								<div class="col-md-8 inputGroupContainer">
 									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-user"></i></span>
-										<input name="ProfilePartner" placeholder="{{- .ProfilePartner -}}" class="form-control" type="text">
+										<span class="input-group-addon"><i class="fas fa-user fa-fw"></i>&nbsp;</span>
+										<input id="ProfilePartner" name="ProfilePartner" placeholder="{{- .ProfilePartner -}}" class="form-control" type="text">
 									</div>
 								</div>
 							</div>
@@ -87,42 +78,40 @@
 
 							<!-- Text input-->
 							<div class="form-group">
-								<label class="col-md-4 control-label">Languages spoken</label>
-								<div class="col-md-4 inputGroupContainer">
+								<label for="ProfileLanguages" class="col-md-8 control-label">Languages spoken</label>
+								<div class="col-md-8 inputGroupContainer">
 									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-language"></i></span>
-										<input name="ProfileLanguages" placeholder="{{- .ProfileLanguages -}}" class="form-control" type="text">
+										<span class="input-group-addon"><i class="fas fa-language fa-fw"></i>&nbsp;</span>
+										<input id="ProfileLanguages" name="ProfileLanguages" placeholder="{{- .ProfileLanguages -}}" class="form-control" type="text">
 									</div>
 								</div>
 							</div>
 
 							<!-- Text input-->
 							<div class="form-group">
-							<label class="col-md-4 control-label">Languages spoken</label>
-								<div class="col-md-4 inputGroupContainer">
+							<label for="ProfileSkillsText" class="col-md-8 control-label">Skills</label>
+								<div class="col-md-8 inputGroupContainer">
 									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-language"></i></span>
-										<input name="ProfileLanguages" placeholder="{{- .ProfileLanguages -}}" class="form-control" type="text">
+										<span class="input-group-addon"><i class="fas fa-toolbox fa-fw"></i>&nbsp;</span>
+										<input id="ProfileSkillsText" name="ProfileSkillsText" placeholder="{{- .ProfileSkillsText -}}" class="form-control" type="text">
 									</div>
 								</div>
 							</div>
-							<div class="col-2 mb-4">
+							<div class="col-md-2 mb-4">
 								{{ if .ProfileFirstImage -}}
-								<img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128"><br />
+								<img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128" srcset="{{- .ProfileFirstImage }} 1x, {{ .ProfileRetinaFirstImage }} 2x"><br />
 								{{- end }}
-								<div class="form-group">
-									<label for="ProfileFirstText">About your real life</label>
-									<textarea class="form-control" id="ProfileFirstText" rows="10">{{- .ProfileFirstText -}}</textarea>
-								</div>
+
+							</div>
+							<div class="form-group col-md-6 mb-4">
+								<label for="ProfileFirstText">About your real life</label>
+								<textarea class="form-control" id="ProfileFirstText" rows="10">{{- .ProfileFirstText -}}</textarea>
 							</div>
 							<!-- Success message -->
-							<div class="alert alert-success invisible" role="alert" id="success_message">Success<i class="fas fa-thumbs-up"></i>Success!</div>
+							<div class="alert alert-success invisible" role="alert" id="success_message">Success&nbsp;<i class="fas fa-thumbs-up"></i>Success!</div>
 							<!-- Submit Button -->
-							<div class="form-group">
-								<label class="col-md-4 control-label"></label>
-								<div class="col-md-4"><br>
-									<button type="submit" class="btn btn-warning">Submit<span class="fas fa-paper-plane"></span></button>
-								</div>
+							<div class="form-group col-md-8 mb-4">
+								<button type="submit" class="btn btn-primary" value="Submit">Submit&nbsp;<i class="fas fa-paper-plane"></i></button>
 							</div>
 						</fieldset>
 					</form>
@@ -142,7 +131,7 @@
 						<div class="collapse show" id="onlineUsersCard">
 							<div class="card-body">
 								<div class="table-responsive">
-									<table class="table table-bordered" id="usersOnline" width="100%" cellspacing="0"
+									<table class="table table-bordered table-squeezed" id="usersOnline"
 										data-order='[]' data-page-length='25'>
 										<thead>
 											<tr>
