@@ -43,7 +43,7 @@
 									<div class="input-group-prepend">
 										<span class="input-group-text bg-primary border-right-0 border-primary"><a href="{{- .ProfileURL -}}" target="_blank"><i class="fas fa-globe fa-fw text-light"></i></a></span>
 									</div>
-									<input id="ProfileURL" name="ProfileURL" value="{{- .ProfileURL -}}" class="form-control" type="text" aria-describedby="labelProfileURL">
+									<input id="ProfileURL" name="ProfileURL" value="{{- .ProfileURL -}}" class="form-control" type="url" aria-describedby="labelProfileURL">
 								</div>
 							</div>
 							<!-- Partner -->
