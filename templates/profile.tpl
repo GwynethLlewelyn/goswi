@@ -10,108 +10,90 @@
 		<div class="container-fluid">
 			<!-- Content Row -->
 			<div class="row">
-				<div class="col-4 mb-4">
-					<!-- this will be the user's mugshot -->
-					{{ if .ProfileURL}}
-					<a href="{{- .ProfileURL -}}" target="_blank">
-					{{ end -}}
-					{{- if .ProfileImage }}
-					<img src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256" srcset="{{- .ProfileImage }} 1x, {{ .ProfileRetinaImage }} 2x">
-					{{ else }}
-					<img src="{{- .Libravatar -}}" alt="{{ .Username }} ({{- .UserUUID -}}" height="256" width="256">
-					{{ end -}}
-					{{- if .ProfileURL}}
-					</a>
-					{{ end }}
-				</div>
-				<div class="col-lg-8 mb-4">
+				<div class="col-12 mb-4">
 					<form class="well form-horizontal" action="/user/profile" method="post"  id="profileForm">
 						<fieldset>
 							<!-- Your Profile: UserName -->
-							<legend class="text-center col-md-8"><h2>{{- if .Username -}}{{- .Username -}}{{- else -}}Your{{- end -}}&nbsp;Profile</h2></legend><br />
+							<legend class="text-center"><h2>{{- if .Username -}}{{- .Username -}}'s{{- else -}}Your{{- end -}}&nbsp;Profile</h2></legend><br />
 							<!-- About -->
 							<div class="form-group">
-    							<label for="AboutText" class="col-md-8 control-label">About</label>
-    							<textarea class="form-control" id="AboutText" rows="10">{{- .ProfileAboutText -}}</textarea>
+								<label for="AboutText" id="labelAboutText" class="control-label">About you</label>
+								<div class="input-group">
+									<div class="image pr-2">
+										<!-- this will be the user's mugshot -->
+										{{ if .ProfileURL}}
+										<a href="{{- .ProfileURL -}}" target="_blank">
+											{{ end -}}
+											{{- if .ProfileImage }}
+											<img class="rounded shadow" src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256" srcset="{{- .ProfileImage }} 1x, {{ .ProfileRetinaImage }} 2x">
+											{{ else }}
+											<img class="rounded shadow" src="{{- .Libravatar -}}" alt="{{ .Username }} ({{- .UserUUID -}}" height="256" width="256">
+											{{ end -}}
+											{{- if .ProfileURL}}
+										</a>
+										{{ end }}
+									</div>
+    								<textarea class="form-control" id="AboutText" rows="10" aria-describedby="labelAboutText">{{- .ProfileAboutText -}}</textarea>
+								</div>
   							</div>
 							<!-- ProfileURL -->
 							<div class="form-group">
-								<label for="ProfileURL" class="col-md-8 control-label">Profile URL</label>
-									<div class="col-md-8 inputGroupContainer">
-										<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-globe fa-fw"></i>&nbsp;</span>
-										<input id="ProfileURL" name="ProfileURL" placeholder="{{- .ProfileURL -}}" class="form-control" type="text">
+								<label for="ProfileURL" id="labelProfileURL" class="control-label">Profile URL</label>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text bg-primary border-right-0 border-primary"><a href="{{- .ProfileURL -}}" target="_blank"><i class="fas fa-globe fa-fw text-light"></i></a></span>
 									</div>
+									<input id="ProfileURL" name="ProfileURL" value="{{- .ProfileURL -}}" class="form-control" type="text" aria-describedby="labelProfileURL">
 								</div>
 							</div>
 							<!-- Partner -->
 							<div class="form-group">
-							<label for="ProfilePartner" class="col-md-8 control-label">Partner</label>
-								<div class="col-md-8 inputGroupContainer">
-									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-user fa-fw"></i>&nbsp;</span>
-										<input id="ProfilePartner" name="ProfilePartner" placeholder="{{- .ProfilePartner -}}" class="form-control" type="text">
+								<label for="ProfilePartner" id="labelProfilePartner" class="control-label">Partner</label>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-user fa-fw text-light"></i></span>
 									</div>
+									<input id="ProfilePartner" name="ProfilePartner" value="{{- .ProfilePartner -}}" class="form-control" type="text" aria-describedby="labelProfilePartner">
 								</div>
 							</div>
-							<!-- Select example
+							<!-- Languages -->
 							<div class="form-group">
-								<label class="col-md-4 control-label">Department / Office</label>
-								<div class="col-md-4 selectContainer">
-									<div class="input-group">
-										<span class="input-group-addon"><i class="glyphicon glyphicon-list"></i></span>
-										<select name="department" class="form-control selectpicker">
-											<option value="">Select your Department/Office</option>
-											<option>Department of Engineering</option>
-											<option>Department of Agriculture</option>
-											<option >Accounting Office</option>
-											<option >Tresurer's Office</option>
-											<option >MPDC</option>
-											<option >MCTC</option>
-											<option >MCR</option>
-											<option >Mayor's Office</option>
-											<option >Tourism Office</option>
-										</select>
+								<label for="ProfileLanguages" id="labelProfileLanguages" class="control-label">Languages spoken</label>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-language fa-fw text-light"></i></span>
 									</div>
+									<input id="ProfileLanguages" name="ProfileLanguages" value="{{- .ProfileLanguages -}}" class="form-control" type="text" aria-describedby="labelProfileLanguages">
 								</div>
-							</div> -->
-
-							<!-- Text input-->
+							</div>
+							<!-- Skills-->
 							<div class="form-group">
-								<label for="ProfileLanguages" class="col-md-8 control-label">Languages spoken</label>
-								<div class="col-md-8 inputGroupContainer">
-									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-language fa-fw"></i>&nbsp;</span>
-										<input id="ProfileLanguages" name="ProfileLanguages" placeholder="{{- .ProfileLanguages -}}" class="form-control" type="text">
+								<label for="ProfileSkillsText" id="labelProfileSkillsText" class="control-label">Skills</label>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-toolbox fa-fw text-light"></i></span>
 									</div>
+									<input id="ProfileSkillsText" name="ProfileSkillsText" value="{{- .ProfileSkillsText -}}" class="form-control" type="text" aria-describedby="labelProfileSkillsText">
 								</div>
 							</div>
-
-							<!-- Text input-->
 							<div class="form-group">
-							<label for="ProfileSkillsText" class="col-md-8 control-label">Skills</label>
-								<div class="col-md-8 inputGroupContainer">
-									<div class="input-group">
-										<span class="input-group-addon"><i class="fas fa-toolbox fa-fw"></i>&nbsp;</span>
-										<input id="ProfileSkillsText" name="ProfileSkillsText" placeholder="{{- .ProfileSkillsText -}}" class="form-control" type="text">
+								<label for="ProfileFirstText" id="labelProfileFirstText" class="control-label">About your real life</label>
+								<div class="input-group">
+									<div class="image pr-1">
+										{{- if .ProfileFirstImage -}}
+										<img class="rounded shadow-sm" src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128" srcset="{{- .ProfileFirstImage }} 1x, {{ .ProfileRetinaFirstImage }} 2x">
+										{{- else -}}
+										<img class="rounded shadow-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMa1zzHwAFXAKM3m3GvQAAAABJRU5ErkJggg==" alt="No image for {{- .Username -}}" height="128" width="128">
+										{{- end }}
 									</div>
+									<textarea class="form-control" id="ProfileFirstText" rows="3" aria-describedby="labelProfileFirstText">{{- .ProfileFirstText -}}</textarea>
 								</div>
-							</div>
-							<div class="col-md-2 mb-4">
-								{{ if .ProfileFirstImage -}}
-								<img src="{{- .ProfileFirstImage -}}" alt="Real Life Image for {{- .Username -}}" height="128" width="128" srcset="{{- .ProfileFirstImage }} 1x, {{ .ProfileRetinaFirstImage }} 2x"><br />
-								{{- end }}
-
-							</div>
-							<div class="form-group col-md-6 mb-4">
-								<label for="ProfileFirstText">About your real life</label>
-								<textarea class="form-control" id="ProfileFirstText" rows="10">{{- .ProfileFirstText -}}</textarea>
 							</div>
 							<!-- Success message -->
 							<div class="alert alert-success invisible" role="alert" id="success_message">Success&nbsp;<i class="fas fa-thumbs-up"></i>Success!</div>
 							<!-- Submit Button -->
-							<div class="form-group col-md-8 mb-4">
-								<button type="submit" class="btn btn-primary" value="Submit">Submit&nbsp;<i class="fas fa-paper-plane"></i></button>
+							<div class="form-group mx-auto text-center mb-4">
+								<button type="submit" class="btn btn-primary shadow-sm" value="Submit">Submit&nbsp;<i class="fas fa-paper-plane"></i></button>
 							</div>
 						</fieldset>
 					</form>
