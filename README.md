@@ -16,8 +16,8 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 
 ## Configuration
 
-- Because Second Life and OpenSimulator internally use JPEG2000 for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
-	- install ImageMagick according to https://github.com/gographics/imagick
+- Because Second Life and OpenSimulator internally use JPEG2000 for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
+	- install ImageMagick according to https://github.com/gographics/imagick (go for version 7)
 	- make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
 	- Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
   My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external)
@@ -39,7 +39,7 @@ The fonts used are, per [Google's v.1.9.5 guidelines for Go-related things](http
 
 The template used, [SB Admin 2](https://startbootstrap.com/template-overviews/sb-admin-2/), has been developed by [Start Bootstrap](http://startbootstrap.com/) — created and maintained by [David Miller](http://davidmiller.io/) — and is based on the [Bootstrap](http://getbootstrap.com/) framework created by [Mark Otto](https://twitter.com/mdo) and [Jacob Thorton](https://twitter.com/fat). It is released under a [MIT license](vendor/startbootstrap-sb-admin-2/LICENSE).
 
-I've tried to stick to the original files for as long as I could (merely linking to them), but, over time, I had to make more and more changes to them. CSS was getting so many exceptions that I had to create my own file. It's not minified, since I use all sorts of caches and proxies in front of my setup — namely Cloudflare and Google's PageSpeed module for `nginx` — so I don't worry a lot about 'minification'.
+I've tried to stick to their original files for as long as I could (merely linking to them), but, over time, I had to make more and more changes to them. CSS was getting so many exceptions that I had to create my own file. It's not minified, since I use all sorts of caches and proxies in front of my setup — namely Cloudflare and Google's PageSpeed module for `nginx` — so I don't worry a lot about 'minification'.
 
 Most colours come from the awesome [Nord colour palette](https://www.nordtheme.com/), released under a [MIT license](https://github.com/arcticicestudio/nord/blob/develop/LICENSE.md). I have to admit that I'm in love with that colour scheme, and abuse and overuse it pretty much everywhere. Fortunately, if you hate it, it should be quite easy to change to something else!
 

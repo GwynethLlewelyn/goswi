@@ -81,84 +81,9 @@ func GetProfile(c *gin.Context) {
 		profileData.ProfileMaturePublish	= (maturePublish != "")
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG]: user %q (%s) has no profile; database error was %v", username, uuid, err)
+			log.Printf("[DEBUG]: retrieving profile from user %q (%s) failed; database error was %v", username, uuid, err)
 		}
 	}
-
-	// // For ProfileImage/ProfileFirstImage we need to convert them from JPEG2000 to something else.
-	// // cache check first!
-	// imageAssetFileName := filepath.Join(*config["cache"], profileData.ProfileImage + ".jp2")
-	// imageFileName := filepath.Join(*config["cache"], profileData.ProfileImage + *config["convertExt"]) // name of converted file
-	// imageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileImage, "/data")
-//
-	// fd, ferr := os.Open(imageAssetFileName)
-	// defer fd.Close()
-	// if ferr != nil {
-	// 	// file is not in the cache yet, so grab it and save it
-	// 	err := downloadFile(imageAssetFileName, imageAssetURL)
-	// 	if *config["ginMode"] == "debug" {
-	// 		log.Println("[DEBUG] File", imageAssetFileName, "not in cache yet - trying to load it from", imageAssetURL)
-	// 	}
-	// 	if err != nil {
-	// 		log.Println("[WARN] Asset", profileData.ProfileImage, "didn't get saved to cache")
-	// 	}
-	// }
-	// fd.Close()	// we don't need it any more
-	// // Now we have this asset in the cache, so, we just need to convert it, but first see if we have already converted it (gwyneth 20200718).
-	// fd, ferr = os.Open(imageFileName)	// this is the final image /path/to/cache/imageUUID.jpeg
-	// defer fd.Close()
-	// if ferr != nil {
-	// 	// image not in the cache yet, let's convert it! (gwyneth 20200718)
-	// 	// We launch an external command simply because there is no native Go library for JPEG2000 and we're trying to avoid using CGo (we could use it with ImageMagick)
-	// 	if *config["jp2convert"] == "" {
-	// 		// should not happen, unless a stupid user overwrote it
-	// 		log.Println("[ERROR] Empty path to conversion utility! Please add a valid entry for 'jp2convert' in your config.ini")
-	// 	} else {
-	// 		// first let's fill the %s with the actual filenames
-	// 		cmdString := fmt.Sprintf(*config["jp2convert"], imageAssetFileName, imageFileName)
-	// 		if *config["ginMode"] == "debug" {
-	// 			log.Println("[DEBUG] Command string extracted from config.ini and parsed:", cmdString)
-	// 		}
-	// 		// now turn it into a []string
-	// 		// code comes from https://stackoverflow.com/a/49429437/1035977 by @vahdet
-	// 		slc := strings.Split(cmdString, " ")
-	// 		for i := range slc {
-	// 			slc[i] = strings.TrimSpace(slc[i]) // trim whitespace
-	// 		}
-	// 		cmd := exec.Command(slc[0], slc[1:]...)
-	// 		if *config["ginMode"] == "debug" {
-	// 			log.Println("[DEBUG] Converting command is", cmd)
-	// 		}
-	// 		output, err := cmd.CombinedOutput()	// move
-	// 		if err != nil {
-	// 			log.Println("[ERROR] Couldn't launch conversion command", err)
-	// 		} else {
-	// 			if *config["ginMode"] == "debug" {
-	// 				log.Printf("[DEBUG] Output from converting command was %q\n", output)
-	// 			}
-	// 		}
-	// 		// we're finished for now; the image is now on the cache; we can close everything
-	// 		//  and move on!
-	// 		fd.Close()
-	// 	}
-	// }
-	// // ok, now we can set the image URL pointing to the cached file!
-	// // even if it doesn't exist, or failed to convert, we will always get something, namely, a broken image, but that's ok, it won't crash the application (gwyneth 20200719).
-	// // TODO(gwyneth): if the image failed to convert, assign it to a default image (maybe a default image asset from OpenSimulator?) (gwyneth 20200719).
-	// // note that this is the same as imageFileName, but while imageFileName was constructed with filepath (since it points to a file using the filesystem), avatarProfileImage is constructed with path, since it's supposed to be an URL (gwyneth 20200719)
-	// // TODO(gwyneth): add debugging on the handler for the cache to see if it is actually being called (nginx might be serving it statically); also, there should be a cache garbage collector if the user changed their profile image.
-	// avatarProfileImage = path.Join(*config["cache"], profileData.ProfileImage + *config["convertExt"])	// note that hopefully the router is set correctly on main()! (gwyneth 20200719)
-//
-	// if *config["ginMode"] == "debug" {
-	// 	log.Printf("[DEBUG] After conversion, ProfileImage is now %q\n", avatarProfileImage)
-	// }
-	// // Because of the way path.Join() 'cleans up' links, we might end up without a leading slash; so we just need to check for that.
-	// if avatarProfileImage[0] != '/' {
-	// 	avatarProfileImage = "/" + avatarProfileImage
-	// }
-	// if *config["ginMode"] == "debug" {
-	// 	log.Printf("[DEBUG] ProfileImage is now %q\n", avatarProfileImage)
-	// }
 
 	// see if we have this image already
 	// Note: in the future, we might simplify the call by just using the UUID + file extension... (gwyneth 20200727)
@@ -226,11 +151,9 @@ func GetProfile(c *gin.Context) {
 	//  image URL, and will fail with a broken image (404 error on browser) if it doesn't; thus:
 	// TODO(gwyneth): get some sort of default image for when all of the above fails
 
-
 	// Do the same for the profile image for First (=Real) Life. Comments as above!
 	profileFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + *config["convertExt"])
 	profileRetinaFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + "@2x" + *config["convertExt"])
-
 
 	if !imageCache.Has(profileFirstImage) {
 		if *config["ginMode"] == "debug" {
