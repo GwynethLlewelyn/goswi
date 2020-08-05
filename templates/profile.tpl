@@ -69,7 +69,7 @@
 							</div>
 							<!-- Want to... -->
 							<div class="form-group col-3" id="WantToLeft">
-								<label for="WantToLeft" id="labelProfileWantToText" class="control-label">I Want To:</label>
+								<label for="WantToLeft" id="labelProfileWantToText">I Want To:</label>
 								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToBuild">Build</label>
@@ -114,8 +114,36 @@
 								</div>
 							</div>
 							<!-- Skills-->
-							<div class="form-group">
-								<label for="ProfileSkillsText" id="labelProfileSkillsText" class="control-label">Skills</label>
+							<div class="form-group col-3" id="SkillsLeft">
+								<label for="SkillsLeft" id="labelProfileSkillsText">Skills:</label>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="SkillsTextures" {{ if (bitTest .ProfileSkillsMask 1) -}}checked{{- end -}}>
+									<label class="form-check-label" for="SkillsTextures">Textures</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="SkillsModeling" {{ if (bitTest .ProfileSkillsMask 8) -}}checked{{- end -}}>
+									<label class="form-check-label" for="SkillsModeling">Modeling</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="SkillsScripting" {{ if (bitTest .ProfileSkillsMask 16) -}}checked{{- end -}}>
+									<label class="form-check-label" for="SkillsScripting">Scripting</label>
+								</div>
+							</div>
+							<div class="form-group col-3" id="SkillsRight">
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="SkillsArchitecture" {{ if (bitTest .ProfileSkillsMask 2) -}}checked{{- end -}}>
+									<label class="form-check-label" for="SkillsArchitecture">Architecture</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="SkillsEventPlanning" {{ if (bitTest .ProfileSkillsMask 4) -}}checked{{- end -}}>
+									<label class="form-check-label" for="SkillsEventPlanning">Event Planning</label>
+								</div>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" id="SkillsCustomCharacters" {{ if (bitTest .ProfileSkillsMask 32) -}}checked{{- end -}}>
+									<label class="form-check-label" for="SkillsCustomCharacters">Custom Characters</label>
+								</div>
+							</div>
+							<div class="form-group col-6 mb-1">
 								<div class="input-group">
 									<div class="input-group-prepend">
 										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-toolbox fa-fw text-light"></i></span>
