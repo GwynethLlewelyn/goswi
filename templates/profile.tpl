@@ -56,14 +56,45 @@
 									<input id="ProfilePartner" name="ProfilePartner" value="{{- .ProfilePartner -}}" class="form-control" type="text" aria-describedby="labelProfilePartner">
 								</div>
 							</div>
-							<!-- Languages -->
+							<!-- Checkboxes for Publishing & Mature -->
 							<div class="form-group">
-								<label for="ProfileLanguages" id="labelProfileLanguages" class="control-label">Languages spoken</label>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" type="checkbox" id="ProfileAllowPublish" {{ if ne .ProfileAllowPublish 0 -}}checked{{- end -}}>
+									<label class="form-check-label" for="ProfileAllowPublish">Allow publishing?</label>
+								</div>
+								<div class="form-check form-check-inline">
+									<input class="form-check-input" type="checkbox" id="ProfileMaturePublish" {{ if ne .ProfileMaturePublish 0 -}}checked{{- end -}}>
+									<label class="form-check-label" for="ProfileMaturePublish">Mature profile?</label>
+								</div>
+							</div>
+							<!-- Want to... -->
+							<div class="form-group">
+								<label for="WantToLeft" id="labelProfileWantToText" class="control-label">I Want to:</label>
+								<div class="form-check" id="WantToLeft">
+									<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToBuild">Build</label>
+									<input class="form-check-input" type="checkbox" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToMeet">Meet</label>
+									<input class="form-check-input" type="checkbox" id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToMeet">Group</label>
+									<input class="form-check-input" type="checkbox" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToSell">Sell</label>
+								</div>
+								<div class="form-check" id="WantToRight">
+									<input class="form-check-input" type="checkbox" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToExplore">Explore</label>
+									<input class="form-check-input" type="checkbox" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToBeHired">Be Hired</label>
+									<input class="form-check-input" type="checkbox" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToBuy">Buy</label>
+									<input class="form-check-input" type="checkbox" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
+									<label class="form-check-label" for="WantToHire">Hire</label>
+								</div>
 								<div class="input-group">
 									<div class="input-group-prepend">
-										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-language fa-fw text-light"></i></span>
+										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-hand-holding fa-fw text-light"></i></span>
 									</div>
-									<input id="ProfileLanguages" name="ProfileLanguages" value="{{- .ProfileLanguages -}}" class="form-control" type="text" aria-describedby="labelProfileLanguages">
+									<input id="ProfileWantToText" name="ProfileWantToText" value="{{- .ProfileWantToText -}}" class="form-control" type="text" aria-describedby="labelProfileWantToText">
 								</div>
 							</div>
 							<!-- Skills-->
@@ -76,6 +107,17 @@
 									<input id="ProfileSkillsText" name="ProfileSkillsText" value="{{- .ProfileSkillsText -}}" class="form-control" type="text" aria-describedby="labelProfileSkillsText">
 								</div>
 							</div>
+							<!-- Languages -->
+							<div class="form-group">
+								<label for="ProfileLanguages" id="labelProfileLanguages" class="control-label">Languages spoken</label>
+								<div class="input-group">
+									<div class="input-group-prepend">
+										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-language fa-fw text-light"></i></span>
+									</div>
+									<input id="ProfileLanguages" name="ProfileLanguages" value="{{- .ProfileLanguages -}}" class="form-control" type="text" aria-describedby="labelProfileLanguages">
+								</div>
+							</div>
+							<!-- Text for First Life and associated image -->
 							<div class="form-group">
 								<label for="ProfileFirstText" id="labelProfileFirstText" class="control-label">About your real life</label>
 								<div class="input-group">
@@ -89,6 +131,7 @@
 									<textarea class="form-control" id="ProfileFirstText" rows="3" aria-describedby="labelProfileFirstText">{{- .ProfileFirstText -}}</textarea>
 								</div>
 							</div>
+
 							<!-- Success message -->
 							<div class="alert alert-success invisible" role="alert" id="success_message">Success&nbsp;<i class="fas fa-thumbs-up"></i>Success!</div>
 							<!-- Submit Button -->
@@ -98,7 +141,7 @@
 						</fieldset>
 					</form>
 					{{- if .ProfileData }}
-					<!-- Raw data: {{- .ProfileData -}}-->
+					<div class="invisible">Raw data: {{- .ProfileData -}}</div>
 					{{ end -}}
 				</div> <!-- /.col -->
 			</div> <!-- /.row -->

@@ -26,8 +26,8 @@ import (
 type UserProfile struct {
 	UserUUID string 			`form:"useruuid" json:"useruuid"`
 	ProfilePartner string		`form:"profilePartner" json:"profilePartner"`
-	ProfileAllowPublish bool	`form:"profileAllowPublish" json:"profileAllowPublish"`
-	ProfileMaturePublish bool	`form:"profileMaturePublish" json:"profileMaturePublish"`
+	ProfileAllowPublish int		`form:"profileAllowPublish" json:"profileAllowPublish"`
+	ProfileMaturePublish int	`form:"profileMaturePublish" json:"profileMaturePublish"`
 	ProfileURL string			`form:"profileURL" json:"profileURL"`
 	ProfileWantToMask int		`form:"profileWantToMask" json:"profileWantToMask"`
 	ProfileWantToText string	`form:"profileWantToText" json:"profileWantToText"`
@@ -59,13 +59,13 @@ func GetProfile(c *gin.Context) {
 	var (
 		profileData UserProfile
 //		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
-		allowPublish, maturePublish string // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
+//		allowPublish, maturePublish string // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
 	)
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
 			&profileData.UserUUID,
 			&profileData.ProfilePartner,
-			&allowPublish,
-			&maturePublish,
+			&profileData.ProfileAllowPublish,
+			&profileData.ProfileMaturePublish,
 			&profileData.ProfileURL,
 			&profileData.ProfileWantToMask,
 			&profileData.ProfileWantToText,
@@ -77,8 +77,8 @@ func GetProfile(c *gin.Context) {
 			&profileData.ProfileFirstImage,
 			&profileData.ProfileFirstText,
 		)
-		profileData.ProfileAllowPublish		= (allowPublish != "")
-		profileData.ProfileMaturePublish	= (maturePublish != "")
+		// profileData.ProfileAllowPublish		= (allowPublish != "")
+		// profileData.ProfileMaturePublish	= (maturePublish != "")
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
 			log.Printf("[DEBUG]: retrieving profile from user %q (%s) failed; database error was %v", username, uuid, err)

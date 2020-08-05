@@ -20,7 +20,7 @@ require (
 	github.com/philippgille/gokv/syncmap v0.6.0
 	github.com/philippgille/gokv/util v0.6.0 // indirect
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	golang.org/x/sys v0.0.0-20200803210538-64077c9b5642 // indirect
+	golang.org/x/sys v0.0.0-20200805065543-0cf7623e9dbd // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/gographics/imagick.v1 v1.1.2 // indirect
 	gopkg.in/gographics/imagick.v2 v2.6.0 // indirect
