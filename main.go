@@ -11,7 +11,7 @@ import (
 	"github.com/philippgille/gokv/syncmap"
 	"github.com/vharitonsky/iniflags"
 	"gopkg.in/gographics/imagick.v3/imagick"
-//	"html/template"
+	"html/template"
 //	"io"
 	"log"
 //	"net"
@@ -95,9 +95,9 @@ func main() {
 
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
-/*	router.SetFuncMap(template.FuncMap{
-		"formatAsYear": formatAsYear,
-	})*/
+	router.SetFuncMap(template.FuncMap{
+		"bitTest": bitTest,
+	})
 	// figure out where the templates are
 	if (*config["templatePath"] != "") {
 		if (!strings.HasSuffix(*config["templatePath"], "/")) {

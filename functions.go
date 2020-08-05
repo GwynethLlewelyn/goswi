@@ -116,3 +116,10 @@ func isValidExtension(lookup string) bool {
 	}
 	return false
 }
+
+// Functions to deal with bitfield comparisons inside templates.
+
+// bitTest applies a mask to a flag and returns true if the bit is set in the mask, false otherwise.
+func bitTest(flag int, mask int) bool {
+	return (flag & mask) != 0
+}

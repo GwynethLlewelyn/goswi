@@ -68,28 +68,44 @@
 								</div>
 							</div>
 							<!-- Want to... -->
-							<div class="form-group">
-								<label for="WantToLeft" id="labelProfileWantToText" class="control-label">I Want to:</label>
-								<div class="form-check" id="WantToLeft">
+							<div class="form-group col-mod3" id="WantToLeft">
+								<label for="WantToLeft" id="labelProfileWantToText" class="control-label">I Want To:</label>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToBuild">Build</label>
+								</div>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToMeet">Meet</label>
+								</div>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToMeet">Group</label>
+								</div>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToSell">Sell</label>
 								</div>
-								<div class="form-check" id="WantToRight">
+							</div>
+							<div class="form-group col-md3" id="WantToRight">
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToExplore">Explore</label>
+								</div>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToBeHired">Be Hired</label>
+								</div>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToBuy">Buy</label>
+								</div>
+								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToHire">Hire</label>
 								</div>
+							</div>
+							<div class="form-group col-md-6" id="inputProfileWantToText">
 								<div class="input-group">
 									<div class="input-group-prepend">
 										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-hand-holding fa-fw text-light"></i></span>
