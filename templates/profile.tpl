@@ -68,7 +68,7 @@
 								</div>
 							</div>
 							<!-- Want to... -->
-							<div class="form-group col-mod3" id="WantToLeft">
+							<div class="form-group col-3" id="WantToLeft">
 								<label for="WantToLeft" id="labelProfileWantToText" class="control-label">I Want To:</label>
 								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
@@ -87,7 +87,7 @@
 									<label class="form-check-label" for="WantToSell">Sell</label>
 								</div>
 							</div>
-							<div class="form-group col-md3" id="WantToRight">
+							<div class="form-group col-3" id="WantToRight">
 								<div class="form-check">
 									<input class="form-check-input" type="checkbox" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
 									<label class="form-check-label" for="WantToExplore">Explore</label>
@@ -105,7 +105,7 @@
 									<label class="form-check-label" for="WantToHire">Hire</label>
 								</div>
 							</div>
-							<div class="form-group col-md-6" id="inputProfileWantToText">
+							<div class="form-group col-6 mb-1" id="inputProfileWantToText">
 								<div class="input-group">
 									<div class="input-group-prepend">
 										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-hand-holding fa-fw text-light"></i></span>
