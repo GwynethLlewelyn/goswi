@@ -57,100 +57,115 @@
 								</div>
 							</div>
 							<!-- Checkboxes for Publishing & Mature -->
-							<div class="form-group">
-								<div class="form-check form-check-inline">
-									<input class="form-check-input" type="checkbox" id="ProfileAllowPublish" {{ if ne .ProfileAllowPublish 0 -}}checked{{- end -}}>
-									<label class="form-check-label" for="ProfileAllowPublish">Allow publishing?</label>
+							<div class="form-row">
+								<div class="form-group col-3 mt-2 mb-2">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="ProfileAllowPublish" {{ if ne .ProfileAllowPublish 0 -}}checked{{- end -}}>
+										<label class="form-check-label" for="ProfileAllowPublish">Allow publishing?</label>
+									</div>
 								</div>
-								<div class="form-check form-check-inline">
-									<input class="form-check-input" type="checkbox" id="ProfileMaturePublish" {{ if ne .ProfileMaturePublish 0 -}}checked{{- end -}}>
-									<label class="form-check-label" for="ProfileMaturePublish">Mature profile?</label>
+								<div class="form-group col-3 mt-2 mb-2">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="ProfileMaturePublish" {{ if ne .ProfileMaturePublish 0 -}}checked{{- end -}}>
+										<label class="form-check-label" for="ProfileMaturePublish">Mature profile?</label>
+									</div>
 								</div>
 							</div>
+							<hr>
 							<!-- Want to... -->
-							<div class="form-group col-3" id="WantToLeft">
-								<label for="WantToLeft" id="labelProfileWantToText">I Want To:</label>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToBuild">Build</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToMeet">Meet</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToMeet">Group</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToSell">Sell</label>
-								</div>
-							</div>
-							<div class="form-group col-3" id="WantToRight">
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToExplore">Explore</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToBeHired">Be Hired</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToBuy">Buy</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
-									<label class="form-check-label" for="WantToHire">Hire</label>
-								</div>
-							</div>
-							<div class="form-group col-6 mb-1" id="inputProfileWantToText">
-								<div class="input-group">
-									<div class="input-group-prepend">
-										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-hand-holding fa-fw text-light"></i></span>
+							<label for="WantToLeft" id="labelProfileWantToText">I Want To:</label>
+							<div class="form-row">
+								<div class="form-group col-3 mt-2 mb-2" id="WantToLeft">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToBuild">Build</label>
 									</div>
-									<input id="ProfileWantToText" name="ProfileWantToText" value="{{- .ProfileWantToText -}}" class="form-control" type="text" aria-describedby="labelProfileWantToText">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToMeet">Meet</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToMeet">Group</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToSell">Sell</label>
+									</div>
+								</div>
+								<div class="form-group col-3 mt-2 mb-2" id="WantToRight">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToExplore">Explore</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToBeHired">Be Hired</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToBuy">Buy</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
+										<label class="form-check-label" for="WantToHire">Hire</label>
+									</div>
 								</div>
 							</div>
+							<div class="form-row">
+								<div class="form-group col-6 mb-1" id="inputProfileWantToText">
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-hand-holding fa-fw text-light"></i></span>
+										</div>
+										<input id="ProfileWantToText" name="ProfileWantToText" value="{{- .ProfileWantToText -}}" class="form-control" type="text" aria-describedby="labelProfileWantToText">
+									</div>
+								</div>
+							</div>
+							<hr>
 							<!-- Skills-->
-							<div class="form-group col-3" id="SkillsLeft">
-								<label for="SkillsLeft" id="labelProfileSkillsText">Skills:</label>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="SkillsTextures" {{ if (bitTest .ProfileSkillsMask 1) -}}checked{{- end -}}>
-									<label class="form-check-label" for="SkillsTextures">Textures</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="SkillsModeling" {{ if (bitTest .ProfileSkillsMask 8) -}}checked{{- end -}}>
-									<label class="form-check-label" for="SkillsModeling">Modeling</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="SkillsScripting" {{ if (bitTest .ProfileSkillsMask 16) -}}checked{{- end -}}>
-									<label class="form-check-label" for="SkillsScripting">Scripting</label>
-								</div>
-							</div>
-							<div class="form-group col-3" id="SkillsRight">
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="SkillsArchitecture" {{ if (bitTest .ProfileSkillsMask 2) -}}checked{{- end -}}>
-									<label class="form-check-label" for="SkillsArchitecture">Architecture</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="SkillsEventPlanning" {{ if (bitTest .ProfileSkillsMask 4) -}}checked{{- end -}}>
-									<label class="form-check-label" for="SkillsEventPlanning">Event Planning</label>
-								</div>
-								<div class="form-check">
-									<input class="form-check-input" type="checkbox" id="SkillsCustomCharacters" {{ if (bitTest .ProfileSkillsMask 32) -}}checked{{- end -}}>
-									<label class="form-check-label" for="SkillsCustomCharacters">Custom Characters</label>
-								</div>
-							</div>
-							<div class="form-group col-6 mb-1">
-								<div class="input-group">
-									<div class="input-group-prepend">
-										<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-toolbox fa-fw text-light"></i></span>
+							<label for="SkillsLeft" id="labelProfileSkillsText">Skills:</label>
+							<div class="form-row">
+								<div class="form-group col-3 mt-2 mb-2" id="SkillsLeft">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="SkillsTextures" {{ if (bitTest .ProfileSkillsMask 1) -}}checked{{- end -}}>
+										<label class="form-check-label" for="SkillsTextures">Textures</label>
 									</div>
-									<input id="ProfileSkillsText" name="ProfileSkillsText" value="{{- .ProfileSkillsText -}}" class="form-control" type="text" aria-describedby="labelProfileSkillsText">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="SkillsModeling" {{ if (bitTest .ProfileSkillsMask 8) -}}checked{{- end -}}>
+										<label class="form-check-label" for="SkillsModeling">Modeling</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="SkillsScripting" {{ if (bitTest .ProfileSkillsMask 16) -}}checked{{- end -}}>
+										<label class="form-check-label" for="SkillsScripting">Scripting</label>
+									</div>
+								</div>
+								<div class="form-group col-3 mt-2 mb-2" id="SkillsRight">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="SkillsArchitecture" {{ if (bitTest .ProfileSkillsMask 2) -}}checked{{- end -}}>
+										<label class="form-check-label" for="SkillsArchitecture">Architecture</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="SkillsEventPlanning" {{ if (bitTest .ProfileSkillsMask 4) -}}checked{{- end -}}>
+										<label class="form-check-label" for="SkillsEventPlanning">Event Planning</label>
+									</div>
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" id="SkillsCustomCharacters" {{ if (bitTest .ProfileSkillsMask 32) -}}checked{{- end -}}>
+										<label class="form-check-label" for="SkillsCustomCharacters">Custom Characters</label>
+									</div>
 								</div>
 							</div>
+							<div class="form-row">
+								<div class="form-group col-6 mb-1">
+									<div class="input-group">
+										<div class="input-group-prepend">
+											<span class="input-group-text bg-primary border-right-0 border-primary"><i class="fas fa-toolbox fa-fw text-light"></i></span>
+										</div>
+										<input id="ProfileSkillsText" name="ProfileSkillsText" value="{{- .ProfileSkillsText -}}" class="form-control" type="text" aria-describedby="labelProfileSkillsText">
+									</div>
+								</div>
+							</div>
+							<hr>
 							<!-- Languages -->
 							<div class="form-group">
 								<label for="ProfileLanguages" id="labelProfileLanguages" class="control-label">Languages spoken</label>
