@@ -232,6 +232,50 @@ func GetProfile(c *gin.Context) {
 	})
 }
 
+// saveProfile is what gets called when someone saves the profile.
+func saveProfile(c *gin.Context) {
+	var oneProfile UserProfile
+
+	session := sessions.Default(c)
+
+	if c.Bind(&oneProfile) != nil { // nil means no errors
+		c.HTML(http.StatusBadRequest, "404.tpl", gin.H{
+			"errorcode"		: http.StatusBadRequest,
+			"errortext"		: "Saving profile failed",
+			"errorbody"		: "No form data posted",
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"titleCommon"	: *config["titleCommon"] + " - Profile",
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
+		})
+		log.Println("[ERROR] No form data posted for saving profile")
+
+		return
+	}
+	c.HTML(http.StatusOK, "404.tpl", gin.H{
+		"errorcode"		: http.StatusOK,
+		"errortext"		: "Saving profile succeeded",
+		"errorbody"		: "But... we still haven't done the coding!... So nothing actually happened",
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"logo"			: *config["logo"],
+		"logoTitle"		: *config["logoTitle"],
+		"sidebarCollapsed" : *config["sidebarCollapsed"],
+		"titleCommon"	: *config["titleCommon"] + " - Profile",
+		"Username"		: session.Get("Username"),
+		"Libravatar"	: session.Get("Libravatar"),
+	})
+	log.Println("[INFO] Got form data for profile but code isn't implemented yet")
+
+	return
+}
+
 // Transformation functions
 // These will probably be moved to cache.go or something similar (gwyneth 20200724)
 // TODO(gwyneth): Probably split it further in subdirectories

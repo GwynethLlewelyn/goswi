@@ -11,6 +11,9 @@
 			<!-- Content Row -->
 			<div class="row">
 				<div class="col-12 mb-4">
+					{{- if .BoxTitle -}}
+					{{ template "infobox.tpl" .}}
+					{{- end -}}
 					<form class="well form-horizontal" action="/user/profile" method="post"  id="profileForm">
 						<fieldset>
 							<!-- Your Profile: UserName -->
