@@ -257,6 +257,68 @@ func saveProfile(c *gin.Context) {
 
 		return
 	}
+
+	// check if we really are who we claim to be
+	if session.Get("UUID") != oneProfile.UserUUID {
+		c.HTML(http.StatusUnauthorized, "404.tpl", gin.H{
+			"errorcode"		: http.StatusUnauthorized,
+			"errortext"		: "No permission",
+			"errorbody"		: "You have no permission to change the profile for " + session.Get("Username"),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"titleCommon"	: *config["titleCommon"] + " - Profile",
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
+		})
+		log.Printf("[ERROR] Session UUID %q is not the same as Profile UUID %q - profile data change for %q not allowed\n",
+		session.Get("UUID"), oneProfile.UserUUID, session.Get("Username"))
+
+		return
+	}
+
+	// Allegedly we have successfully bound to the form data, so we can proceed to write it to the database.
+	if *config["dsn"] == "" {
+		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+	}
+	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
+	checkErrFatal(err)
+
+	defer db.Close()
+
+	// Calculate the masks
+
+//	wantToText :=
+
+
+	// Update it on database
+	result, err := db.Exec("UPDATE userprofile SET profilePartner = ?, profileAllowPublish = ?, profileMaturePublish = ?, profileURL = ?, profileWantToMask = ?, profileWantToText = ?, profileSkillsMask = ?, profileSkillsText = ?, profileLanguages = ?, profileImage = ?, profileAboutText = ?, profileFirstImage = ?, profileFirstText = ? WHERE useruuid = ?"),
+		oneProfile.ProfilePartner,
+		oneProfile.ProfileAllowPublish,
+		oneProfile.ProfileMaturePublish,
+		oneProfile.ProfileURL,
+		oneProfile.ProfileWantToMask,
+		oneProfile.ProfileWantToText,
+		oneProfile.ProfileSkillsMask,
+		oneProfile.ProfileSkillsText,
+		oneProfile.ProfileLanguages,
+		oneProfile.ProfileImage,
+		oneProfile.ProfileAboutText,
+		oneProfile.ProfileFirstImage,
+		oneProfile.ProfileFirstText,
+		oneProfile.UserUUID,
+	)
+
+	checkErr(err)
+
+	if numRowsAffected, err := result.RowsAffected(); err != nil {
+		log.Printf("[ERROR] Updating database with new password for %q failed, error was %q\n", thisUUID, err)
+	} else {
+
+
 	c.HTML(http.StatusOK, "404.tpl", gin.H{
 		"errorcode"		: http.StatusOK,
 		"errortext"		: "Saving profile succeeded",

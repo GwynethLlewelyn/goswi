@@ -80,37 +80,37 @@
 							<div class="form-row">
 								<div class="form-group col-3 mt-2 mb-2" id="WantToLeft">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Build" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToBuild">Build</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Meet" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToMeet">Meet</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Group"  id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToMeet">Group</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Sell" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToSell">Sell</label>
 									</div>
 								</div>
 								<div class="form-group col-3 mt-2 mb-2" id="WantToRight">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Explore" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToExplore">Explore</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="BeHired" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToBeHired">Be Hired</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Buy" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToBuy">Buy</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="WantTo[]" value="Hire" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToHire">Hire</label>
 									</div>
 								</div>
