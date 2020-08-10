@@ -63,14 +63,16 @@
 							<div class="form-row">
 								<div class="form-group col-3 mt-2 mb-2">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="ProfileAllowPublish" {{ if ne .ProfileAllowPublish 0 -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfilePublish[]" value="Allow" id="checkboxProfileAllowPublish" {{ if eq .ProfileAllowPublish true -}}checked{{- end -}}>
 										<label class="form-check-label" for="ProfileAllowPublish">Allow publishing?</label>
+										<input type="hidden" value="{{- .ProfileAllowPublish -}}" id="ProfileAllowPublish">
 									</div>
 								</div>
 								<div class="form-group col-3 mt-2 mb-2">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" id="ProfileMaturePublish" {{ if ne .ProfileMaturePublish 0 -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfilePublish[]" value="Mature" id="checkboxProfileMaturePublish" {{ if eq .ProfileMaturePublish true -}}checked{{- end -}}>
 										<label class="form-check-label" for="ProfileMaturePublish">Mature profile?</label>
+										<input type="hidden" value="{{- .ProfileMaturePublish -}}" id="ProfileMaturePublish">
 									</div>
 								</div>
 							</div>

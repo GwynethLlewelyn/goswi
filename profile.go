@@ -26,8 +26,9 @@ import (
 type UserProfile struct {
 	UserUUID string 			`form:"UserUUID" json:"useruuid"`
 	ProfilePartner string		`form:"ProfilePartner" json:"profilePartner"`
-	ProfileAllowPublish int		`form:"ProfileAllowPublish" json:"profileAllowPublish"`
-	ProfileMaturePublish int	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
+	ProfileAllowPublish bool	`form:"ProfileAllowPublish" json:"profileAllowPublish"`	// inside the database, this is binary(1)
+	ProfileMaturePublish bool	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
+	ProfilePublish []string		`form:"ProfilePublish" json:"profilePublish"`	// seems to be needed; values are Allow and Mature
 	ProfileURL string			`form:"ProfileURL" json:"profileURL"`
 	ProfileWantToMask int		`form:"ProfileWantToMask" json:"profileWantToMask"`
 	ProfileWantTo []string		`form:"ProfileWantTo[]"`
@@ -61,13 +62,13 @@ func GetProfile(c *gin.Context) {
 	var (
 		profileData UserProfile
 //		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
-//		allowPublish, maturePublish string // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
+		allowPublish, maturePublish []byte // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
 	)
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
 			&profileData.UserUUID,
 			&profileData.ProfilePartner,
-			&profileData.ProfileAllowPublish,
-			&profileData.ProfileMaturePublish,
+			&allowPublish,	// &profileData.ProfileAllowPublish,
+			&maturePublish,	// &profileData.ProfileMaturePublish,
 			&profileData.ProfileURL,
 			&profileData.ProfileWantToMask,
 			&profileData.ProfileWantToText,
@@ -79,11 +80,17 @@ func GetProfile(c *gin.Context) {
 			&profileData.ProfileFirstImage,
 			&profileData.ProfileFirstText,
 		)
-		// profileData.ProfileAllowPublish		= (allowPublish != "")
-		// profileData.ProfileMaturePublish	= (maturePublish != "")
+		profileData.ProfileAllowPublish		= (allowPublish[0] != 0)
+		profileData.ProfileMaturePublish	= (maturePublish[0] != 0)
+
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG]: retrieving profile from user %q (%s) failed; database error was %v", username, uuid, err)
+			log.Printf("[ERROR]: retrieving profile from user %q (%s) failed; database error was %v\n", username, uuid, err)
+		}
+	} else {
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG]: while retrieving profile, allowPublish is %v while maturePublish is %v\n", allowPublish, maturePublish)
+			log.Printf("[DEBUG]: retrieving profile from user %q (%s): %+v\n", username, uuid, profileData)
 		}
 	}
 
@@ -342,11 +349,38 @@ func saveProfile(c *gin.Context) {
 		log.Printf("[DEBUG] oneProfile.ProfileWantTo is %v, wantToMask is %d, oneProfile.ProfileSkills is %v, skillsMask is %d\n", oneProfile.ProfileWantTo, wantToMask, oneProfile.ProfileSkills, skillsMask)
 	}
 
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] oneProfile.ProfileAllowPublish is %+v, oneProfile.ProfileMaturePublish is %+v\n", oneProfile.ProfileAllowPublish, oneProfile.ProfileMaturePublish)
+	}
+
+	var allowPublish, maturePublish []byte // see comment under GetProfile
+
+	// we always seem to get checkboxes as a group inside an array, so we do something similar as above with the bitmasks
+	//  however
+	for _, publish := range(oneProfile.ProfilePublish) {
+		switch publish {
+			case "Allow":
+				allowPublish = append(allowPublish, 1)
+			case "Mature":
+				maturePublish = append(maturePublish, 1)
+		}
+	}
+	if len(allowPublish) == 0 {
+		allowPublish = append(allowPublish, 0)
+	}
+	if len(maturePublish) == 0 {
+		maturePublish = append(maturePublish, 0)
+	}
+
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] oneProfile.ProfilePublish is %+v, allowPublish is %+v, maturePublish is %+v\n", oneProfile.ProfilePublish, allowPublish, maturePublish)
+	}
+
 	// Update it on database
 	result, err := db.Exec("UPDATE userprofile SET profileAllowPublish = ?, profileMaturePublish = ?, profileURL = ?, profileWantToMask = ?, profileWantToText = ?, profileSkillsMask = ?, profileSkillsText = ?, profileLanguages = ?, profileAboutText = ?, profileFirstText = ? WHERE useruuid = ?",
 		// oneProfile.ProfilePartner,
-		oneProfile.ProfileAllowPublish,
-		oneProfile.ProfileMaturePublish,
+		allowPublish,
+		maturePublish,
 		oneProfile.ProfileURL,
 		wantToMask,						// oneProfile.ProfileWantToMask,	// images are read-only!
 		oneProfile.ProfileWantToText,
@@ -359,6 +393,8 @@ func saveProfile(c *gin.Context) {
 	)
 
 	checkErr(err)
+
+
 
 	if numRowsAffected, err := result.RowsAffected(); err != nil {
 		c.HTML(http.StatusOK, "404.tpl", gin.H{
