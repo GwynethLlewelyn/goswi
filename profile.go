@@ -24,22 +24,22 @@ import (
 )
 
 type UserProfile struct {
-	UserUUID string 			`form:"useruuid" json:"useruuid"`
-	ProfilePartner string		`form:"profilePartner" json:"profilePartner"`
-	ProfileAllowPublish int		`form:"profileAllowPublish" json:"profileAllowPublish"`
-	ProfileMaturePublish int	`form:"profileMaturePublish" json:"profileMaturePublish"`
-	ProfileURL string			`form:"profileURL" json:"profileURL"`
-	ProfileWantToMask int		`form:"profileWantToMask" json:"profileWantToMask"`
-	ProfileWantTo []string		`form:"profileWantTo[]"`
-	ProfileWantToText string	`form:"profileWantToText" json:"profileWantToText"`
-	ProfileSkillsMask int		`form:"profileSkillsMask" json:"profileSkillsMask"`
-	ProfileSkills []string		`form:"profileSkills[]"`
-	ProfileSkillsText string	`form:"profileSkillsText" json:"profileSkillsText"`
-	ProfileLanguages string		`form:"profileLanguages" json:"profileLanguages"`
-	ProfileImage string			`form:"profileImage" json:"profileImage"`
-	ProfileAboutText string		`form:"profileAboutText" json:"profileAboutText"`
-	ProfileFirstImage string	`form:"profileFirstImage" json:"profileFirstImage"`
-	ProfileFirstText string		`form:"profileFirstText" json:"profileFirstText"`
+	UserUUID string 			`form:"UserUUID" json:"useruuid"`
+	ProfilePartner string		`form:"ProfilePartner" json:"profilePartner"`
+	ProfileAllowPublish int		`form:"ProfileAllowPublish" json:"profileAllowPublish"`
+	ProfileMaturePublish int	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
+	ProfileURL string			`form:"ProfileURL" json:"profileURL"`
+	ProfileWantToMask int		`form:"ProfileWantToMask" json:"profileWantToMask"`
+	ProfileWantTo []string		`form:"ProfileWantTo[]"`
+	ProfileWantToText string	`form:"ProfileWantToText" json:"profileWantToText"`
+	ProfileSkillsMask int		`form:"ProfileSkillsMask" json:"profileSkillsMask"`
+	ProfileSkills []string		`form:"ProfileSkills[]"`
+	ProfileSkillsText string	`form:"ProfileSkillsText" json:"profileSkillsText"`
+	ProfileLanguages string		`form:"ProfileLanguages" json:"profileLanguages"`
+	ProfileImage string			`form:"ProfileImage" json:"profileImage"`
+	ProfileAboutText string		`form:"ProfileAboutText" json:"profileAboutText"`
+	ProfileFirstImage string	`form:"ProfileFirstImage" json:"profileFirstImage"`
+	ProfileFirstText string		`form:"ProfileFirstText" json:"profileFirstText"`
 }
 
 // GetProfile connects to the database, does its magic, and spews out a profile. That's the theory at least.
@@ -260,6 +260,11 @@ func saveProfile(c *gin.Context) {
 
 		return
 	}
+
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] oneProfile is now %+v\n", oneProfile)
+	}
+
 	// check if we really are who we claim to be
 	if thisUUID != oneProfile.UserUUID {
 		c.HTML(http.StatusUnauthorized, "404.tpl", gin.H{
@@ -336,21 +341,19 @@ func saveProfile(c *gin.Context) {
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] oneProfile.ProfileWantTo is %v, wantToMask is %d, oneProfile.ProfileSkills is %v, skillsMask is %d\n", oneProfile.ProfileWantTo, wantToMask, oneProfile.ProfileSkills, skillsMask)
 	}
-/*
+
 	// Update it on database
-	result, err := db.Exec("UPDATE userprofile SET profilePartner = ?, profileAllowPublish = ?, profileMaturePublish = ?, profileURL = ?, profileWantToMask = ?, profileWantToText = ?, profileSkillsMask = ?, profileSkillsText = ?, profileLanguages = ?, profileImage = ?, profileAboutText = ?, profileFirstImage = ?, profileFirstText = ? WHERE useruuid = ?"),
-		oneProfile.ProfilePartner,
+	result, err := db.Exec("UPDATE userprofile SET profileAllowPublish = ?, profileMaturePublish = ?, profileURL = ?, profileWantToMask = ?, profileWantToText = ?, profileSkillsMask = ?, profileSkillsText = ?, profileLanguages = ?, profileAboutText = ?, profileFirstText = ? WHERE useruuid = ?",
+		// oneProfile.ProfilePartner,
 		oneProfile.ProfileAllowPublish,
 		oneProfile.ProfileMaturePublish,
 		oneProfile.ProfileURL,
-		wantToMask,						// oneProfile.ProfileWantToMask,
+		wantToMask,						// oneProfile.ProfileWantToMask,	// images are read-only!
 		oneProfile.ProfileWantToText,
 		skillsMask,						// oneProfile.ProfileSkillsMask,
 		oneProfile.ProfileSkillsText,
 		oneProfile.ProfileLanguages,
-		oneProfile.ProfileImage,
 		oneProfile.ProfileAboutText,
-		oneProfile.ProfileFirstImage,
 		oneProfile.ProfileFirstText,
 		oneProfile.UserUUID,
 	)
@@ -358,28 +361,30 @@ func saveProfile(c *gin.Context) {
 	checkErr(err)
 
 	if numRowsAffected, err := result.RowsAffected(); err != nil {
-		log.Printf("[ERROR] Updating database with new profile for %q failed, error was %q\n", thisUUID, err)
-	} else if *config["ginMode"] == "debug" {
-		log.Printf("[INFO] Success updating database with new profile for %q, number of rows affected: %d\n", thisUUID, numRowsAffected)
-	}
-*/
-	c.HTML(http.StatusOK, "404.tpl", gin.H{
-		"errorcode"		: http.StatusOK,
-		"errortext"		: "Saving profile succeeded",
-		"errorbody"		: "But... we still haven't done the coding!... So nothing actually happened",
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
-		"titleCommon"	: *config["titleCommon"] + " - Profile",
-		"Username"		: session.Get("Username"),
-		"Libravatar"	: session.Get("Libravatar"),
-	})
-	log.Println("[INFO] Got form data for profile but code isn't implemented yet")
+		c.HTML(http.StatusOK, "404.tpl", gin.H{
+			"errorcode"		: http.StatusOK,
+			"errortext"		: "Saving profile failed",
+			"errorbody"		: fmt.Sprintf("Database error was: %q [%d row(s) affected]", err, numRowsAffected),
+			"now"			: formatAsYear(time.Now()),
+			"author"		: *config["author"],
+			"description"	: *config["description"],
+			"logo"			: *config["logo"],
+			"logoTitle"		: *config["logoTitle"],
+			"sidebarCollapsed" : *config["sidebarCollapsed"],
+			"titleCommon"	: *config["titleCommon"] + " - Profile",
+			"Username"		: session.Get("Username"),
+			"Libravatar"	: session.Get("Libravatar"),
+		})
 
-	return
+		log.Printf("[ERROR] Updating database with new profile for %q failed, error was %s\n", thisUUID, err)
+		// TODO(gwyneth): we
+		return
+	} else {
+		if *config["ginMode"] == "debug" {
+			log.Printf("[INFO] Success updating database with new profile for %q, number of rows affected: %d\n", thisUUID, numRowsAffected)
+		}
+		c.Redirect(http.StatusSeeOther, "/user/profile")
+	}
 }
 
 // Transformation functions

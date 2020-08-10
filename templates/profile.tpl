@@ -20,23 +20,23 @@
 							<legend class="text-center"><h2>{{- if .Username -}}{{- .Username -}}'s{{- else -}}Your{{- end -}}&nbsp;Profile</h2></legend><br />
 							<!-- About -->
 							<div class="form-group">
-								<label for="AboutText" id="labelAboutText" class="control-label">About you</label>
+								<label for="ProfileAboutText" id="labelAboutText" class="control-label">About you</label>
 								<div class="input-group">
 									<div class="image pr-2">
 										<!-- this will be the user's mugshot -->
 										{{ if .ProfileURL}}
 										<a href="{{- .ProfileURL -}}" target="_blank">
-											{{ end -}}
+										{{ end -}}
 											{{- if .ProfileImage }}
 											<img class="rounded shadow" src="{{- .ProfileImage -}}" alt="{{- .Username }} ({{- .UserUUID -}})" height="256" width="256" srcset="{{- .ProfileImage }} 1x, {{ .ProfileRetinaImage }} 2x">
 											{{ else }}
 											<img class="rounded shadow" src="{{- .Libravatar -}}" alt="{{ .Username }} ({{- .UserUUID -}}" height="256" width="256">
 											{{ end -}}
-											{{- if .ProfileURL}}
+										{{- if .ProfileURL}}
 										</a>
 										{{ end }}
 									</div>
-    								<textarea class="form-control" id="AboutText" rows="10" aria-describedby="labelAboutText">{{- .ProfileAboutText -}}</textarea>
+    								<textarea class="form-control" id="ProfileAboutText" name="ProfileAboutText" rows="10" aria-describedby="labelAboutText">{{- .ProfileAboutText -}}</textarea>
 								</div>
   							</div>
 							<!-- ProfileURL -->
@@ -80,37 +80,37 @@
 							<div class="form-row">
 								<div class="form-group col-3 mt-2 mb-2" id="WantToLeft">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Build" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Build" id="WantToBuild" {{ if (bitTest .ProfileWantToMask 1) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToBuild">Build</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Meet" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Meet" id="WantToMeet" {{ if (bitTest .ProfileWantToMask 4) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToMeet">Meet</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Group"  id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Group"  id="WantToGroup" {{ if (bitTest .ProfileWantToMask 8) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToMeet">Group</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Sell" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Sell" id="WantToSell" {{ if (bitTest .ProfileWantToMask 32) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToSell">Sell</label>
 									</div>
 								</div>
 								<div class="form-group col-3 mt-2 mb-2" id="WantToRight">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Explore" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Explore" id="WantToExplore" {{ if (bitTest .ProfileWantToMask 2) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToExplore">Explore</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="BeHired" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="BeHired" id="WantToBeHired" {{ if (bitTest .ProfileWantToMask 64) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToBeHired">Be Hired</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Buy" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Buy" id="WantToBuy" {{ if (bitTest .ProfileWantToMask 16) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToBuy">Buy</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileWantTo[]" value="Hire" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileWantTo[]" value="Hire" id="WantToHire" {{ if (bitTest .ProfileWantToMask 128) -}}checked{{- end -}}>
 										<label class="form-check-label" for="WantToHire">Hire</label>
 									</div>
 								</div>
@@ -131,29 +131,29 @@
 							<div class="form-row">
 								<div class="form-group col-3 mt-2 mb-2" id="SkillsLeft">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileSkills[]" value="Textures" id="SkillsTextures" {{ if (bitTest .ProfileSkillsMask 1) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileSkills[]" value="Textures" id="SkillsTextures" {{ if (bitTest .ProfileSkillsMask 1) -}}checked{{- end -}}>
 										<label class="form-check-label" for="SkillsTextures">Textures</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileSkills[]" value="Modeling" id="SkillsModeling" {{ if (bitTest .ProfileSkillsMask 8) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileSkills[]" value="Modeling" id="SkillsModeling" {{ if (bitTest .ProfileSkillsMask 8) -}}checked{{- end -}}>
 										<label class="form-check-label" for="SkillsModeling">Modeling</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileSkills[]" value="Scripting" id="SkillsScripting" {{ if (bitTest .ProfileSkillsMask 16) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileSkills[]" value="Scripting" id="SkillsScripting" {{ if (bitTest .ProfileSkillsMask 16) -}}checked{{- end -}}>
 										<label class="form-check-label" for="SkillsScripting">Scripting</label>
 									</div>
 								</div>
 								<div class="form-group col-3 mt-2 mb-2" id="SkillsRight">
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileSkills[]" value="Architecture" id="SkillsArchitecture" {{ if (bitTest .ProfileSkillsMask 2) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileSkills[]" value="Architecture" id="SkillsArchitecture" {{ if (bitTest .ProfileSkillsMask 2) -}}checked{{- end -}}>
 										<label class="form-check-label" for="SkillsArchitecture">Architecture</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileSkills[]" value="EventPlanning" id="SkillsEventPlanning" {{ if (bitTest .ProfileSkillsMask 4) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileSkills[]" value="EventPlanning" id="SkillsEventPlanning" {{ if (bitTest .ProfileSkillsMask 4) -}}checked{{- end -}}>
 										<label class="form-check-label" for="SkillsEventPlanning">Event Planning</label>
 									</div>
 									<div class="form-check">
-										<input class="form-check-input" type="checkbox" name="profileSkills[]" value="CustomCharacters" id="SkillsCustomCharacters" {{ if (bitTest .ProfileSkillsMask 32) -}}checked{{- end -}}>
+										<input class="form-check-input" type="checkbox" name="ProfileSkills[]" value="CustomCharacters" id="SkillsCustomCharacters" {{ if (bitTest .ProfileSkillsMask 32) -}}checked{{- end -}}>
 										<label class="form-check-label" for="SkillsCustomCharacters">Custom Characters</label>
 									</div>
 								</div>
@@ -190,7 +190,7 @@
 										<img class="rounded shadow-sm" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mOMa1zzHwAFXAKM3m3GvQAAAABJRU5ErkJggg==" alt="No image for {{- .Username -}}" height="128" width="128">
 										{{- end }}
 									</div>
-									<textarea class="form-control" id="ProfileFirstText" rows="3" aria-describedby="labelProfileFirstText">{{- .ProfileFirstText -}}</textarea>
+									<textarea class="form-control" id="ProfileFirstText" name="ProfileFirstText" rows="3" aria-describedby="labelProfileFirstText">{{- .ProfileFirstText -}}</textarea>
 								</div>
 							</div>
 
@@ -201,6 +201,7 @@
 								<button type="submit" class="btn btn-primary shadow-sm" value="Submit">Submit&nbsp;<i class="fas fa-paper-plane"></i></button>
 							</div>
 						</fieldset>
+						<input id="UserUUID" name="UserUUID" type="hidden" value="{{- .UserUUID -}}">
 					</form>
 					{{- if .ProfileData }}
 					<div class="invisible">Raw data: {{- .ProfileData -}}</div>
