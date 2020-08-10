@@ -30,8 +30,10 @@ type UserProfile struct {
 	ProfileMaturePublish int	`form:"profileMaturePublish" json:"profileMaturePublish"`
 	ProfileURL string			`form:"profileURL" json:"profileURL"`
 	ProfileWantToMask int		`form:"profileWantToMask" json:"profileWantToMask"`
+	ProfileWantTo []string		`form:"profileWantTo[]"`
 	ProfileWantToText string	`form:"profileWantToText" json:"profileWantToText"`
 	ProfileSkillsMask int		`form:"profileSkillsMask" json:"profileSkillsMask"`
+	ProfileSkills []string		`form:"profileSkills[]"`
 	ProfileSkillsText string	`form:"profileSkillsText" json:"profileSkillsText"`
 	ProfileLanguages string		`form:"profileLanguages" json:"profileLanguages"`
 	ProfileImage string			`form:"profileImage" json:"profileImage"`
@@ -237,6 +239,7 @@ func saveProfile(c *gin.Context) {
 	var oneProfile UserProfile
 
 	session := sessions.Default(c)
+	thisUUID := session.Get("UUID")
 
 	if c.Bind(&oneProfile) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "404.tpl", gin.H{
@@ -257,13 +260,12 @@ func saveProfile(c *gin.Context) {
 
 		return
 	}
-
 	// check if we really are who we claim to be
-	if session.Get("UUID") != oneProfile.UserUUID {
+	if thisUUID != oneProfile.UserUUID {
 		c.HTML(http.StatusUnauthorized, "404.tpl", gin.H{
 			"errorcode"		: http.StatusUnauthorized,
 			"errortext"		: "No permission",
-			"errorbody"		: "You have no permission to change the profile for " + session.Get("Username"),
+			"errorbody"		: fmt.Sprintf("You have no permission to change the profile for %q", session.Get("Username")),
 			"now"			: formatAsYear(time.Now()),
 			"author"		: *config["author"],
 			"description"	: *config["description"],
@@ -275,7 +277,7 @@ func saveProfile(c *gin.Context) {
 			"Libravatar"	: session.Get("Libravatar"),
 		})
 		log.Printf("[ERROR] Session UUID %q is not the same as Profile UUID %q - profile data change for %q not allowed\n",
-		session.Get("UUID"), oneProfile.UserUUID, session.Get("Username"))
+		thisUUID, oneProfile.UserUUID, session.Get("Username"))
 
 		return
 	}
@@ -291,18 +293,59 @@ func saveProfile(c *gin.Context) {
 
 	// Calculate the masks
 
-//	wantToText :=
+	var wantToMask, skillsMask int
 
+	for _, bitfield := range(oneProfile.ProfileWantTo) {
+		switch bitfield {
+			case "Build":
+				wantToMask += 1
+			case "Meet":
+				wantToMask += 4
+			case "Group":
+				wantToMask += 8
+			case "Sell":
+				wantToMask += 32
+			case "Explore":
+				wantToMask += 2
+			case "BeHired":
+				wantToMask += 64
+			case "Buy":
+				wantToMask += 16
+			case "Hire":
+				wantToMask += 128
+		}
+	}
 
+	for _, bitfield := range(oneProfile.ProfileSkills) {
+		switch bitfield {
+			case "Textures":
+				skillsMask += 1
+			case "Modeling":
+				skillsMask += 8
+			case "Scripting":
+				skillsMask += 16
+			case "Architecture":
+				skillsMask += 2
+			case "EventPlanning":
+				skillsMask += 4
+			case "CustomCharacters":
+				skillsMask += 32
+		}
+	}
+
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] oneProfile.ProfileWantTo is %v, wantToMask is %d, oneProfile.ProfileSkills is %v, skillsMask is %d\n", oneProfile.ProfileWantTo, wantToMask, oneProfile.ProfileSkills, skillsMask)
+	}
+/*
 	// Update it on database
 	result, err := db.Exec("UPDATE userprofile SET profilePartner = ?, profileAllowPublish = ?, profileMaturePublish = ?, profileURL = ?, profileWantToMask = ?, profileWantToText = ?, profileSkillsMask = ?, profileSkillsText = ?, profileLanguages = ?, profileImage = ?, profileAboutText = ?, profileFirstImage = ?, profileFirstText = ? WHERE useruuid = ?"),
 		oneProfile.ProfilePartner,
 		oneProfile.ProfileAllowPublish,
 		oneProfile.ProfileMaturePublish,
 		oneProfile.ProfileURL,
-		oneProfile.ProfileWantToMask,
+		wantToMask,						// oneProfile.ProfileWantToMask,
 		oneProfile.ProfileWantToText,
-		oneProfile.ProfileSkillsMask,
+		skillsMask,						// oneProfile.ProfileSkillsMask,
 		oneProfile.ProfileSkillsText,
 		oneProfile.ProfileLanguages,
 		oneProfile.ProfileImage,
@@ -315,10 +358,11 @@ func saveProfile(c *gin.Context) {
 	checkErr(err)
 
 	if numRowsAffected, err := result.RowsAffected(); err != nil {
-		log.Printf("[ERROR] Updating database with new password for %q failed, error was %q\n", thisUUID, err)
-	} else {
-
-
+		log.Printf("[ERROR] Updating database with new profile for %q failed, error was %q\n", thisUUID, err)
+	} else if *config["ginMode"] == "debug" {
+		log.Printf("[INFO] Success updating database with new profile for %q, number of rows affected: %d\n", thisUUID, numRowsAffected)
+	}
+*/
 	c.HTML(http.StatusOK, "404.tpl", gin.H{
 		"errorcode"		: http.StatusOK,
 		"errortext"		: "Saving profile succeeded",
