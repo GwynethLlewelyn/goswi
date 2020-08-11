@@ -22,8 +22,6 @@ require (
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
 	golang.org/x/sys v0.0.0-20200805065543-0cf7623e9dbd // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
-	gopkg.in/gographics/imagick.v1 v1.1.2 // indirect
-	gopkg.in/gographics/imagick.v2 v2.6.0 // indirect
 	gopkg.in/gographics/imagick.v3 v3.3.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect
 	strk.kbt.io/projects/go/libravatar v0.0.0-20191008002943-06d1c002b251

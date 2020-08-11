@@ -326,7 +326,7 @@ func main() {
 			"author"		: *config["author"],
 			"description"	: *config["description"],
 			"logo"			: *config["logo"],
-			"logoTitle"			: *config["logoTitle"],
+			"logoTitle"		: *config["logoTitle"],
 			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - 404",
 			"Username"		: session.Get("Username"),
@@ -355,8 +355,7 @@ func main() {
 		if (*config["tlsCRT"] != "" && *config["tlsKEY"] != "") {
 			err := router.RunTLS(":8033", *config["tlsCRT"], *config["tlsKEY"]) // if it works, it will never return
 			if (err != nil) {
-				log.Println("[WARN] Could not run with TLS; either the certificate", *config["tlsCRT"], "was not found, or the private key",
-					*config["tlsKEY"], "was not found, or either [maybe even both] are invalid.")
+				log.Printf("[WARN] Could not run with TLS; either the certificate %q was not found, or the private key %q was not found, or either [maybe even both] are invalid.\n", *config["tlsCRT"], *config["tlsKEY"])
 				log.Println("[INFO] Running _without_ TLS on the usual port")
 				log.Fatal(router.Run(":8033"))
 			}

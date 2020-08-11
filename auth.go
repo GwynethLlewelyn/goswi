@@ -11,9 +11,9 @@ import (
 // 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+//	jsoniter "github.com/json-iterator/go"
 //	"github.com/philippgille/gokv"
 //	"github.com/philippgille/gokv/syncmap"
-//	jsoniter "github.com/json-iterator/go"
 //	"html/template"
 	"log"
 // 	"math/rand"
@@ -192,28 +192,9 @@ func performLogin(c *gin.Context) {
 			log.Printf("[INFO] User valid with username: %q UUID: %q Email: <%s> Token: %q", oneUser.Username, principalID, email, session.Get("Token"))
 		}
 
+		session.Set("Libravatar", getAvatar(email, oneUser.Username, 60))
 		if email != "" {
-//			avt.SetSecureFallbackHost("unicornify.pictures")	// possibly not needed, we'll implement it locally
-			avt := libravatar.New()
-			avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
-			avt.SetUseHTTPS(true)
-//			avt.SetSecureFallbackHost("unicornify.pictures")
-			if avatar_url, err := avt.FromEmail(email); err == nil {
-				session.Set("Libravatar", avatar_url)
-			} else {
-				if *config["ginMode"] == "debug" {
-					log.Println("[WARN]: Libravatar returned error:", err)
-				}
-				// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
-				session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
-				session.Set("Email", email)	// who knows, it might be useful at some point
-			}
-		} else {
-			// if we don't have a valid email, get an Unicorn!
-			if *config["ginMode"] == "debug" {
-				log.Println("[WARN]: Empty email on database, attempting to get a Unicorn")
-			}
-			session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(oneUser.Username) + "?s=60")
+			session.Set("Email", email)	// who knows, it might be useful at some point
 		}
 		session.Set("RememberMe", oneUser.RememberMe)
 		session.Save()
@@ -777,30 +758,12 @@ func checkTokenForPasswordReset(c *gin.Context) {
 					if *config["ginMode"] == "debug" {
 						log.Printf("[INFO] Password change link: User valid with username: %q UUID: %s Email: <%s> Token: %s", someTokens.Username, someTokens.UserUUID, someTokens.Email, session.Get("Token"))
 					}
+
+					session.Set("Libravatar", getAvatar(someTokens.Email, someTokens.Username, 60))
 					if someTokens.Email != "" {
-						//			avt.SetSecureFallbackHost("unicornify.pictures")	// possibly not needed, we'll implement it locally
-						avt := libravatar.New()
-						avt.SetAvatarSize(60)	// for some silly reason, that's what our template has...
-						avt.SetUseHTTPS(true)
-						//			avt.SetSecureFallbackHost("unicornify.pictures")
-						if avatar_url, err := avt.FromEmail(someTokens.Email); err == nil {
-							session.Set("Libravatar", avatar_url)
-						} else {
-							if *config["ginMode"] == "debug" {
-								log.Println("[WARN]: Libravatar returned error:", err)
-							}
-							// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
-							session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(someTokens.Username) + "?s=60")
-							session.Set("Email", someTokens.Email)	// who knows, it might be useful at some point
-						}
-					} else {
-						// if we don't have a valid email, get an Unicorn!
-						if *config["ginMode"] == "debug" {
-							log.Println("[WARN]: Empty email on database, attempting to get a Unicorn")
-						}
-						session.Set("Libravatar", "https://unicornify.pictures/avatar/" + GetMD5Hash(someTokens.Username) + "?s=60")
+						session.Set("Email", someTokens.Email)	// who knows, it might be useful at some point
 					}
-//						session.Set("RememberMe", ???)	// we may not be able to set this here
+//					session.Set("RememberMe", ???)	// we may not be able to set this here (yet)
 					session.Save()
 
 					// move user to password change template
@@ -875,3 +838,28 @@ func isUsernameAvailable(username string) bool {
 	return false
 }
 
+// getAvatar returns a Libravatar, Gravatar, or Unicorn and returns the URL to the image.
+// In the future, it will also save the image to cache, but now we just need a quick & dirty approach (gwyneth 20200811).
+func getAvatar(email string, username string, size uint) string {
+	avt := libravatar.New()
+	avt.SetAvatarSize(size)
+	avt.SetUseHTTPS(true)
+
+	if email != "" {
+		if avatar_url, err := avt.FromEmail(email); err == nil {
+			return avatar_url
+		} else {
+			if *config["ginMode"] == "debug" {
+				log.Println("[WARN]: Libravatar returned error:", err)
+			}
+			// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
+			return fmt.Sprintf("https://unicornify.pictures/avatar/%s?s=%d", GetMD5Hash(email), size)
+		}
+	} else {
+		// if we don't have a valid email, get an Unicorn!
+		if *config["ginMode"] == "debug" {
+			log.Println("[WARN]: Empty email on database, attempting to get a Unicorn via username")
+		}
+		return fmt.Sprintf("https://unicornify.pictures/avatar/%s?s=%d", GetMD5Hash(username), size)
+	}
+}

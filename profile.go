@@ -394,11 +394,9 @@ func saveProfile(c *gin.Context) {
 
 	checkErr(err)
 
-
-
 	if numRowsAffected, err := result.RowsAffected(); err != nil {
 		c.HTML(http.StatusOK, "404.tpl", gin.H{
-			"errorcode"		: http.StatusOK,
+			"errorcode"		: http.StatusInternalServerError,
 			"errortext"		: "Saving profile failed",
 			"errorbody"		: fmt.Sprintf("Database error was: %q [%d row(s) affected]", err, numRowsAffected),
 			"now"			: formatAsYear(time.Now()),
@@ -430,7 +428,7 @@ func imageCacheTransform(key string) *diskv.PathKey {
 	path := strings.Split(key, "/")
 	last := len(path) - 1
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] imageCacheTransform: got key %q transformed into path %v and filename %q\n",
+		log.Printf("[DEBUG] imageCacheTransform: got from KV store key %q transformed into path %v and filename %q\n",
 			key, path, path[last])
 	}
 	return &diskv.PathKey{
@@ -441,7 +439,7 @@ func imageCacheTransform(key string) *diskv.PathKey {
 
 func imageCacheInverseTransform(pathKey *diskv.PathKey) string {
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] imageCacheInverseTransform: got pathKey %v which will be returned as %q\n",
+		log.Printf("[DEBUG] imageCacheInverseTransform: pathKey %v which will be returned as %q\n",
 			pathKey, strings.Join(pathKey.Path, "/") + pathKey.FileName) // inefficient but we're just debugging... (gwyneth 20200727)
 	}
 	return strings.Join(pathKey.Path, "/") + pathKey.FileName
