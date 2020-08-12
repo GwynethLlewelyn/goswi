@@ -125,41 +125,10 @@
 						</div>
 					</div>
 				</a>
-<!--
-				<a class="dropdown-item d-flex align-items-center" href="#">
-				  <div class="dropdown-list-image mr-3">
-					<img class="rounded-circle" src="https://source.unsplash.com/AU4VPcFN4LE/60x60" alt="">
-					<div class="status-indicator"></div>
-				  </div>
-				  <div>
-					<div class="text-truncate">I have the photos that you ordered last month, how would you like them sent to you?</div>
-					<div class="small text-gray-500">Jae Chun · 1d</div>
-				  </div>
-				</a>
-				<a class="dropdown-item d-flex align-items-center" href="#">
-				  <div class="dropdown-list-image mr-3">
-					<img class="rounded-circle" src="https://source.unsplash.com/CS2uCrpNzJY/60x60" alt="">
-					<div class="status-indicator bg-warning"></div>
-				  </div>
-				  <div>
-					<div class="text-truncate">Last month's report looks great, I am very happy with the progress so far, keep up the good work!</div>
-					<div class="small text-gray-500">Morgan Alvarez · 2d</div>
-				  </div>
-				</a>
-				<a class="dropdown-item d-flex align-items-center" href="#">
-				  <div class="dropdown-list-image mr-3">
-					<img class="rounded-circle" src="https://source.unsplash.com/Mv9hjnEUHR4/60x60" alt="">
-					<div class="status-indicator bg-success"></div>
-				  </div>
-				  <div>
-					<div class="text-truncate">Am I a good boy? The reason I ask is because someone told me that people say this to all dogs, even if they aren't good...</div>
-					<div class="small text-gray-500">Chicken the Dog · 2w</div>
-				  </div>
-				</a>
-				-->
 				<a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
 				{{ end }}
 			  </div>
+			  {{ end }}
 			</li>
 
 			<li class="topbar-divider d-none d-sm-block"></li>

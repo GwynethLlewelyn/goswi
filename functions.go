@@ -141,21 +141,19 @@ func bitTest(flag int, mask int) bool {
 	return (flag & mask) != 0
 }
 
-// CommonEnvironment defines variables we are _always_ passing on to templates.
-var CommonEnvironment = gin.H{
-	"now"			: formatAsYear(time.Now()),
-	"author"		: *config["author"],
-	"description"	: *config["description"],
-	"logo"			: *config["logo"],
-	"logoTitle"		: *config["logoTitle"],
-	"sidebarCollapsed" : *config["sidebarCollapsed"],
-	"titleCommon"	: *config["titleCommon"],
-}
-
 // environment pushes a lot of stuff into the common environment
 func environment(c *gin.Context, env gin.H) gin.H {
 	session := sessions.Default(c)
-	var sessionRawData = gin.H{
+	var data = gin.H{
+		/* common environment */
+		"now"			: formatAsYear(time.Now()),
+		"author"		: *config["author"],
+		"description"	: *config["description"],
+		"logo"			: *config["logo"],
+		"logoTitle"		: *config["logoTitle"],
+		"sidebarCollapsed" : *config["sidebarCollapsed"],
+		"titleCommon"	: *config["titleCommon"],
+		/* session data */
 		"Username"		: session.Get("Username"),
 		"UUID"			: session.Get("UUID"),
 		"Libravatar"	: session.Get("Libravatar"),
@@ -165,6 +163,6 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"Messages"		: session.Get("Messages"),
 	}
 
-	retMap := MergeMaps(CommonEnvironment, sessionRawData, env)
+	retMap := MergeMaps(data, env)
 	return retMap
 }
