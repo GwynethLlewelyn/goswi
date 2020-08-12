@@ -198,6 +198,11 @@ func performLogin(c *gin.Context) {
 		}
 		session.Set("RememberMe", oneUser.RememberMe)
 		session.Save()
+
+		// Set up background routine to deal with incoming offline IMs (gwyneth 202006812).
+		// During debugging, we'll simply call this once (better than nothing...)
+
+		GetOfflineMessages(c)
 	} else {
 		// invalid user, do not set cookies!
 		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
@@ -222,6 +227,7 @@ func performLogin(c *gin.Context) {
 
 		return
 	}
+
 	c.Redirect(http.StatusSeeOther, "/")	// see https://softwareengineering.stackexchange.com/questions/99894/why-doesnt-http-have-post-redirect and https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/303
 }
 

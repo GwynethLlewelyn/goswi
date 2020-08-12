@@ -6,6 +6,9 @@ import (
 	"encoding/hex"
 	"encoding/base64"
 	"fmt"
+	"github.com/gin-contrib/sessions"
+//	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"log"
 	"math"
@@ -117,9 +120,51 @@ func isValidExtension(lookup string) bool {
 	return false
 }
 
+// MergeMaps adds lots of map[string]interface{} together, returning the merged map[string]interface{}.
+// It overwrites duplicate keys, maps tp the right overwriting whatever keys are on the left.
+// This allows for setting 'default' arguments later below, which can be overriden.
+// See https://play.golang.org/p/8a9cXdSL_o3 as well as https://stackoverflow.com/a/39406305/1035977.
+func MergeMaps(maps ...map[string]interface{}) map[string]interface{} {
+	result := make(map[string]interface{})
+	for _, m := range maps {
+		for k, v := range m {
+			result[k] = v
+		}
+	}
+	return result
+}
+
 // Functions to deal with bitfield comparisons inside templates.
 
 // bitTest applies a mask to a flag and returns true if the bit is set in the mask, false otherwise.
 func bitTest(flag int, mask int) bool {
 	return (flag & mask) != 0
+}
+
+// CommonEnvironment defines variables we are _always_ passing on to templates.
+var CommonEnvironment = gin.H{
+	"now"			: formatAsYear(time.Now()),
+	"author"		: *config["author"],
+	"description"	: *config["description"],
+	"logo"			: *config["logo"],
+	"logoTitle"		: *config["logoTitle"],
+	"sidebarCollapsed" : *config["sidebarCollapsed"],
+	"titleCommon"	: *config["titleCommon"],
+}
+
+// environment pushes a lot of stuff into the common environment
+func environment(c *gin.Context, env gin.H) gin.H {
+	session := sessions.Default(c)
+	var sessionRawData = gin.H{
+		"Username"		: session.Get("Username"),
+		"UUID"			: session.Get("UUID"),
+		"Libravatar"	: session.Get("Libravatar"),
+		"Token"			: session.Get("Token"),
+		"Email"			: session.Get("Email"),
+		"RememberMe"	: session.Get("RememberMe"),
+		"Messages"		: session.Get("Messages"),
+	}
+
+	retMap := MergeMaps(CommonEnvironment, sessionRawData, env)
+	return retMap
 }

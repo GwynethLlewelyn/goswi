@@ -153,82 +153,37 @@ func main() {
 	router.StaticFile("/site.webmanifest", filepath.Join(PathToStaticFiles, "/assets/favicons/site.webmanifest"))
 
 	router.GET("/", func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusOK, "index.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
-			"titleCommon"	: *config["titleCommon"] + " - Home",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		c.HTML(http.StatusOK, "index.tpl", environment(c,
+			gin.H{
+				"titleCommon"	: *config["titleCommon"] + " - Home",
+		}))
 	})
 
 	router.GET("/welcome", GetStats)
 	router.GET("/about", func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusOK, "about.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
+		c.HTML(http.StatusOK, "about.tpl", environment(c,
+		gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - About",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		}))
 	})
 	router.GET("/help", func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusOK, "help.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
-			"titleCommon"	: *config["titleCommon"] + " - Help",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		c.HTML(http.StatusOK, "help.tpl", environment(c,
+			gin.H{
+				"titleCommon"	: *config["titleCommon"] + " - Help",
+		}))
 	})
 	// the following are not implemented yet
 	router.GET("/economy", func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
-			"titleCommon"	: *config["titleCommon"] + " - Economy",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		c.HTML(http.StatusNotFound, "404.tpl", environment(c,
+			gin.H{
+				"titleCommon"	: *config["titleCommon"] + " - Economy",
+		}))
 	})
 	router.GET("/search", func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
-			"titleCommon"	: *config["titleCommon"] + " - Search results",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		c.HTML(http.StatusNotFound, "404.tpl", environment(c,
+			gin.H{
+				"titleCommon"	: *config["titleCommon"] + " - Search results",
+		}))
 	})
 
 	userRoutes := router.Group("/user")
