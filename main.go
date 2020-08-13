@@ -4,7 +4,7 @@ import (
 	"flag"
 	// "fmt"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/cookie"
+	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
 	"github.com/peterbourgon/diskv/v3"
 	_ "github.com/philippgille/gokv"
@@ -110,7 +110,7 @@ func main() {
 	router.LoadHTMLGlob(filepath.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
-	store := cookie.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
+	store := memstore.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
 	router.Use(sessions.Sessions("goswisession", store))
 
 	// Initialise the diskv storage on the cache directory (gwyneth 20200724)

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/gob"
 //	"fmt"
 	"log"
 	"github.com/gin-contrib/sessions"
@@ -9,7 +10,7 @@ import (
 	"strconv"
 )
 
-type offlineIM struct {
+type OfflineIM struct {
 	ID string			`json:"ID"`
 	PrincipalID string	`json:"PrincipalID"`
 	Username string		`json:"Username"`	// will be constructed by getting it from the UserAccounts table
@@ -21,6 +22,11 @@ type offlineIM struct {
 
 const MaxNumberMessages int = 5	// maximum number of messages to retrieve
 
+// For some very, very, very stupid reason, we need to register our message type (and probably others) when starting...
+func init() {
+	gob.RegisterName("listOfOfflineIMs", []OfflineIM{})
+}
+
 // GetOfflineMessages will retrieve the top first 5 messages and put it on the session, to avoid constant reloading
 func GetOfflineMessages(c *gin.Context) {
 	session		:= sessions.Default(c)
@@ -28,7 +34,7 @@ func GetOfflineMessages(c *gin.Context) {
 	uuid		:= session.Get("UUID")
 
 	if uuid == "" {
-		log.Println("No UUID stored; messages for this user cannot get retrieved")
+		log.Println("[WARN]: GetOfflineMessages(): No UUID stored; messages for this user cannot get retrieved")
 	}
 
 	if *config["dsn"] == "" {
@@ -44,8 +50,8 @@ func GetOfflineMessages(c *gin.Context) {
 	defer rows.Close()
 
 	var (
-		oneMessage offlineIM
-		messages []offlineIM
+		oneMessage OfflineIM
+		messages []OfflineIM
 		firstName, lastName, email string
 	)
 
@@ -63,17 +69,19 @@ func GetOfflineMessages(c *gin.Context) {
 		oneMessage.Username = firstName + " " + lastName
 		oneMessage.Libravatar = getAvatar(email, oneMessage.Username, 60)
 
-		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG]: message # %d from user %q <%s> to %q is: %q\n", i, oneMessage.Username, email, username, oneMessage.Message)
-		}
+		// if *config["ginMode"] == "debug" {
+		// 	log.Printf("[DEBUG]: message # %d from user %q <%s> to %q is: %q\n", i, oneMessage.Username, email, username, oneMessage.Message)
+		// }
 		messages = append(messages, oneMessage)
 	}
 	checkErr(err)
 
 	// if *config["ginMode"] == "debug" {
-	// 	log.Printf("[DEBUG]: All messages for user %q: %+v\n", username, messages)
+	// 	log.Printf("[DEBUG]: GetOfflineMessages(): All messages for user %q: %+v\n", username, messages)
 	// }
 
 	session.Set("Messages", messages)
-	session.Save()
+	if err := session.Save(); err != nil {
+		log.Printf("[WARN]: GetOfflineMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
+	}
 }

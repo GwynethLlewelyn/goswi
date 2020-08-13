@@ -20,10 +20,16 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 	- install ImageMagick according to https://github.com/gographics/imagick (go for version 7)
 	- make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
 	- Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
-  My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external)
+  My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
 - Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
 - Do *not* forget to set `cookieStore` to a randomly generated password!
 - Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
+- I had to move from session storage in cookies to a memory-based approach, simply because the session data stored in cookies was growing and growing until it blew the established 4K limit. Now, if the application is _not_ running, all the stored session data is _lost_. I've been toying around the following possibilities:
+  - Using either Redis/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all yould have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
+  - Adapt Gin-Gonic to use the Gorilla FileSystem storage (Gin-Gonic sessions use Gorilla sessions underneath)
+  - Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
+
+  I haven't still decided what I'll do...
 
 ### TLS
 
