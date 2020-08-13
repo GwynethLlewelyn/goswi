@@ -20,7 +20,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"time"
+//	"time"
 )
 
 type UserProfile struct {
@@ -47,7 +47,6 @@ type UserProfile struct {
 func GetProfile(c *gin.Context) {
 	session		:= sessions.Default(c)
 	username	:= session.Get("Username")
-	libravatar	:= session.Get("Libravatar")
 	uuid		:= session.Get("UUID")
 
 	// open database connection
@@ -207,16 +206,10 @@ func GetProfile(c *gin.Context) {
 		}
 	}
 
-	c.HTML(http.StatusOK, "profile.tpl", gin.H{
-		"now"			: formatAsYear(time.Now()),
+	c.HTML(http.StatusOK, "profile.tpl", environment(c, gin.H{
 		"needsTables"	: false,
 		"needsMap"		: false,
 		"moreValidation" : true,
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
 		"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 		"titleCommon"	: *config["titleCommon"] + profileData.UserUUID + " Profile",
 		"ProfileData"	: fmt.Sprintf("%+v", profileData),
@@ -236,9 +229,7 @@ func GetProfile(c *gin.Context) {
 		"ProfileFirstImage"	: profileFirstImage,				// Real life, i.e. 'First Life' image
 		"ProfileRetinaFirstImage"	: profileRetinaFirstImage,	// Another generated Retina image
 		"ProfileFirstText"	: profileData.ProfileFirstText,
-		"Username"			: username,
-		"Libravatar"		: libravatar,
-	})
+	}))
 }
 
 // saveProfile is what gets called when someone saves the profile.
@@ -249,20 +240,12 @@ func saveProfile(c *gin.Context) {
 	thisUUID := session.Get("UUID")
 
 	if c.Bind(&oneProfile) != nil { // nil means no errors
-		c.HTML(http.StatusBadRequest, "404.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "404.tpl", environment(c, gin.H{
 			"errorcode"		: http.StatusBadRequest,
 			"errortext"		: "Saving profile failed",
 			"errorbody"		: "No form data posted",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Profile",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		}))
 		log.Println("[ERROR] No form data posted for saving profile")
 
 		return
@@ -274,20 +257,12 @@ func saveProfile(c *gin.Context) {
 
 	// check if we really are who we claim to be
 	if thisUUID != oneProfile.UserUUID {
-		c.HTML(http.StatusUnauthorized, "404.tpl", gin.H{
+		c.HTML(http.StatusUnauthorized, "404.tpl", environment(c, gin.H{
 			"errorcode"		: http.StatusUnauthorized,
 			"errortext"		: "No permission",
 			"errorbody"		: fmt.Sprintf("You have no permission to change the profile for %q", session.Get("Username")),
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Profile",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		}))
 		log.Printf("[ERROR] Session UUID %q is not the same as Profile UUID %q - profile data change for %q not allowed\n",
 		thisUUID, oneProfile.UserUUID, session.Get("Username"))
 
@@ -395,20 +370,12 @@ func saveProfile(c *gin.Context) {
 	checkErr(err)
 
 	if numRowsAffected, err := result.RowsAffected(); err != nil {
-		c.HTML(http.StatusOK, "404.tpl", gin.H{
+		c.HTML(http.StatusOK, "404.tpl", environment(c, gin.H{
 			"errorcode"		: http.StatusInternalServerError,
 			"errortext"		: "Saving profile failed",
 			"errorbody"		: fmt.Sprintf("Database error was: %q [%d row(s) affected]", err, numRowsAffected),
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"titleCommon"	: *config["titleCommon"] + " - Profile",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		}))
 
 		log.Printf("[ERROR] Updating database with new profile for %q failed, error was %s\n", thisUUID, err)
 		// TODO(gwyneth): we

@@ -95,7 +95,7 @@
 			  <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				<i class="fas fa-envelope fa-fw"></i>
 				<!-- Counter - Messages -->
-				<span class="badge badge-danger badge-counter">{{- if .Messages -}}{{- len .Messages -}}{{- end -}}</span>
+				{{- if .Messages -}}<span class="badge badge-danger badge-counter">{{- .numberMessages -}}</span>{{- end -}}
 			  </a>
 			  {{ if .Messages }}
 			  <!-- Dropdown - Messages -->
@@ -106,7 +106,7 @@
 				{{ range .Messages }}
 				<a class="dropdown-item d-flex align-items-center" href="#">
 					<div class="dropdown-list-image mr-3">
-						<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .FromID -}}">
+						<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .Username -}}">
 						<div class="status-indicator bg-success"></div>
 					</div>
 					<div class="font-weight-bold">
@@ -125,8 +125,8 @@
 						</div>
 					</div>
 				</a>
-				<a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
 				{{ end }}
+				<a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
 			  </div>
 			  {{ end }}
 			</li>

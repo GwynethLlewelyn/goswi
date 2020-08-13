@@ -21,7 +21,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"time"
+//	"time"
 	syslog "github.com/RackSec/srslog"
 )
 
@@ -190,68 +190,38 @@ func main() {
 	{
 		userRoutes.POST("/register",	ensureNotLoggedIn(), registerNewUser)
 		userRoutes.GET("/register",		ensureNotLoggedIn(), func(c *gin.Context) {
-			session := sessions.Default(c)
-
 			// we show a 404 error for now
-			c.HTML(http.StatusOK, "404.tpl", gin.H{
-				"errorcode"		: http.StatusForbidden,
-				"errortext"		: "Access denied",
-				"errorbody"		: "Sorry, this grid is not accepting new registrations.",
-				"now"			: formatAsYear(time.Now()),
-				"author"		: *config["author"],
-				"description"	: *config["description"],
-				"logo"			: *config["logo"],
-				"logoTitle"		: *config["logoTitle"],
-				"sidebarCollapsed" : *config["sidebarCollapsed"],
-				"titleCommon"	: *config["titleCommon"] + " - Register new user",
-				"logintemplate"	: false,
-				"Username"		: session.Get("Username"),
-				"Libravatar"	: session.Get("Libravatar"),
-			})
+			c.HTML(http.StatusOK, "404.tpl", environment(c,
+				gin.H{
+					"errorcode"		: http.StatusForbidden,
+					"errortext"		: "Access denied",
+					"errorbody"		: "Sorry, this grid is not accepting new registrations.",
+					"titleCommon"	: *config["titleCommon"] + " - Register new user",
+					"logintemplate"	: false,
+				}))
 		})
 		userRoutes.POST("/change-password",	ensureLoggedIn(), changePassword)
 		userRoutes.GET("/change-password",	ensureLoggedIn(), func(c *gin.Context) {
-			session := sessions.Default(c)
-
-			c.HTML(http.StatusOK, "change-password.tpl", gin.H{
-				"now"			: formatAsYear(time.Now()),
-				"author"		: *config["author"],
-				"description"	: *config["description"],
+			c.HTML(http.StatusOK, "change-password.tpl", environment(c, gin.H{
 				"titleCommon"	: *config["titleCommon"] + " - Change Password",
 				"logintemplate"	: true,
-				"Username"		: session.Get("Username"),
-				"Libravatar"	: session.Get("Libravatar"),
-			})
+			}))
 		})
 		userRoutes.POST("/reset-password",	ensureNotLoggedIn(), resetPassword)
 		userRoutes.GET("/reset-password",	ensureNotLoggedIn(), func(c *gin.Context) {
-			session := sessions.Default(c)
-
-			c.HTML(http.StatusOK, "reset-password.tpl", gin.H{
-				"now"			: formatAsYear(time.Now()),
-				"author"		: *config["author"],
-				"description"	: *config["description"],
+			c.HTML(http.StatusOK, "reset-password.tpl", environment(c, gin.H{
 				"titleCommon"	: *config["titleCommon"] + " - Reset Password",
 				"logintemplate"	: true,
-				"Username"		: session.Get("Username"),
-				"Libravatar"	: session.Get("Libravatar"),
-			})
+			}))
 		})
 		userRoutes.GET("/token/:token", ensureNotLoggedIn(), checkTokenForPasswordReset)
 		userRoutes.POST("/login",	ensureNotLoggedIn(), performLogin)
 		userRoutes.GET("/login", 	ensureNotLoggedIn(), func(c *gin.Context) {
-			session := sessions.Default(c)
-
-			c.HTML(http.StatusOK, "login.tpl", gin.H{
-				"now"			: formatAsYear(time.Now()),
-				"author"		: *config["author"],
-				"description"	: *config["description"],
+			c.HTML(http.StatusOK, "login.tpl", environment(c, gin.H{
 				"Debug"			: false,	// probably unnecessary
 				"titleCommon"	: *config["titleCommon"] + "Welcome!",
 				"logintemplate"	: true,
-				"Username"		: session.Get("Username"),	// very likely not set!!
-				"Libravatar"	: session.Get("Libravatar"),
-			})
+			}))
 		})
 		userRoutes.GET("/logout",	ensureLoggedIn(), logout)
 		userRoutes.GET("/profile",	ensureLoggedIn(), GetProfile)
@@ -259,34 +229,14 @@ func main() {
 	}
 	router.GET("/mapdata", GetMapData)
 	router.NoRoute(func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
+		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		}))
 	})
 	router.NoMethod(func(c *gin.Context) {
-		session := sessions.Default(c)
-
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
+		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-		})
+		}))
 	})
 	// Ping handler (who knows, it might be useful in some contexts... such as Let's Encrypt certificates
 	router.GET("/ping", func(c *gin.Context) {

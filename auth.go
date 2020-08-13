@@ -141,41 +141,29 @@ func performLogin(c *gin.Context) {
 
 	if c.Bind(&oneUser) != nil { // nil means no errors
 //	if err := c.ShouldBind(&oneUser); err != nil {	// this should be working; it's the 'prefered' way. But it doesn't! D'uh! (gwyneth 20200623)
-		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "login.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Login Failed",
 			"BoxMessage"	: "No form data posted",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "What?",
 			"logintemplate"	: true,
-		})
+		}))
 		log.Println("[ERROR] No form data posted for login")
 
 		return
 	}
 	if strings.TrimSpace(oneUser.Password) == "" {	// this should not happen, as we put the password as 'required' on the decorations
-		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "login.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Login Failed",
 			"BoxMessage"	: "Empty password, please try again",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Oh, No!",
 			"logintemplate"	: true,
 			"WrongUsername"	: oneUser.Username,
 			"WrongRememberMe" : oneUser.RememberMe,
-		})
+		}))
 		log.Println("[ERROR] The password can't be empty")
 
 		return
@@ -202,28 +190,22 @@ func performLogin(c *gin.Context) {
 		// Set up background routine to deal with incoming offline IMs (gwyneth 202006812).
 		// During debugging, we'll simply call this once (better than nothing...)
 
-		GetOfflineMessages(c)
+		GetTopOfflineMessages(c)
 	} else {
 		// invalid user, do not set cookies!
 		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
 
-		c.HTML(http.StatusBadRequest, "login.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "login.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Login Failed",
 			"BoxMessage"	: "Invalid credentials provided",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Oh, No!",
 			"logintemplate"	: true,
 			"WrongUsername"	: oneUser.Username,
 			"WrongPassword"	: oneUser.Password,
 			"WrongRememberMe" : oneUser.RememberMe,
-		})
+		}))
 
 		return
 	}
@@ -238,8 +220,7 @@ func logout(c *gin.Context) {
 	session.Clear()
 	session.Options(sessions.Options{Path: "/", MaxAge: -1}) // this sets the cookie with a MaxAge of 0,
 	session.Save()
-	c.Redirect(http.StatusTemporaryRedirect, "/")
-//	c.Redirect(http.StatusFound, "/")	// see https://github.com/gin-contrib/sessions/issues/29#issuecomment-376382465
+	c.Redirect(http.StatusTemporaryRedirect, "/")	// see https://github.com/gin-contrib/sessions/issues/29#issuecomment-376382465
 }
 
 // registerNewUser is currently unimplemented (too dangerous).
@@ -248,20 +229,14 @@ func registerNewUser(c *gin.Context) {
 //	session := sessions.Default(c)	// should not have any session
 
 	if c.Bind(&oneUser) != nil { // nil means no errors
-		c.HTML(http.StatusBadRequest, "register.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "register.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Registration Failed",
 			"BoxMessage"	: "No form data posted",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "What?",
 			"logintemplate"	: true,
-		})
+		}))
 		log.Println("[ERROR] No form data posted to register a new user")
 
 		return
@@ -269,23 +244,17 @@ func registerNewUser(c *gin.Context) {
 //(username, password string) (*UserForm, error) {
 	log.Printf("[INFO] Not implemented yet")
 
-	c.HTML(http.StatusBadRequest, "register.tpl", gin.H{
+	c.HTML(http.StatusBadRequest, "register.tpl", environment(c, gin.H{
 		"BoxTitle"		: "Registration Failed",
 		"BoxMessage"	: "No new users allowed!",
 		"BoxType"		: "danger",
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Sorry!",
 		"logintemplate"	: true,
 		"WrongUsername"	: oneUser.Username,
 		"WrongPassword"	: oneUser.Password,
 		"WrongEmail"	: oneUser.Email,
-	})
+	}))
 
 	return
 }
@@ -301,61 +270,43 @@ func changePassword(c *gin.Context) {
 	session := sessions.Default(c)
 
 	if c.Bind(&aPasswordChange) != nil { // nil means no errors
-		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "change-password.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "No form data posted",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Say what?",
 			"logintemplate"	: true,
-		})
+		}))
 		log.Println("[ERROR] No form data posted for password change")
 
 		return
 	}
 	// Ok, we got a form; so do simple checks first
 	if aPasswordChange.NewPassword != aPasswordChange.ConfirmNewPassword {
-		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "change-password.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "Confirmation password does not match new password!",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "No way, José!",
 			"logintemplate"	: true,
 			"t"				: aPasswordChange.T,
-		})
+		}))
 		log.Println("[ERROR] Confirmation password does not match new password")
 
 		return
 	}
 	if aPasswordChange.T == "" && (aPasswordChange.NewPassword == aPasswordChange.OldPassword) {
-		c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "change-password.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Password change failed",
 			"BoxMessage"	: "New password must be different from the old one!",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "No deal!",
 			"logintemplate"	: true,
 			"t"				: aPasswordChange.T,
-		})
+		}))
 		log.Println("[ERROR] New password must be different from the old one")
 
 		return
@@ -375,23 +326,18 @@ func changePassword(c *gin.Context) {
 			// we do something similar to what was done for login, i.e. present error message and place the existing information back on the form (20200714)
 			log.Printf("[ERROR] Invalid current password for user UUID %q while trying to change it.", thisUUID)
 
-			c.HTML(http.StatusBadRequest, "change-password.tpl", gin.H{
+			c.HTML(http.StatusBadRequest, "change-password.tpl", environment(c, gin.H{
 				"BoxTitle"		: "Login Failed",
 				"BoxMessage"	: "Incorrect current password",
 				"BoxType"		: "danger",
 				"now"			: formatAsYear(time.Now()),
-				"author"		: *config["author"],
-				"description"	: *config["description"],
-				"logo"			: *config["logo"],
-				"logoTitle"		: *config["logoTitle"],
-				"sidebarCollapsed" : *config["sidebarCollapsed"],
 				"Debug"			: false,
 				"titleCommon"	: *config["titleCommon"] + "Whoopsie!",
 				"logintemplate"	: true,
 				"WrongOldPassword"	: aPasswordChange.OldPassword,
 				"WrongNewPassword"	: aPasswordChange.NewPassword,
 				"WrongConfirmNewPassword"	: aPasswordChange.ConfirmNewPassword,
-			})
+			}))
 
 			return
 		}
@@ -453,18 +399,12 @@ func changePassword(c *gin.Context) {
 			} else {
 				log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
 
-				c.HTML(http.StatusForbidden, "404.tpl", gin.H{
-					"now"			: formatAsYear(time.Now()),
-					"author"		: *config["author"],
-					"description"	: *config["description"],
-					"logo"			: *config["logo"],
-					"logoTitle"		: *config["logoTitle"],
-					"sidebarCollapsed" : *config["sidebarCollapsed"],
+				c.HTML(http.StatusForbidden, "404.tpl", environment(c, gin.H{
 					"titleCommon"	: *config["titleCommon"] + " - 403",
 					"errorcode"		: "403",
 					"errortext"		: "User not found",
 					"errorbody"		: "Unknown or invalid user, cannot proceed, please try later.",
-				})
+				}))
 				return
 			}
 		}
@@ -497,56 +437,34 @@ func changePassword(c *gin.Context) {
 		} else {
 			if numRowsAffected != 1 {
 				log.Printf("[WARN] Inconsistent database state after password change, numRowsAffected was %d which is unusual", numRowsAffected)
-				c.HTML(http.StatusOK, "index.tpl", gin.H{
-					"now"			: formatAsYear(time.Now()),
-					"author"		: *config["author"],
-					"description"	: *config["description"],
-					"logo"			: *config["logo"],
-					"logoTitle"		: *config["logoTitle"],
-					"sidebarCollapsed" : *config["sidebarCollapsed"],
+				c.HTML(http.StatusOK, "index.tpl", environment(c, gin.H{
 					"titleCommon"	: *config["titleCommon"] + " - Home",
-					"Username"		: session.Get("Username"),
-					"Libravatar"	: session.Get("Libravatar"),
 					"BoxTitle"		: "Password probably not changed",
 					"BoxType"		: "warning",
 					"BoxMessage"	: "You might need to try again",
 					"Content"		: fmt.Sprintf("Warning: your password change seems to have affected %d instances on the database, which is both surprising and unusual; please check if the change worked at all", numRowsAffected),
-				})
+				}))
 				return
 			} else {
 				log.Printf("[INFO] Success updating database with new password for %q; %d rows affected\n", thisUUID, numRowsAffected)
 			}
 		}
-		c.HTML(http.StatusOK, "index.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
+		c.HTML(http.StatusOK, "index.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - Home",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
 			"BoxTitle"		: "Password changed",
 			"BoxType"		: "success",
 			"BoxMessage"	: "Now don't forget the new one!",
 			"Content"		: "Your password has been successfully changed!",
-		})
+		}))
 		return
 	}
 
-	c.HTML(http.StatusForbidden, "404.tpl", gin.H{
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
+	c.HTML(http.StatusForbidden, "404.tpl", environment(c, gin.H{
 		"titleCommon"	: *config["titleCommon"] + " - 403",
 		"errorcode"		: "403",
 		"errortext"		: "Token incorrect",
 		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", token),	// token may be empty
-	})
+	}))
 	log.Printf("[ERROR] User UUID %q tried to use token %q but it's not valid and/or expired\n", thisUUID, token)
 }
 
@@ -566,20 +484,14 @@ func resetPassword(c *gin.Context) {
 	//session := sessions.Default(c)
 
 	if c.Bind(&aPasswordReset) != nil { // nil means no errors
-		c.HTML(http.StatusBadRequest, "reset-password.tpl", gin.H{
+		c.HTML(http.StatusBadRequest, "reset-password.tpl", environment(c, gin.H{
 			"BoxTitle"		: "Password reset failed",
 			"BoxMessage"	: "No form data posted for password reset",
 			"BoxType"		: "danger",
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"Debug"			: false,
 			"titleCommon"	: *config["titleCommon"] + "Whut?",
 			"logintemplate"	: true,
-		})
+		}))
 		log.Println("[WARN] No form data posted for password reset")
 
 		return
@@ -683,18 +595,12 @@ If it was you, use the following link: ` + tokenURL + `
 			}
 		}
 	}
-	c.HTML(http.StatusOK, "reset-password-confirmation.tpl", gin.H{
+	c.HTML(http.StatusOK, "reset-password-confirmation.tpl", environment(c, gin.H{
 		"Content"		: fmt.Sprintf("Please check your email address %q for a password reset link; if your email address is in our database, you should get it shortly.", email),
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
 		"Debug"			: false,
 		"titleCommon"	: *config["titleCommon"] + "Email sent!",
 		"logintemplate"	: true,
-	})
+	}))
 }
 
 // checkTokenForPasswordReset is called when the user clicks the link for resetting their password, and we need to check if the token is a valid token to allow authentication
@@ -704,36 +610,24 @@ func checkTokenForPasswordReset(c *gin.Context) {
 
 	// token = c.Param("token")	// Wouldn't this be more obvious?
 	if err := c.ShouldBindUri(&params); err != nil {	// this should never fail, but... 	(gwyneth 20200713)
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
+		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",
 			"errorcode"		: "404",
 			"errortext"		: "Token not sent",
 			"errorbody"		: fmt.Sprintf("Invalid token or token not sent. Error was: %v", err),
-		})
+		}))
 		log.Println("[ERROR] Invalid token or token not sent. Error was:", err)
 		return
 	}
 	// assign token with the content of the parameter...
 	token = params.Payload
 	if token == "" { // one of those errors that should never happen... (gwyneth 20200713)
-		c.HTML(http.StatusNotFound, "404.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
+		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",
 			"errorcode"		: "404",
 			"errortext"		: "Empty token payload",
 			"errorbody"		: "Invalid token or empty token payload.",
-		})
+		}))
 		log.Println("[ERROR] Invalid token or empty token payload.")
 		return
 
@@ -773,18 +667,12 @@ func checkTokenForPasswordReset(c *gin.Context) {
 					session.Save()
 
 					// move user to password change template
-					c.HTML(http.StatusOK, "change-password.tpl", gin.H{
-						"now"			: formatAsYear(time.Now()),
-						"author"		: *config["author"],
-						"description"	: *config["description"],
-						"logo"			: *config["logo"],
-						"logoTitle"		: *config["logoTitle"],
-						"sidebarCollapsed" : *config["sidebarCollapsed"],
+					c.HTML(http.StatusOK, "change-password.tpl", environment(c, gin.H{
 						"Debug"			: false,
 						"titleCommon"	: *config["titleCommon"] + "New password!",
 						"logintemplate"	: true,
 						"someTokens"	: someTokens,	// this will allow us to ignore the 'old' password and just ask for new ones.
-					})
+					}))
 					// that's all, folks!
 					return
 				}
@@ -798,18 +686,12 @@ func checkTokenForPasswordReset(c *gin.Context) {
 		log.Println("[ERROR] Nothing stored for", selector, "error was", err)
 	}
 
-	c.HTML(http.StatusForbidden, "404.tpl", gin.H{
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
+	c.HTML(http.StatusForbidden, "404.tpl", environment(c, gin.H{
 		"titleCommon"	: *config["titleCommon"] + " - 403",
 		"errorcode"		: "403",
 		"errortext"		: "Token incorrect",
 		"errorbody"		: fmt.Sprintf("Either your token %q is invalid or it has expired!", token),
-	})
+	}))
 }
 
 // isUsernameAvailable simply checks the OpenSimulator database table 'UserAccounts' to see if a user exists with this username; note that OpenSimulator considers the username to have two distinct parts, 'first name' and 'last name'.

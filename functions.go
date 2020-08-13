@@ -144,6 +144,12 @@ func bitTest(flag int, mask int) bool {
 // environment pushes a lot of stuff into the common environment
 func environment(c *gin.Context, env gin.H) gin.H {
 	session := sessions.Default(c)
+	var sidebarCollapsed string = ""	// false by default
+	if session.Get("sidebarCollapsed") == "true" {
+		sidebarCollapsed = "true"
+	} else if *config["sidebarCollapsed"] == "true" {
+		sidebarCollapsed = "true"
+	}
 	var data = gin.H{
 		/* common environment */
 		"now"			: formatAsYear(time.Now()),
@@ -151,7 +157,7 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"description"	: *config["description"],
 		"logo"			: *config["logo"],
 		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : *config["sidebarCollapsed"],
+		"sidebarCollapsed" : sidebarCollapsed,
 		"titleCommon"	: *config["titleCommon"],
 		/* session data */
 		"Username"		: session.Get("Username"),
@@ -161,11 +167,12 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"Email"			: session.Get("Email"),
 		"RememberMe"	: session.Get("RememberMe"),
 		"Messages"		: session.Get("Messages"),
+		"numberMessages": session.Get("numberMessages"),
 	}
 
 	retMap := MergeMaps(data, env)
 
-	if *config["ginMode"] == "debug" {
+	if *config["ginMode"] == "debug" && retMap["Username"] != "" {
 		log.Printf("[DEBUG]: environment(): All messages for user %q: %+v\n", retMap["Username"], retMap["Messages"])
 	}
 
