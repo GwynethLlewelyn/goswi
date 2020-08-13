@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
+	github.com/dustin/go-humanize v1.0.0
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-playground/validator/v10 v10.3.0 // indirect

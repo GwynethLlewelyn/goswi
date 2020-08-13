@@ -111,7 +111,7 @@
 					</div>
 					<div class="font-weight-bold">
 						<div class="text-truncate">{{- .Message -}}</div>
-						<div class="small text-gray-500">{{- .Username -}} · {{- .TMStamp -}}</div>
+						<div class="small text-gray-500">{{- .Username -}}{{- if .TMStamp }}&nbsp;·&nbsp;{{ .TMStamp -}}{{- end -}}</div>
 					</div>
 				</a>
 				{{ else }}

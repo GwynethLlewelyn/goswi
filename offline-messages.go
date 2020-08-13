@@ -4,9 +4,10 @@ import (
 	"database/sql"
 	"encoding/gob"
 //	"fmt"
-	"log"
+	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"log"
 	"strconv"
 )
 
@@ -40,7 +41,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
-	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
+	db, err := sql.Open("mysql", *config["dsn"] + "?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
 	checkErrFatal(err)
 
 	defer db.Close()
@@ -63,21 +64,28 @@ func GetTopOfflineMessages(c *gin.Context) {
 			oneMessage OfflineIM
 			messages []OfflineIM
 			firstName, lastName, email string
+			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
 
-		for i := 1; rows.Next(); i++ {
+		for /* i := 1; */ rows.Next() /* ; i++ */ {		// uncomment for special
 			err = rows.Scan(
 				&oneMessage.ID,
 				&oneMessage.PrincipalID,
 				&oneMessage.FromID,
 				&oneMessage.Message,
-				&oneMessage.TMStamp,
+				&messageTimeStamp,
 				&firstName,
 				&lastName,
 				&email,
 			)
 			oneMessage.Username = firstName + " " + lastName
 			oneMessage.Libravatar = getAvatar(email, oneMessage.Username, 60)
+			// do something to the time
+			if messageTimeStamp.Valid {
+				oneMessage.TMStamp = humanize.Time(messageTimeStamp.Time)
+			} else {
+				oneMessage.TMStamp = ""
+			}
 
 			// if *config["ginMode"] == "debug" {
 			// 	log.Printf("[DEBUG]: message # %d from user %q <%s> to %q is: %q\n", i, oneMessage.Username, email, username, oneMessage.Message)
