@@ -38,7 +38,7 @@ func GetOfflineMessages(c *gin.Context) {
 	checkErrFatal(err)
 
 	defer db.Close()
-	rows, err := db.Query("SELECT ID, im_offline.PrincipalID, FromID, Message, TMStamp, FirstName, LastName, Email FROM im_offline, UserAccounts WHERE im_offline.PrincipalID = ? AND UserAccounts.PrincipalID = im_offline.PrincipalID ORDER BY TMStamp ASC LIMIT ?", uuid, strconv.Itoa(MaxNumberMessages))
+	rows, err := db.Query("SELECT ID, im_offline.PrincipalID, FromID, Message, TMStamp, FirstName, LastName, Email FROM im_offline, UserAccounts WHERE im_offline.PrincipalID = ? AND UserAccounts.PrincipalID = im_offline.FromID ORDER BY TMStamp ASC LIMIT ?", uuid, strconv.Itoa(MaxNumberMessages))
 	checkErr(err)
 
 	defer rows.Close()
