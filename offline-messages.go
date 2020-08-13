@@ -70,9 +70,9 @@ func GetOfflineMessages(c *gin.Context) {
 	}
 	checkErr(err)
 
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG]: All messages for user %q: %+v\n", username, messages)
-	}
+	// if *config["ginMode"] == "debug" {
+	// 	log.Printf("[DEBUG]: All messages for user %q: %+v\n", username, messages)
+	// }
 
 	session.Set("Messages", messages)
 	session.Save()
