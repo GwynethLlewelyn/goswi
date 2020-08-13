@@ -21,7 +21,16 @@ func ensureLoggedIn() gin.HandlerFunc {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[INFO]: ensureLoggedIn(): No authenticated user")
 			}
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
+			c.HTML(http.StatusOK, "404.tpl", environment(c,
+				gin.H{
+					"errorcode"		: http.StatusUnauthorized,
+					"errortext"		: http.StatusText(http.StatusUnauthorized),
+					"errorbody"		: "You must be authenticated to continue",
+					"titleCommon"	: *config["titleCommon"] + " - " + http.StatusText(http.StatusUnauthorized),
+					"logintemplate"	: false,
+				}))
+			//c.AbortWithStatus(http.StatusUnauthorized)
 		} else {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[INFO]: ensureLoggedIn(): Username is %q", loggedInInterface)
@@ -40,7 +49,16 @@ func ensureNotLoggedIn() gin.HandlerFunc {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
 			}
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.Abort()
+			c.HTML(http.StatusOK, "404.tpl", environment(c,
+				gin.H{
+					"errorcode"		: http.StatusUnauthorized,
+					"errortext"		: "Already authenticated",
+					"errorbody"		: "You have already logged in!",
+					"titleCommon"	: *config["titleCommon"] + " -  Already authenticated",
+					"logintemplate"	: false,
+				}))
+			// c.AbortWithStatus(http.StatusUnauthorized)
 		} else {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user")
@@ -55,12 +73,13 @@ func setUserStatus() gin.HandlerFunc {
 		session := sessions.Default(c)
 
 		// Note that all the things below may set everything to empty strings, which is FINE! (gwyneth 20200628)
-		c.Set("Username",	session.Get("Username"))
-		c.Set("Email",		session.Get("Email"))
-		c.Set("Libravatar",	session.Get("Libravatar"))
-		c.Set("Token",		session.Get("Token"))
-		c.Set("UUID",		session.Get("UUID"))
-		c.Set("RememberMe",	session.Get("RememberMe"))
+		c.Set("Username",			session.Get("Username"))
+		c.Set("Email",				session.Get("Email"))
+		c.Set("Libravatar",			session.Get("Libravatar"))
+		c.Set("Token",				session.Get("Token"))
+		c.Set("UUID",				session.Get("UUID"))
+		c.Set("RememberMe",			session.Get("RememberMe"))
+		c.Set("sidebarCollapsed",	session.Get("sidebarCollapsed"))
 
 		if *config["ginMode"] == "debug" {
 			log.Printf("[INFO]: setUserStatus(): Authenticated? %q (username) Cookie token: %q Libravatar: %q", session.Get("Username"), session.Get("Token"), session.Get("Libravatar"))
