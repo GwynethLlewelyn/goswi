@@ -158,6 +158,7 @@ func GetProfile(c *gin.Context) {
 	// note that the code will now assume that profileImage does, indeed, have a valid
 	//  image URL, and will fail with a broken image (404 error on browser) if it doesn't; thus:
 	// TODO(gwyneth): get some sort of default image for when all of the above fails
+	// An idea would be just to get a Libravatar! We have it, after all...
 
 	// Do the same for the profile image for First (=Real) Life. Comments as above!
 	profileFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + *config["convertExt"])

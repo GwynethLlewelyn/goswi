@@ -79,7 +79,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 				&email,
 			)
 			oneMessage.Username = firstName + " " + lastName
-			oneMessage.Libravatar = getAvatar(email, oneMessage.Username, 60)
+			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time
 			if messageTimeStamp.Valid {
 				oneMessage.TMStamp = humanize.Time(messageTimeStamp.Time)
