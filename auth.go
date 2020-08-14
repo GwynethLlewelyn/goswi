@@ -18,7 +18,7 @@ import (
 //	"html/template"
 	"io/ioutil"
 	"log"
-	"mime"
+//	"mime"
 // 	"math/rand"
 	"net/http"
 	"net/smtp"
@@ -738,7 +738,8 @@ func getLibravatar(email string, username string, size uint) string {
 	avt.SetUseHTTPS(true)
 	var (
 		avatarURL string
-		imageExtension string = *config["convertExt"]	// may be wrong, but this is our fallback
+		// TODO(gwyneth): We cannot be sure that the extension is valid
+//		imageExtension string = *config["convertExt"]	// may be wrong, but this is our fallback
 	)
 
 	// TODO(gwyneth): First see if we have a profile image for this user. If not, we'll get a Gravatar/Libravatar.
@@ -762,7 +763,7 @@ func getLibravatar(email string, username string, size uint) string {
 		// Note that this may also fail...
 	}
 	// Now see if we have this URL in the KV store (cache). For key we don't use the URL directly because the actual URL may have weird characters; instead we use a simple MD5 hash:
-	hashedAvatarURL := GetMD5Hash(avatarURL)
+	hashedAvatarURL := filepath.Join(*config["cache"], GetMD5Hash(avatarURL))
 
 	if !imageCache.Has(hashedAvatarURL) {
 		// Not in the cache; so we will download it and place it in the KV store if all went well.
@@ -789,6 +790,8 @@ func getLibravatar(email string, username string, size uint) string {
 				log.Println("[INFO] Image retrieved from getLibravatar", avatarURL, "has", len(newImage), "bytes.")
 			}
 		}
+/*
+		// TODO(gwyneth): This needs rethinking... (gwyneth 20200814)
 		// At this point, we know that the avatarURL is valid and has retrieved a valid image
 		// Let's check what type the image has:
 		rawContentType := resp.Header.Get("Content-Type")
@@ -805,6 +808,7 @@ func getLibravatar(email string, username string, size uint) string {
 				log.Printf("[INFO] getLibravatar(): error retrieving content-type %q for %q\n", rawContentType, avatarURL)
 			}
 		}
+*/
 		// just a final debugging check before actually writing things to the KV store
 		if *config["ginMode"] == "debug" {
 			log.Println("[DEBUG] getLibravatar(): avatarURL is", avatarURL, "while hash is", hashedAvatarURL)
@@ -814,5 +818,5 @@ func getLibravatar(email string, username string, size uint) string {
 		}
 	}
 	// assemble the path to return to user; from now on, this is a static image residing in _our_ filesystem!
-	return filepath.Join(PathToStaticFiles, "/", *config["cache"], hashedAvatarURL + imageExtension)
+	return filepath.Join(PathToStaticFiles, "/", hashedAvatarURL /* + imageExtension */)
 }
