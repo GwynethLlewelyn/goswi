@@ -172,9 +172,9 @@ func environment(c *gin.Context, env gin.H) gin.H {
 
 	retMap := MergeMaps(data, env)
 
-	if *config["ginMode"] == "debug" && retMap["Username"] != "" {
-		log.Printf("[DEBUG]: environment(): All messages for user %q: %+v\n", retMap["Username"], retMap["Messages"])
-	}
+	// if *config["ginMode"] == "debug" && retMap["Username"] != nil && retMap["Username"] != "" {
+	// 	log.Printf("[DEBUG]: environment(): All messages for user %q: %+v\n", retMap["Username"], retMap["Messages"])
+	// }
 
 	return retMap
 }
