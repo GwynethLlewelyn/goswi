@@ -54,8 +54,8 @@
 					<h6 class="dropdown-header">
 						Feed Notifications Center
 					</h6>
-					{{ range .FeedMessages }}
-					<a class="dropdown-item d-flex align-items-center" href="#">
+					{{ range $i, $e := .FeedMessages }}
+					<a class="dropdown-item d-flex align-items-center not-msg-{{- $i -}}" href="#">
 						<div class="mr-3">
 							<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .Username -}}">
 							<div class="small text-gray-500 text-center">{{- .Feedgroup -}}</div>
@@ -96,8 +96,8 @@
 					<h6 class="dropdown-header">
 					Offline Instant Message Center
 					</h6>
-					{{ range .Messages }}
-					<a class="dropdown-item d-flex align-items-center" href="#">
+					{{ range $i, $e := .Messages }}
+					<a class="dropdown-item d-flex align-items-center im-msg-{{- $i -}}" href="#">
 						<div class="dropdown-list-image mr-3">
 							<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .Username -}}">
 							<div class="status-indicator bg-success"></div>
