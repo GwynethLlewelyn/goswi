@@ -12,7 +12,7 @@ import (
 	"gopkg.in/gographics/imagick.v3/imagick"
 	"io/ioutil"
 //	jsoniter "github.com/json-iterator/go"
-//	"html/template"
+	"html/template"
 	"log"
 	"net/http"
 	// "os"
@@ -221,22 +221,22 @@ func GetProfile(c *gin.Context) {
 		"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 		"titleCommon"	: *config["titleCommon"] + profileData.UserUUID + " Profile",
 		"ProfileData"	: fmt.Sprintf("%+v", profileData),
-		"ProfileURL"	: profileData.ProfileURL, // TODO(gwyneth): This ought to be sanitized!!
+		"ProfileURL"	: template.HTML(profileData.ProfileURL),
 		"UserUUID"				: profileData.UserUUID,
 		"ProfilePartner"		: profileData.ProfilePartner,
 		"ProfileAllowPublish"	: profileData.ProfileAllowPublish,
 		"ProfileMaturePublish"	: profileData.ProfileMaturePublish,
 		"ProfileWantToMask"	: profileData.ProfileWantToMask,
-		"ProfileWantToText"	: profileData.ProfileWantToText,
+		"ProfileWantToText"	: template.HTML(profileData.ProfileWantToText),
 		"ProfileSkillsMask"	: profileData.ProfileSkillsMask,
-		"ProfileSkillsText"	: profileData.ProfileSkillsText,
-		"ProfileLanguages"	: profileData.ProfileLanguages,
+		"ProfileSkillsText"	: template.HTML(profileData.ProfileSkillsText),
+		"ProfileLanguages"	: template.HTML(profileData.ProfileLanguages),
 		"ProfileImage"		: profileImage,						// OpenSimulator/Second Life profile image
 		"ProfileRetinaImage"	: profileRetinaImage,			// Generated Retina image
-		"ProfileAboutText"	: profileData.ProfileAboutText,
+		"ProfileAboutText"	: template.HTML(profileData.ProfileAboutText),
 		"ProfileFirstImage"	: profileFirstImage,				// Real life, i.e. 'First Life' image
 		"ProfileRetinaFirstImage"	: profileRetinaFirstImage,	// Another generated Retina image
-		"ProfileFirstText"	: profileData.ProfileFirstText,
+		"ProfileFirstText"	: template.HTML(profileData.ProfileFirstText),
 	}))
 }
 

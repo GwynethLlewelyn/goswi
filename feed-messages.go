@@ -10,6 +10,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"html/template"
 	"log"
 	"strconv"
 )
@@ -20,7 +21,7 @@ type FeedMessage struct {
 	PostID string		`json:"PostID"`		// primary key
 	Username string		`json:"Username"`	// will be constructed by getting it from the UserAccounts table
 	Libravatar string	`json:"Libravatar"`
-	PostMarkup string	`json:"PostMarkup"`	// actual message. May contain HTML.
+	PostMarkup template.HTML	`json:"PostMarkup"`	// actual message. May contain HTML.
 	Chronostamp string	`json:"Chronostamp"`
 	Visibility int		`json:"Visibility"`	// Ignored on this implementation
 	Comment int			`json:"Comment"`	// Ignored on this implementation
@@ -28,12 +29,13 @@ type FeedMessage struct {
 	Editlock string		`json:"Editlock"`	// possibly the UUID of the avatar locking this message for editing
 	Feedgroup string	`json:"Feedgroup"`
 }
+type FeedMessageList []FeedMessage
 
 const MaxNumberFeedMessages int = 5	// maximum number of feed messages to retrieve
 
 // For some very, very, very stupid reason, we need to register our message type (and probably others) when starting...
 func init() {
-	gob.RegisterName("listOfFeedMessages", []FeedMessage{})
+	gob.RegisterName("listOfFeedMessages", FeedMessageList{})
 }
 
 // GetTopFeedMessages will retrieve the top first 5 feed messages and put it on the session, to avoid constant reloading
@@ -70,7 +72,7 @@ func GetTopFeedMessages(c *gin.Context) {
 
 		var (
 			oneMessage FeedMessage
-			messages []FeedMessage
+			messages FeedMessageList
 			firstName, lastName, email, unsafeMessage string
 			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
@@ -91,7 +93,7 @@ func GetTopFeedMessages(c *gin.Context) {
 				&lastName,
 				&email,
 			)
-			oneMessage.PostMarkup = bluemondaySafeHTML.Sanitize(unsafeMessage)
+			oneMessage.PostMarkup = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
 			oneMessage.Username = firstName + " " + lastName
 			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time

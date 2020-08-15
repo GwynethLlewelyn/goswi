@@ -7,6 +7,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"html/template"
 	"log"
 	"strconv"
 )
@@ -17,15 +18,16 @@ type OfflineIM struct {
 	Username string		`json:"Username"`	// will be constructed by getting it from the UserAccounts table
 	Libravatar string	`json:"Libravatar"`
 	FromID string		`json:"FromID"`
-	Message string		`json:"Message"`
+	Message template.HTML		`json:"Message"`	// may contain HTML, so it will be sanitised later on (gwyneth 20200815)
 	TMStamp string		`json:"TMStamp"`
 }
+type OfflineIMList []OfflineIM
 
 const MaxNumberMessages int = 5	// maximum number of messages to retrieve
 
 // For some very, very, very stupid reason, we need to register our message type (and probably others) when starting...
 func init() {
-	gob.RegisterName("listOfOfflineIMs", []OfflineIM{})
+	gob.RegisterName("listOfOfflineIMs", OfflineIMList{})
 }
 
 // GetTopOfflineMessages will retrieve the top first 5 messages and put it on the session, to avoid constant reloading
@@ -62,7 +64,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 
 		var (
 			oneMessage OfflineIM
-			messages []OfflineIM
+			messages OfflineIMList
 			firstName, lastName, email, unsafeMessage string
 			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
@@ -78,7 +80,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 				&lastName,
 				&email,
 			)
-			oneMessage.Message = bluemondaySafeHTML.Sanitize(unsafeMessage)
+			oneMessage.Message = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
 			oneMessage.Username = firstName + " " + lastName
 			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time

@@ -10,6 +10,7 @@ import (
 //	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+//	"html/template"
 	"log"
 	"math"
 	"os"
@@ -150,6 +151,7 @@ func environment(c *gin.Context, env gin.H) gin.H {
 	} else if *config["sidebarCollapsed"] == "true" {
 		sidebarCollapsed = "true"
 	}
+
 	var data = gin.H{
 		/* common environment */
 		"now"			: formatAsYear(time.Now()),
