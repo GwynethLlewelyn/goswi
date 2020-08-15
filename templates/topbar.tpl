@@ -43,92 +43,84 @@
 {{ if .Username }}
 			<!-- Nav Item - Alerts -->
 			<li class="nav-item dropdown no-arrow mx-1 disabled">
-			  <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<i class="fas fa-bell fa-fw"></i>
-				<!-- Counter - Alerts -->
-				<span class="badge badge-danger badge-counter">3+</span>
-			  </a>
-			  <!-- Dropdown - Alerts -->
-			  <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
-				<h6 class="dropdown-header">
-				  Alerts Center
-				</h6>
-				<a class="dropdown-item d-flex align-items-center" href="#">
-				  <div class="mr-3">
-					<div class="icon-circle bg-primary">
-					  <i class="fas fa-file-alt text-white"></i>
-					</div>
-				  </div>
-				  <div>
-					<div class="small text-gray-500">December 12, 2019</div>
-					<span class="font-weight-bold">A new monthly report is ready to download!</span>
-				  </div>
+				<a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria haspopup="true" aria-expanded="false">
+					<i class="fas fa-bell fa-fw"></i>
+					<!-- Counter - Alerts -->
+					{{- if .FeedMessages -}}<span class="badge badge-danger badge-counter">{{- .numberFeedMessages -}}</span>{{- end -}}
 				</a>
-				<a class="dropdown-item d-flex align-items-center" href="#">
-				  <div class="mr-3">
-					<div class="icon-circle bg-success">
-					  <i class="fas fa-donate text-white"></i>
-					</div>
-				  </div>
-				  <div>
-					<div class="small text-gray-500">December 7, 2019</div>
-					$290.29 has been deposited into your account!
-				  </div>
-				</a>
-				<a class="dropdown-item d-flex align-items-center" href="#">
-				  <div class="mr-3">
-					<div class="icon-circle bg-warning">
-					  <i class="fas fa-exclamation-triangle text-white"></i>
-					</div>
-				  </div>
-				  <div>
-					<div class="small text-gray-500">December 2, 2019</div>
-					Spending Alert: We've noticed unusually high spending for your account.
-				  </div>
-				</a>
-				<a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
-			  </div>
+				{{ if .FeedMessages }}
+				<!-- Dropdown - Alerts -->
+				<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="alertsDropdown">
+					<h6 class="dropdown-header">
+						Feed Notifications Center
+					</h6>
+					{{ range .FeedMessages }}
+					<a class="dropdown-item d-flex align-items-center" href="#">
+						<div class="mr-3">
+							<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .Username -}}">
+							<div class="small text-gray-500 text-center">{{- .Feedgroup -}}</div>
+						</div>
+						<div>
+							<span class="font-weight-normal">From:&nbsp;</span><span class="font-weight-bolder">{{- .Username -}}</span>
+							<div class="small text-gray-500 mb-1">{{- .Chronostamp -}}</div>
+							<span class="font-weight-normal">{{- .PostMarkup -}}</span>
+						</div>
+					</a>
+					{{ else }}
+					<a class="dropdown-item d-flex align-items-center" href="#">
+						<div class="mr-3">
+							<div class="icon-circle bg-primary">
+								<i class="fas fa-bell-slash text-white bg-danger"></i>
+							</div>
+						</div>
+						<div>
+							<span class="font-weight-normal">No notifications</span>
+						</div>
+					</a>
+					{{ end }}
+					{{- if gt .numberFeedMessages 0 -}}<a class="dropdown-item text-center small text-gray-500" href="#">Show All Notifications</a>{{- end -}}
+				</div>
+				{{ end }}
 			</li>
 
 			<!-- Nav Item - Messages -->
 			<li class="nav-item dropdown no-arrow mx-1 disabled">
-			  <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				<i class="fas fa-envelope fa-fw"></i>
-				<!-- Counter - Messages -->
-				{{- if .Messages -}}<span class="badge badge-danger badge-counter">{{- .numberMessages -}}</span>{{- end -}}
-			  </a>
-			  {{ if .Messages }}
-			  <!-- Dropdown - Messages -->
-			  <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="messagesDropdown" >
-				<h6 class="dropdown-header">
-				  Offline Instant Message Center
-				</h6>
-				{{ range .Messages }}
-				<a class="dropdown-item d-flex align-items-center" href="#">
-					<div class="dropdown-list-image mr-3">
-						<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .Username -}}">
-						<div class="status-indicator bg-success"></div>
-					</div>
-					<div class="font-weight-bold">
-						<div class="text-truncate">{{- .Message -}}</div>
-						<div class="small text-gray-500">{{- .Username -}}{{- if .TMStamp }}&nbsp;·&nbsp;{{ .TMStamp -}}{{- end -}}</div>
-					</div>
+				<a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					<i class="fas fa-envelope fa-fw"></i>
+					<!-- Counter - Messages -->
+					{{- if .Messages -}}<span class="badge badge-danger badge-counter">{{- .numberMessages -}}</span>{{- end -}}
 				</a>
-				{{ else }}
-				<a class="dropdown-item d-flex align-items-center" href="#">
-					<div class="dropdown-list-image mr-3">
-						<i class="fas fa-ban fa-3x"></i>
-						<div class="status-indicator bg-danger"></div>
-						<div class="font-weight-bold">
+			{{ if .Messages }}
+				<!-- Dropdown - Messages -->
+				<div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in" aria-labelledby="messagesDropdown" >
+					<h6 class="dropdown-header">
+					Offline Instant Message Center
+					</h6>
+					{{ range .Messages }}
+					<a class="dropdown-item d-flex align-items-center" href="#">
+						<div class="dropdown-list-image mr-3">
+							<img class="rounded-circle" src="{{- .Libravatar -}}" alt="{{- .Username -}}">
+							<div class="status-indicator bg-success"></div>
+						</div>
+						<div class="font-weight-normal">
+							<div class="text-truncate">{{- .Message -}}</div>
+							<div class="small text-gray-500">{{- .Username -}}{{- if .TMStamp }}&nbsp;·&nbsp;{{ .TMStamp -}}{{- end -}}</div>
+						</div>
+					</a>
+					{{ else }}
+					<a class="dropdown-item d-flex align-items-center" href="#">
+						<div class="dropdown-list-image mr-3">
+							<i class="fas fa-comment-slash fa-3x text-white bg-danger"></i>
+						</div>
+						<div class="font-weight-normal">
 							<div class="text-truncate">No Offline Instant Messages</div>
 							<div class="small text-gray-500">&nbsp;</div>
 						</div>
-					</div>
-				</a>
+					</a>
+					{{ end }}
+					{{- if gt .numberMessages 0 -}}<a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>{{- end -}}
+				</div>
 				{{ end }}
-				<a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>
-			  </div>
-			  {{ end }}
 			</li>
 
 			<li class="topbar-divider d-none d-sm-block"></li>

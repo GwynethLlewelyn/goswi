@@ -168,6 +168,8 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"RememberMe"	: session.Get("RememberMe"),
 		"Messages"		: session.Get("Messages"),
 		"numberMessages": session.Get("numberMessages"),
+		"FeedMessages"		: session.Get("FeedMessages"),
+		"numberFeedMessages": session.Get("numberFeedMessages"),
 	}
 
 	retMap := MergeMaps(data, env)

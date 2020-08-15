@@ -57,12 +57,12 @@ func GetTopFeedMessages(c *gin.Context) {
 	// first count how many messages we have, we will need this later.
 	// According to the Internet, current versions of MariaDB/MySQL are actually much faster doing _two_ queries, one just for counting rows, since it's allegedly optimised; in this case, we can simplify the whole query as well.
 
-	var numberMessages int
+	var numberFeedMessages int
 
-	err = db.QueryRow("SELECT COUNT(*) FROM feeds").Scan(&numberMessages)
+	err = db.QueryRow("SELECT COUNT(*) FROM feeds").Scan(&numberFeedMessages)
 	checkErr(err)
 
-	if numberMessages > 0 {
+	if numberFeedMessages > 0 {
 		rows, err := db.Query("SELECT PostParentID, PosterID, PostID, PostMarkup, Chronostamp, Visibility, Comment, Commentlock, Editlock, Feedgroup, FirstName, LastName, Email FROM feeds, UserAccounts WHERE UserAccounts.PrincipalID = PosterID ORDER BY Chronostamp ASC LIMIT ?", strconv.Itoa(MaxNumberFeedMessages))
 		checkErr(err)
 
@@ -112,10 +112,10 @@ func GetTopFeedMessages(c *gin.Context) {
 		// }
 
 		session.Set("FeedMessages", messages)
-		session.Set("numberFeedMessages", numberMessages)
+		session.Set("numberFeedMessages", numberFeedMessages)
 	} else {	// no messages for this user
 		session.Set("FeedMessages", nil)
-		session.Set("numberFeedMessages", numberMessages)
+		session.Set("numberFeedMessages", numberFeedMessages)
 	}
 	if err := session.Save(); err != nil {
 		log.Printf("[WARN]: GetTopFeedMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)

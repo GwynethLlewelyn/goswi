@@ -193,8 +193,8 @@ func performLogin(c *gin.Context) {
 
 		// Set up background routine to deal with incoming offline IMs (gwyneth 202006812).
 		// During debugging, we'll simply call this once (better than nothing...)
-
 		GetTopOfflineMessages(c)
+		GetTopFeedMessages(c)
 	} else {
 		// invalid user, do not set cookies!
 		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
