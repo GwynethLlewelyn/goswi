@@ -6,6 +6,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
+	"github.com/microcosm-cc/bluemonday"
 	"github.com/peterbourgon/diskv/v3"
 	_ "github.com/philippgille/gokv"
 	"github.com/philippgille/gokv/syncmap"
@@ -25,11 +26,14 @@ import (
 	syslog "github.com/RackSec/srslog"
 )
 
+// Global variables
 var (
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
 	PathToStaticFiles string
 	GOSWIstore syncmap.Store	// this stores tokens for password reset links
 	imageCache *diskv.Diskv		// and this is the cache for images (gwyneth 20200726)
+	slideshow []string			// slideshow is a slice of strings representing all images for the splash-screen slideshow.
+	bluemondaySafeHTML = bluemonday.UGCPolicy()	// Initialise bluemonday: this is the standard, we might do it a little more restrictive (gwyneth 20200815)
 )
 
 var config = map[string]*string	{// just a place to keep them all together
@@ -54,8 +58,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"cache"			: flag.String("cache", "./cache/", "File path to the assets cache"),
 	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
 }
-// slideshow is a slice of strings representing all images for the splash-screen slideshow.
-var slideshow []string
+
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
 
 // main starts here.
@@ -110,7 +113,7 @@ func main() {
 	router.LoadHTMLGlob(filepath.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
-	store := memstore.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension)
+	store := memstore.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension) stored in memory (gwyneth 20200812)
 	router.Use(sessions.Sessions("goswisession", store))
 
 	// Initialise the diskv storage on the cache directory (gwyneth 20200724)
@@ -139,6 +142,7 @@ func main() {
 		}
 	}
 
+	// Gin router configuration starts here
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", filepath.Join(PathToStaticFiles, "/lib"))
 	router.Static("/assets", filepath.Join(PathToStaticFiles, "/assets"))

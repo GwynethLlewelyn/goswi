@@ -63,7 +63,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 		var (
 			oneMessage OfflineIM
 			messages []OfflineIM
-			firstName, lastName, email string
+			firstName, lastName, email, unsafeMessage string
 			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
 
@@ -72,12 +72,13 @@ func GetTopOfflineMessages(c *gin.Context) {
 				&oneMessage.ID,
 				&oneMessage.PrincipalID,
 				&oneMessage.FromID,
-				&oneMessage.Message,
+				&unsafeMessage,
 				&messageTimeStamp,
 				&firstName,
 				&lastName,
 				&email,
 			)
+			oneMessage.Message = bluemondaySafeHTML.Sanitize(unsafeMessage)
 			oneMessage.Username = firstName + " " + lastName
 			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time

@@ -62,23 +62,30 @@ func GetProfile(c *gin.Context) {
 		profileData UserProfile
 //		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
 		allowPublish, maturePublish []byte // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
-	)
+		unsafeProfileURL, unsafeProfileWantToText, unsafeProfileLanguages, unsafeProfileAboutText, unsafeProfileFirstText string 	// user-provided data requiring strict sanitising (gwyneth 20200815)
+		)
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
 			&profileData.UserUUID,
 			&profileData.ProfilePartner,
 			&allowPublish,	// &profileData.ProfileAllowPublish,
 			&maturePublish,	// &profileData.ProfileMaturePublish,
-			&profileData.ProfileURL,
+			&unsafeProfileURL,
 			&profileData.ProfileWantToMask,
-			&profileData.ProfileWantToText,
+			&unsafeProfileWantToText,
 			&profileData.ProfileSkillsMask,
 			&profileData.ProfileSkillsText,
-			&profileData.ProfileLanguages,
+			&unsafeProfileLanguages,
 			&profileData.ProfileImage,
-			&profileData.ProfileAboutText,
+			&unsafeProfileAboutText,
 			&profileData.ProfileFirstImage,
-			&profileData.ProfileFirstText,
+			&unsafeProfileFirstText,
 		)
+
+		profileData.ProfileURL				= bluemondaySafeHTML.Sanitize(unsafeProfileURL)
+		profileData.ProfileWantToText		= bluemondaySafeHTML.Sanitize(unsafeProfileWantToText)
+		profileData.ProfileLanguages		= bluemondaySafeHTML.Sanitize(unsafeProfileLanguages)
+		profileData.ProfileAboutText		= bluemondaySafeHTML.Sanitize(unsafeProfileAboutText)
+		profileData.ProfileFirstText		= bluemondaySafeHTML.Sanitize(unsafeProfileFirstText)
 		profileData.ProfileAllowPublish		= (allowPublish[0] != 0)
 		profileData.ProfileMaturePublish	= (maturePublish[0] != 0)
 
@@ -357,14 +364,14 @@ func saveProfile(c *gin.Context) {
 		// oneProfile.ProfilePartner,
 		allowPublish,
 		maturePublish,
-		oneProfile.ProfileURL,
+		bluemondaySafeHTML.Sanitize(oneProfile.ProfileURL),
 		wantToMask,						// oneProfile.ProfileWantToMask,	// images are read-only!
-		oneProfile.ProfileWantToText,
+		bluemondaySafeHTML.Sanitize(oneProfile.ProfileWantToText),
 		skillsMask,						// oneProfile.ProfileSkillsMask,
-		oneProfile.ProfileSkillsText,
-		oneProfile.ProfileLanguages,
-		oneProfile.ProfileAboutText,
-		oneProfile.ProfileFirstText,
+		bluemondaySafeHTML.Sanitize(oneProfile.ProfileSkillsText),
+		bluemondaySafeHTML.Sanitize(oneProfile.ProfileLanguages),
+		bluemondaySafeHTML.Sanitize(oneProfile.ProfileAboutText),
+		bluemondaySafeHTML.Sanitize(oneProfile.ProfileFirstText),
 		oneProfile.UserUUID,
 	)
 

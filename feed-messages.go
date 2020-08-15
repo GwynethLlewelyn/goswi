@@ -71,7 +71,7 @@ func GetTopFeedMessages(c *gin.Context) {
 		var (
 			oneMessage FeedMessage
 			messages []FeedMessage
-			firstName, lastName, email string
+			firstName, lastName, email, unsafeMessage string
 			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
 
@@ -80,7 +80,7 @@ func GetTopFeedMessages(c *gin.Context) {
 				&oneMessage.PostParentID,
 				&oneMessage.PosterID,
 				&oneMessage.PostID,
-				&oneMessage.PostMarkup,
+				&unsafeMessage,
 				&messageTimeStamp,
 				&oneMessage.Visibility,
 				&oneMessage.Comment,
@@ -91,6 +91,7 @@ func GetTopFeedMessages(c *gin.Context) {
 				&lastName,
 				&email,
 			)
+			oneMessage.PostMarkup = bluemondaySafeHTML.Sanitize(unsafeMessage)
 			oneMessage.Username = firstName + " " + lastName
 			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time
