@@ -5,12 +5,12 @@ package main
 import (
 	"database/sql"
 // 	"encoding/json"
-//	"fmt"
+	"fmt"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 //	jsoniter "github.com/json-iterator/go"
-//	"html/template"
+	"html/template"
 	"log"
 	"net/http"
 //	"strings"
@@ -82,14 +82,17 @@ func GetStats(c *gin.Context) {
 
 	defer rows.Close()
 
+	var regionName template.HTML
+
 	for rows.Next() {
 		err = rows.Scan(
-			&simpleRegion.RegionName,
+			&regionName,
 			&simpleRegion.LocX,
 			&simpleRegion.LocY,
 		)
 		simpleRegion.LocX /= 256
 		simpleRegion.LocY /= 256
+		simpleRegion.RegionName = fmt.Sprintf(`<a class="class-link text-secondary" href="secondlife://%s/127/127/24/" onclick="goInWorld('secondlife://%s/127/127/24/');">%s</a>`, regionName, regionName, regionName)
 		regionsTable = append(regionsTable, simpleRegion)
 	}
 	checkErr(err)

@@ -87,6 +87,13 @@
 				]
 			});
 		});
+		// Deal with redirecting to a grid; shamelessly copied from https://discoverygrid.net/viewersplash.php
+		function goInWorld(uri) {
+			window.open(encodeURI(uri), "_self");
+			setTimeout(function() {
+					window.open("secondlife:///app/login","_self");
+				}, 1500);
+		}
 	</script>
 {{ end }}
 	<script>

@@ -45,11 +45,11 @@
 					<div class="col-4 mb-4">
 						<!-- DataTables for Region list -->
 						<div class="card shadow mb-4">
-							<a href="#regionList" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="regionList">
+							<a href="#regionsTableCard" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="regionsTableCard">
 								<h6 class="m-0 font-weight-bold text-primary">List of Regions</h6>
 							</a>
-							<div class="collapse show" id="regionList">
-								<div class="card-body">
+							<div class="collapse show" id="regionsTableCard">
+								<div class="card-body text-secondary">
 									<div class="table-responsive">
 										<table class="table table-bordered table-striped table-compact table-squeezed" id="regionsTable" data-order='[]' data-page-length='35'>
 											<thead>
@@ -72,10 +72,10 @@
 					<div class="col-8 mb-4">
 						<!-- DataTables for Viewer Info -->
 						<div class="card shadow mb-4">
-							<a href="#viewerInfo" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="viewerInfo">
+							<a href="#viewerInfoCard" class="card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="viewerInfoCard">
 								<h6 class="m-0 font-weight-bold text-primary">Your Viewer Info</h6>
 							</a>
-							<div class="collapse show" id="vieweInfo">
+							<div class="collapse show" id="viewerInfoCard">
 								<div class="card-body">
 									<div class="table-responsive">
 										<table class="table table-bordered table-compact table-striped table-squeezed" id="viewerInfo" data-order='[]' data-page-length='25'>
