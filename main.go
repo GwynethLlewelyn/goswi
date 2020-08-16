@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	// "fmt"
+	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
@@ -57,6 +58,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"convertExt"	: flag.String("convertExt", ".png", "Filename extension or type for cached resources (depends on the converter actually supporting this particular extension; if not, conversion will fail)"),
 	"cache"			: flag.String("cache", "./cache/", "File path to the assets cache"),
 	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
+	"ROBUSTserver"	: flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
 }
 
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
@@ -189,6 +191,7 @@ func main() {
 				"titleCommon"	: *config["titleCommon"] + " - Search results",
 		}))
 	})
+	router.GET("/stats", location.Default(), OSSimpleStats)
 
 	userRoutes := router.Group("/user")
 	{

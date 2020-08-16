@@ -6,12 +6,14 @@ import (
 	"database/sql"
 // 	"encoding/json"
 	"fmt"
+	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 //	jsoniter "github.com/json-iterator/go"
 	"html/template"
 	"log"
+	"net"
 	"net/http"
 //	"strings"
 	"time"
@@ -20,12 +22,15 @@ import (
 // We need to pass JSON to templates, because it won't work otherwise.
 // var json = jsoniter.ConfigCompatibleWithStandardLibrary
 
-// SimpleRegion is a very simple struct just to get a region's name and location.
+// SimpleRegion is a very simple struct just to get a region's name. location and size.
 // In the future, it might have extra fields for linking to the grid map.
+// Added sizeX/Y for 'official' statistics (gwyneth 20200816).
 type SimpleRegion struct {
 	RegionName string	`form:"regionName" json:"regionName"`	// we'll JSONify this later
 	LocX int			`form:"locX" json:"locX,string"`
 	LocY int			`form:"locY" json:"locY,string"`
+	SizeX int			`form:"sizeX" json:"sizeX,string"`		// Note that the current gridmap does assume sizeX/Y == 256 (gwyneth 20200816)
+	SizeY int			`form:"sizeY" json:"sizeY,string"`
 }
 
 // Apparently this is what we get with /welcome — some information from the viewer! (gwyneth 20200612)
@@ -132,3 +137,103 @@ func GetStats(c *gin.Context) {
 			"Libravatar"	: session.Get("Libravatar"),
 	})
 }
+
+// Implementation of OpenSimulator statistics according to https://github.com/BillBlight/OS_Simple_Stats/blob/master/stats.php (gwyneth 20200816)
+func OSSimpleStats(c *gin.Context) {
+	var gStatus string = "ONLINE"
+
+	conn, err := net.Dial("tcp", *config["ROBUSTserver"])
+	// TODO(gwyneth): I'll probably put a timeout here somewhere (gwyneth 20200817).
+	if err != nil {
+		log.Println("[ERROR] ROBUST server unavailable; error was:", err)
+		gStatus = "OFFLINE"
+	}
+	conn.Close()
+
+	// TODO(gwyneth): for the rest of the things, we will limit this to 1 query every X minutes, or else everything blows up; we might return a cached result (gwyneth 20200817).
+
+	// open database connection
+	if *config["dsn"] == "" {
+		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+	}
+	db, err := sql.Open("mysql", *config["dsn"] + "?parseTime=true")
+	checkErrFatal(err)
+
+	defer db.Close()
+
+	preshguser := 0
+	checkErr(db.QueryRow("SELECT COUNT(*) FROM GridUser WHERE UserID LIKE '%htt%' AND BINARY Login > UNIX_TIMESTAMP(NOW()) - 2592000").Scan(&preshguser)) // 2592000 = 1 month
+
+	nowonlinescounter := 0
+	checkErr(db.QueryRow("SELECT COUNT(*) FROM Presence").Scan(&nowonlinescounter))
+
+	pastmonth := 0
+	checkErr(db.QueryRow("SELECT DISTINCT COUNT(*) FROM GridUser WHERE BINARY Logout > UNIX_TIMESTAMP(NOW()) - 2592000").Scan(&pastmonth))
+
+	totalaccounts := 0
+	checkErr(db.QueryRow("SELECT COUNT(*) FROM UserAccounts").Scan(&totalaccounts))
+
+	totalregions := 0
+	totalvarregions := 0
+	totalsingleregions := 0
+	totalsize := 0
+	var simpleRegion SimpleRegion
+
+	rows, err := db.Query("SELECT sizeX, sizeY FROM regions")
+	checkErr(err)
+
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(
+			&simpleRegion.SizeX,
+			&simpleRegion.SizeY,
+		)
+		totalregions++
+		if simpleRegion.SizeX == 256 {
+			totalsingleregions++
+		} else {
+			totalvarregions++
+		}
+		totalsize += simpleRegion.SizeX * simpleRegion.SizeY / 1000
+	}
+	checkErr(err)
+
+	// now handle formats by type; e.g. .../stats?format=json replies with JSON
+	var format string
+
+	if c.Bind(&format) != nil { // nil means no errors
+		checkErr(err)
+	}
+
+	url := location.Get(c) // get info about hostname
+
+	// Create object to send to templating system
+	var arr = gin.H{
+		"GridStatus"				: gStatus,
+		"Online_Now"				: nowonlinescounter,
+		"HG_Visitors_Last_30_Days"	: preshguser,
+		"Local_Users_Last_30_Days"	: pastmonth,
+		"Total_Active_Last_30_Days"	: pastmonth + preshguser,
+		"Registered_Users"			: totalaccounts,
+		"Regions"					: totalregions,
+		"Var_Regions"				: totalvarregions,
+		"Single_Regions"			: totalsingleregions,
+		"Total_LandSize(km2)"		: totalsize,
+		"Login_URL"					: *config["assetServer"],
+		"Website"					: url.Scheme + url.Host,
+		"Login_Screen"				: url.Scheme + url.Host + "/welcome",
+	}
+
+	switch format {
+		case "json":
+			c.JSON(http.StatusOK, arr)
+		case "xml":
+			c.XML(http.StatusOK, arr)
+		case "yaml":
+			c.YAML(http.StatusOK, arr)
+		default:
+			c.HTML(http.StatusOK, "stats.tpl", environment(c, arr))
+	}
+}
+
