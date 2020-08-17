@@ -151,7 +151,7 @@ func OSSimpleStats(c *gin.Context) {
 	var (
 		arr gin.H
 		currentTime time.Time = time.Now()
-		cachedTime time.Time = currentTime
+		cachedTime time.Time = currentTime.Add(-15 * time.Minute) // somewhen in the past
 		format ResponseFormatType
 	)
 	// first handle formats by type; e.g. .../stats?format=json replies with JSON
@@ -163,7 +163,7 @@ func OSSimpleStats(c *gin.Context) {
 	}
 	url := location.Get(c) // get info about hostname
 
-	if cachedArr != nil && cachedArr["timestamp"] != nil {	// first
+	if cachedArr != nil && cachedArr["timestamp"] != nil {	// first make sure that this is valid
 		cachedTime = cachedArr["timestamp"].(time.Time)
 	}
 	if currentTime.Sub(cachedTime).Minutes() > 5 {
@@ -174,8 +174,8 @@ func OSSimpleStats(c *gin.Context) {
 		if i != -1 {
 			server = server[i+2:]
 		}
-
 		if *config["ginMode"] == "debug" {
+			log.Println("[INFO] OSSimpleStats(): Cache expired; retrieving new set of data")
 			log.Printf("[DEBUG] OSSimpleStats(): ROBUST server is at %q\n", server)
 		}
 
@@ -257,6 +257,9 @@ func OSSimpleStats(c *gin.Context) {
 		// save it
 		cachedArr = arr
 	} else {
+		if *config["ginMode"] == "debug" {
+			log.Println("[INFO] OSSimpleStats(): Cache still valid, retrieving last stored value")
+		}
 		arr = cachedArr // retrieve it
 	}
 

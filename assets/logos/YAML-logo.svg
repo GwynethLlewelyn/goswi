@@ -1,6 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:cc="http://creativecommons.org/ns#" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="160" height="160" id="YAML_Logo" data-name="YAML Logo" viewBox="0 0 512 470.647">
-	<title id="title-001">JSON logo</title>
+<svg 
+	xmlns="http://www.w3.org/2000/svg" 
+	xmlns:cc="http://creativecommons.org/ns#"
+	xmlns:dc="http://purl.org/dc/elements/1.1/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:svg="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	version="1.1"
+	width="160"
+	height="160"
+	id="YAML_Logo"
+	data-name="YAML Logo"
+	viewBox="0 0 512 470.647">
+	<title id="title-001">YAML logo</title>
 	<defs>
 		<style>.cls-1{fill:#cb171e;}</style>
 	</defs>

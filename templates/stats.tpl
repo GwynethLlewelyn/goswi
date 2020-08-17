@@ -40,6 +40,29 @@
 					<span class="text-sm-left"><em>Last updated:&nbsp;{{- .timestamp -}}</em></span>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col mb-4">
+					<hr>
+					<h4 class="font-weight-bold text-primary align-left">Statistics in other formats:</h4>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-2 mb-4">
+					<a href="{{- .StatsDir -}}/json"><img class="align-self-center align-middle" src="/assets/logos/JSON-logo.svg" height="100" width="100%" alt="JSON">
+					<br>
+					<p class="text-sm-center align-middle">JSON</p></a>
+				</div>
+				<div class="col-2 mb-4">
+					<a href="{{- .StatsDir -}}/xml"><img class="align-self-center align-middle" src="/assets/logos/XML-logo.svg" height="100" width="100%" alt="XML">
+					<br>
+					<p class="text-sm-center align-middle">XML</p></a>
+				</div>
+				<div class="col-2 mb-4">
+					<a href="{{- .StatsDir -}}/yaml"><img class="align-self-center align-middle" src="/assets/logos/YAML-logo.svg" height="100" width="100%" alt="YAML">
+					<br>
+					<p class="text-sm-center align-middle">YAML</p></a>
+				</div>
+			</div>
 			{{- template "back.tpl" -}}
 		</div> <!-- /.container-fluid -->
 	</div> <!-- End of Main Content -->

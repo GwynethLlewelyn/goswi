@@ -11,7 +11,9 @@
    version="1.1"
    width="160"
    height="160"
-   id="svg-001">
+   id="svg-001"
+   data-name="JSON logo"
+   viewBox="0 0 160 160">
   <title
      id="title-001">JSON logo</title>
   <defs
