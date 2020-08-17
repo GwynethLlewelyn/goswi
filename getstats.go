@@ -15,7 +15,7 @@ import (
 	"log"
 	"net"
 	"net/http"
-//	"strings"
+	"strings"
 	"time"
 )
 
@@ -141,11 +141,26 @@ func GetStats(c *gin.Context) {
 // Implementation of OpenSimulator statistics according to https://github.com/BillBlight/OS_Simple_Stats/blob/master/stats.php (gwyneth 20200816)
 func OSSimpleStats(c *gin.Context) {
 	var gStatus string = "ONLINE"
+	var serverBuilder strings.Builder
+	var server string
+	_, err := serverBuilder.WriteString(*config["ROBUSTserver"])
+	if err != nil {
+		log.Panicf("[ERROR] OSSimpleStats(): Could not add ROBUSTserver string %q\n", *config["ROBUSTserver"])
+	}
+	i := strings.Index(serverBuilder.String(), "//")
+	if i != -1 {
+		server = (serverBuilder.String())[i+2:]
+	} else {
+		server = serverBuilder.String()
+	}
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] OSSimpleStats(): ROBUST server is at %q\n", server)
+	}
 
-	conn, err := net.Dial("tcp", *config["ROBUSTserver"])
+	conn, err := net.Dial("tcp", server)
 	// TODO(gwyneth): I'll probably put a timeout here somewhere (gwyneth 20200817).
 	if err != nil {
-		log.Println("[ERROR] ROBUST server unavailable; error was:", err)
+		log.Printf("[ERROR] OSSimpleStats(): ROBUST server %q unavailable; error was: %q", server, err)
 		gStatus = "OFFLINE"
 	}
 	conn.Close()
@@ -205,7 +220,9 @@ func OSSimpleStats(c *gin.Context) {
 	if c.Bind(&format) != nil { // nil means no errors
 		checkErr(err)
 	}
-
+	if *config["ginMode"] == "debug" {
+		log.Printf("[DEBUG] OSSimpleStats(): Format for stats is: %v\n", format)
+	}
 	url := location.Get(c) // get info about hostname
 
 	// Create object to send to templating system
@@ -219,10 +236,10 @@ func OSSimpleStats(c *gin.Context) {
 		"Regions"					: totalregions,
 		"Var_Regions"				: totalvarregions,
 		"Single_Regions"			: totalsingleregions,
-		"Total_LandSize(km2)"		: totalsize,
+		"Total_LandSize"			: totalsize,
 		"Login_URL"					: *config["assetServer"],
-		"Website"					: url.Scheme + url.Host,
-		"Login_Screen"				: url.Scheme + url.Host + "/welcome",
+		"Website"					: url.Scheme + "://" + url.Host,
+		"Login_Screen"				: url.Scheme + "://" + url.Host + "/welcome",
 	}
 
 	switch format {
