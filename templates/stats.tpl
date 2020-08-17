@@ -35,6 +35,11 @@
 					<strong>Login Screen:</strong> <a href="{{- .Login_Screen -}}">{{- .Login_Screen -}}</a><br>
 				</div>
 			</div> <!-- /.row -->
+			<div class="row">
+				<div class="col mb-4">
+					<span class="text-sm-left"><em>Last updated:&nbsp;{{- .timestamp -}}</em></span>
+				</div>
+			</div>
 			{{- template "back.tpl" -}}
 		</div> <!-- /.container-fluid -->
 	</div> <!-- End of Main Content -->

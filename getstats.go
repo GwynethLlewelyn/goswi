@@ -143,102 +143,121 @@ func GetStats(c *gin.Context) {
 }
 
 // Implementation of OpenSimulator statistics according to https://github.com/BillBlight/OS_Simple_Stats/blob/master/stats.php (gwyneth 20200816)
+
+var cachedArr gin.H	// this will store the last retrieval from the database, with a timestamp, to avoid
+
+// OSSimpleStats is the router handler which will query the database and return in one of many formats.
 func OSSimpleStats(c *gin.Context) {
-	var gStatus string = "ONLINE"
-	var server string = *config["ROBUSTserver"]
-
-	i := strings.Index(server, "//")
-	if i != -1 {
-		server = server[i+2:]
-	}
-
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] OSSimpleStats(): ROBUST server is at %q\n", server)
-	}
-
-	conn, err := net.Dial("tcp", server)
-	// TODO(gwyneth): I'll probably put a timeout here somewhere (gwyneth 20200817).
-	if err != nil {
-		log.Printf("[ERROR] OSSimpleStats(): ROBUST server %q unavailable; error was: %q", server, err)
-		gStatus = "OFFLINE"
-	}
-	conn.Close()
-
-	// TODO(gwyneth): for the rest of the things, we will limit this to 1 query every X minutes, or else everything blows up; we might return a cached result (gwyneth 20200817).
-
-	// open database connection
-	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
-	}
-	db, err := sql.Open("mysql", *config["dsn"] + "?parseTime=true")
-	checkErrFatal(err)
-
-	defer db.Close()
-
-	preshguser := 0
-	checkErr(db.QueryRow("SELECT COUNT(*) FROM GridUser WHERE UserID LIKE '%htt%' AND BINARY Login > UNIX_TIMESTAMP(NOW()) - 2592000").Scan(&preshguser)) // 2592000 = 1 month
-
-	nowonlinescounter := 0
-	checkErr(db.QueryRow("SELECT COUNT(*) FROM Presence").Scan(&nowonlinescounter))
-
-	pastmonth := 0
-	checkErr(db.QueryRow("SELECT DISTINCT COUNT(*) FROM GridUser WHERE BINARY Logout > UNIX_TIMESTAMP(NOW()) - 2592000").Scan(&pastmonth))
-
-	totalaccounts := 0
-	checkErr(db.QueryRow("SELECT COUNT(*) FROM UserAccounts").Scan(&totalaccounts))
-
-	totalregions := 0
-	totalvarregions := 0
-	totalsingleregions := 0
-	var totalsize uint = 0
-	var simpleRegion SimpleRegion
-
-	rows, err := db.Query("SELECT sizeX, sizeY FROM regions WHERE owner_uuid <> '00000000-0000-0000-0000-000000000000'")
-	checkErr(err)
-
-	defer rows.Close()
-
-	for rows.Next() {
-		err = rows.Scan(
-			&simpleRegion.SizeX,
-			&simpleRegion.SizeY,
-		)
-		totalregions++
-		if simpleRegion.SizeX == 256 {
-			totalsingleregions++
-		} else {
-			totalvarregions++
-		}
-		totalsize += ((simpleRegion.SizeX * simpleRegion.SizeY) / 1000)
-	}
-	checkErr(err)
-
-	// now handle formats by type; e.g. .../stats?format=json replies with JSON
-	var format ResponseFormatType
-
+	var (
+		arr gin.H
+		currentTime time.Time = time.Now()
+		cachedTime time.Time = currentTime
+		format ResponseFormatType
+	)
+	// first handle formats by type; e.g. .../stats?format=json replies with JSON
 	if err := c.ShouldBindUri(&format); err != nil {
 		checkErr(err)
 	}
 	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] OSSimpleStats(): Format for stats is: %v\n", format)
+		log.Printf("[DEBUG] OSSimpleStats(): Format for stats is: %v; current time is %v\n", format, currentTime)
 	}
 	url := location.Get(c) // get info about hostname
 
-	// Create object to send to templating system
-	var arr = gin.H{
-		"GridStatus"				: gStatus,
-		"Online_Now"				: nowonlinescounter,
-		"HG_Visitors_Last_30_Days"	: preshguser,
-		"Local_Users_Last_30_Days"	: pastmonth,
-		"Total_Active_Last_30_Days"	: pastmonth + preshguser,
-		"Registered_Users"			: totalaccounts,
-		"Regions"					: totalregions,
-		"Var_Regions"				: totalvarregions,
-		"Single_Regions"			: totalsingleregions,
-		"Total_LandSize"			: totalsize,
-		"Login_URL"					: *config["assetServer"],
-		"Website"					: url.Scheme + "://" + url.Host,
-		"Login_Screen"				: url.Scheme + "://" + url.Host + "/welcome",
+	if cachedArr != nil && cachedArr["timestamp"] != nil {	// first
+		cachedTime = cachedArr["timestamp"].(time.Time)
+	}
+	if currentTime.Sub(cachedTime).Minutes() > 5 {
+		var gStatus string = "ONLINE"
+		var server string = *config["ROBUSTserver"]
+
+		i := strings.Index(server, "//")
+		if i != -1 {
+			server = server[i+2:]
+		}
+
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG] OSSimpleStats(): ROBUST server is at %q\n", server)
+		}
+
+		conn, err := net.Dial("tcp", server)
+		// TODO(gwyneth): I'll probably put a timeout here somewhere (gwyneth 20200817).
+		if err != nil {
+			log.Printf("[ERROR] OSSimpleStats(): ROBUST server %q unavailable; error was: %q", server, err)
+			gStatus = "OFFLINE"
+		}
+		conn.Close()
+
+		// TODO(gwyneth): for the rest of the things, we will limit this to 1 query every X minutes, or else everything blows up; we might return a cached result (gwyneth 20200817).
+
+		// open database connection
+		if *config["dsn"] == "" {
+			log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		}
+		db, err := sql.Open("mysql", *config["dsn"] + "?parseTime=true")
+		checkErrFatal(err)
+
+		defer db.Close()
+
+		preshguser := 0
+		checkErr(db.QueryRow("SELECT COUNT(*) FROM GridUser WHERE UserID LIKE '%htt%' AND BINARY Login > UNIX_TIMESTAMP(NOW()) - 2592000").Scan(&preshguser)) // 2592000 = 1 month
+
+		nowonlinescounter := 0
+		checkErr(db.QueryRow("SELECT COUNT(*) FROM Presence").Scan(&nowonlinescounter))
+
+		pastmonth := 0
+		checkErr(db.QueryRow("SELECT DISTINCT COUNT(*) FROM GridUser WHERE BINARY Logout > UNIX_TIMESTAMP(NOW()) - 2592000").Scan(&pastmonth))
+
+		totalaccounts := 0
+		checkErr(db.QueryRow("SELECT COUNT(*) FROM UserAccounts").Scan(&totalaccounts))
+
+		totalregions := 0
+		totalvarregions := 0
+		totalsingleregions := 0
+		var totalsize uint = 0
+		var simpleRegion SimpleRegion
+
+		rows, err := db.Query("SELECT sizeX, sizeY FROM regions WHERE owner_uuid <> '00000000-0000-0000-0000-000000000000'")
+		checkErr(err)
+
+		defer rows.Close()
+
+		for rows.Next() {
+			err = rows.Scan(
+				&simpleRegion.SizeX,
+				&simpleRegion.SizeY,
+			)
+			totalregions++
+			if simpleRegion.SizeX == 256 {
+				totalsingleregions++
+			} else {
+				totalvarregions++
+			}
+			totalsize += simpleRegion.SizeX * simpleRegion.SizeY
+		}
+		checkErr(err)
+		totalsize /= 1000	// we were accumulating rounding errors (gwyneth 20200810)
+
+		// Create object to send to templating system
+		arr = gin.H{
+			"GridStatus"				: gStatus,
+			"Online_Now"				: nowonlinescounter,
+			"HG_Visitors_Last_30_Days"	: preshguser,
+			"Local_Users_Last_30_Days"	: pastmonth,
+			"Total_Active_Last_30_Days"	: pastmonth + preshguser,
+			"Registered_Users"			: totalaccounts,
+			"Regions"					: totalregions,
+			"Var_Regions"				: totalvarregions,
+			"Single_Regions"			: totalsingleregions,
+			"Total_LandSize"			: totalsize,
+			"Login_URL"					: *config["assetServer"],
+			"Website"					: url.Scheme + "://" + url.Host,
+			"Login_Screen"				: url.Scheme + "://" + url.Host + "/welcome",
+			"timestamp"					: currentTime,
+		}
+		// save it
+		cachedArr = arr
+	} else {
+		arr = cachedArr // retrieve it
 	}
 
 	switch format.Payload {
