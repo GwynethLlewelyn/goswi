@@ -59,6 +59,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"cache"			: flag.String("cache", "./cache/", "File path to the assets cache"),
 	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
 	"ROBUSTserver"	: flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
+	"gridstats"		: flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
 }
 
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
@@ -191,7 +192,19 @@ func main() {
 				"titleCommon"	: *config["titleCommon"] + " - Search results",
 		}))
 	})
-	router.GET("/stats", location.Default(), OSSimpleStats)
+
+	// adding routers for grid statistics; this requires a bit of tweaking, since:
+	// 1) we may have conflicting /stats directories (i.e. /stats for the reverse proxy server itself);
+	// 2) We need to handle both the case when someone wants the HTML page, and the cases when requiring a parameter for JSON, XML, YAML etc.;
+	// 3) Gin does not give us the headers by default, so we need to add middleware for that;
+	// 4) The middleware seems to be buggy and the default returns the IP address of the client, not of the server!
+	//
+	var locationMiddleware gin.HandlerFunc = location.New(location.Config{
+		Headers: location.Headers{Host: "X-Forwarded-Host"},
+	})
+
+	router.GET(*config["gridstats"] + "/:ResponseFormatType", locationMiddleware, OSSimpleStats)	// plus middleware to get hostname
+	router.GET(*config["gridstats"], locationMiddleware, OSSimpleStats)	// router without any specific format returns HTML (hopefully)
 
 	userRoutes := router.Group("/user")
 	{

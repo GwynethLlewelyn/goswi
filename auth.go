@@ -612,7 +612,6 @@ func checkTokenForPasswordReset(c *gin.Context) {
 	var token string
 	var params Token
 
-	// token = c.Param("token")	// Wouldn't this be more obvious?
 	if err := c.ShouldBindUri(&params); err != nil {	// this should never fail, but... 	(gwyneth 20200713)
 		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",

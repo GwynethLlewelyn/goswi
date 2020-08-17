@@ -161,6 +161,7 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"logoTitle"		: *config["logoTitle"],
 		"sidebarCollapsed" : sidebarCollapsed,
 		"titleCommon"	: *config["titleCommon"],
+		"StatsDir"		: *config["gridstats"],
 		/* session data */
 		"Username"		: session.Get("Username"),
 		"UUID"			: session.Get("UUID"),

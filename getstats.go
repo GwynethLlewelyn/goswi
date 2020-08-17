@@ -29,8 +29,8 @@ type SimpleRegion struct {
 	RegionName string	`form:"regionName" json:"regionName"`	// we'll JSONify this later
 	LocX int			`form:"locX" json:"locX,string"`
 	LocY int			`form:"locY" json:"locY,string"`
-	SizeX int			`form:"sizeX" json:"sizeX,string"`		// Note that the current gridmap does assume sizeX/Y == 256 (gwyneth 20200816)
-	SizeY int			`form:"sizeY" json:"sizeY,string"`
+	SizeX uint			`form:"sizeX" json:"sizeX,string"`		// Note that the current gridmap does assume sizeX/Y == 256 (gwyneth 20200816)
+	SizeY uint			`form:"sizeY" json:"sizeY,string"`
 }
 
 // Apparently this is what we get with /welcome — some information from the viewer! (gwyneth 20200612)
@@ -48,6 +48,10 @@ type SimpleUser struct {
 	AvatarName	string `form:"Avatar Name" json:"Avatar Name"`
 }
 
+// See comments on auth.go for token... the same applies here
+type ResponseFormatType struct {
+	Payload string `uri:"ResponseFormatType"`
+}
 
 // GetStats will be used on the Welcome template (and possibly elsewhere) to display some in-world stats.
 func GetStats(c *gin.Context) {
@@ -82,7 +86,7 @@ func GetStats(c *gin.Context) {
 
 	defer db.Close()
 
-	rows, err := db.Query("SELECT regionName, locX, locY FROM regions ORDER BY regionName ASC")
+	rows, err := db.Query("SELECT regionName, locX, locY FROM regions WHERE owner_uuid <> '00000000-0000-0000-0000-000000000000' ORDER BY regionName ASC")
 	checkErr(err)
 
 	defer rows.Close()
@@ -141,18 +145,13 @@ func GetStats(c *gin.Context) {
 // Implementation of OpenSimulator statistics according to https://github.com/BillBlight/OS_Simple_Stats/blob/master/stats.php (gwyneth 20200816)
 func OSSimpleStats(c *gin.Context) {
 	var gStatus string = "ONLINE"
-	var serverBuilder strings.Builder
-	var server string
-	_, err := serverBuilder.WriteString(*config["ROBUSTserver"])
-	if err != nil {
-		log.Panicf("[ERROR] OSSimpleStats(): Could not add ROBUSTserver string %q\n", *config["ROBUSTserver"])
-	}
-	i := strings.Index(serverBuilder.String(), "//")
+	var server string = *config["ROBUSTserver"]
+
+	i := strings.Index(server, "//")
 	if i != -1 {
-		server = (serverBuilder.String())[i+2:]
-	} else {
-		server = serverBuilder.String()
+		server = server[i+2:]
 	}
+
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] OSSimpleStats(): ROBUST server is at %q\n", server)
 	}
@@ -191,10 +190,10 @@ func OSSimpleStats(c *gin.Context) {
 	totalregions := 0
 	totalvarregions := 0
 	totalsingleregions := 0
-	totalsize := 0
+	var totalsize uint = 0
 	var simpleRegion SimpleRegion
 
-	rows, err := db.Query("SELECT sizeX, sizeY FROM regions")
+	rows, err := db.Query("SELECT sizeX, sizeY FROM regions WHERE owner_uuid <> '00000000-0000-0000-0000-000000000000'")
 	checkErr(err)
 
 	defer rows.Close()
@@ -210,14 +209,14 @@ func OSSimpleStats(c *gin.Context) {
 		} else {
 			totalvarregions++
 		}
-		totalsize += simpleRegion.SizeX * simpleRegion.SizeY / 1000
+		totalsize += ((simpleRegion.SizeX * simpleRegion.SizeY) / 1000)
 	}
 	checkErr(err)
 
 	// now handle formats by type; e.g. .../stats?format=json replies with JSON
-	var format string
+	var format ResponseFormatType
 
-	if c.Bind(&format) != nil { // nil means no errors
+	if err := c.ShouldBindUri(&format); err != nil {
 		checkErr(err)
 	}
 	if *config["ginMode"] == "debug" {
@@ -242,7 +241,7 @@ func OSSimpleStats(c *gin.Context) {
 		"Login_Screen"				: url.Scheme + "://" + url.Host + "/welcome",
 	}
 
-	switch format {
+	switch format.Payload {
 		case "json":
 			c.JSON(http.StatusOK, arr)
 		case "xml":

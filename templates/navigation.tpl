@@ -55,6 +55,12 @@
 				<i class="fas fa-fw fa-hand-holding-usd"></i>
 				<span>Economy</span></a>
 		</li>
+		<!-- Nav Item - Current Stats -->
+		<li class="nav-item">
+			<a class="nav-link" href="{{- .StatsDir -}}">
+				<i class="fas fa-fw fa-chart-bar"></i>
+				<span>Current Stats</span></a>
+		</li>
 {{ if not .Username }}
 		<!-- Nav Item - Login -->
 		<li class="nav-item">
