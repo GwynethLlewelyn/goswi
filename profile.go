@@ -120,14 +120,14 @@ func GetProfile(c *gin.Context) {
 		// get it!
 		profileImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileImage, "/data")
 		resp, err := http.Get(profileImageAssetURL)
-		defer resp.Body.Close()
 		if err != nil {
 			// handle error
-			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileImageAssetURL)
+			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
 		}
+		defer resp.Body.Close()
 		newImage, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator")
+			log.Println("[ERROR] Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
 		}
 		if len(newImage) == 0 {
 			log.Println("[ERROR] Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
@@ -177,13 +177,13 @@ func GetProfile(c *gin.Context) {
 		}
 		profileFirstImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileFirstImage, "/data")
 		resp, err := http.Get(profileFirstImageAssetURL)
-		defer resp.Body.Close()
 		if err != nil {
-			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileFirstImageAssetURL)
+			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileFirstImageAssetURL, "error was:", err)
 		}
+		defer resp.Body.Close()
 		newImage, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator")
+			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator, error was:", err)
 		}
 		if len(newImage) == 0 {
 			log.Println("[ERROR] Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has zero bytes.")

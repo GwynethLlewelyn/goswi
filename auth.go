@@ -127,7 +127,7 @@ func isUserValid(username, password string) (bool, string, string) {
 		log.Printf("[WARN] Invalid authentication for %q — either user not found or password is wrong", username)
 		return false, "", ""
 	}
-
+	// never reached
 	return true, email, principalID
 }
 
@@ -772,14 +772,15 @@ func getLibravatar(email string, username string, size uint) string {
 		// Not in the KV store yet, so we dial out to get it from the avatar image provider (whatever it might be).
 		// Note: we want to follow redirects (default policy) and extract the content type of what gets returned
 		resp, err := http.Get(avatarURL)
-		defer resp.Body.Close()
 		if err != nil {
 			// handle error
-			log.Println("[ERROR] Oops — getLibravatar cannot find", avatarURL)
+			log.Println("[ERROR] Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
 		}
+		defer resp.Body.Close()
+
 		newImage, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get image contents of", avatarURL, "from getLibravatar")
+			log.Println("[ERROR] Oops — could not get image contents of", avatarURL, "from getLibravatar, error was:", err)
 		}
 		if len(newImage) == 0 {
 			log.Println("[ERROR] Image retrieved from getLibravatar", avatarURL, "has zero bytes.")
@@ -818,5 +819,6 @@ func getLibravatar(email string, username string, size uint) string {
 	}
 
 	// assemble the path to return to user; from now on, this is a static image residing in _our_ filesystem!
-	return filepath.Join(PathToStaticFiles, hashedAvatarURL /* + imageExtension */)
+	// return filepath.Join(PathToStaticFiles, hashedAvatarURL /* + imageExtension */)
+	return hashedAvatarURL
 }

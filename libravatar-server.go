@@ -56,7 +56,7 @@ func Libravatar(c *gin.Context) {
 		log.Println("[DEBUG] PathToStaticFiles is", PathToStaticFiles, "and profileImageFilename is now", profileImageFilename)
 	}
 	// check if image exists on the diskv cache; code shares similarities with profile.go (gwyneth 20200908)
-	profileImage := filepath.Join(PathToStaticFiles, *config["cache"], profileImageFilename)
+	profileImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileImageFilename)
 
 	if imageCache.Has(profileImage) {
 		if *config["ginMode"] == "debug" {
@@ -65,17 +65,24 @@ func Libravatar(c *gin.Context) {
 		// c.Header("Content-Transfer-Encoding", "binary")
 		// c.Header("Content-Type", "image/png")
 		// c.File(profileImage)
-		if fileContent, err := ioutil.ReadFile(profileImage); err != nil {
+
+		// assemble path to static file on disk, because, path complications (gwyneth 20200908)
+		pathToProfileImage := filepath.Join(PathToStaticFiles, profileImage)
+		if *config["ginMode"] == "debug" {
+			log.Printf("[DEBUG] Libravatar: pathToProfileImage is now %q\n", pathToProfileImage)
+		}
+
+		if fileContent, err := ioutil.ReadFile(pathToProfileImage); err != nil {
 			mime := mimetype.Detect(fileContent)
 			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Libravatar: file %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(fileContent))
+				log.Printf("[DEBUG] Libravatar: file %q for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", pathToProfileImage, profileImage, mime.String(), len(fileContent))
 			}
 			c.Data(http.StatusOK, mime.String(), fileContent)	// note: mime.String() will return "application/octet-stream" if the image type was not detected
 			return
 		} else {
 			c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not found for received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
-			log.Printf("[ERROR] Libravatar: imageCache error; file %q is in hash table but not on filesystem! Error was: %s\n",
-				profileImage, err)
+			log.Printf("[ERROR] Libravatar: imageCache error; file %q is in hash table but %q is not on filesystem! Error was: %v\n",
+				profileImage, pathToProfileImage, err)
 			// this probably means that the imageCache is corrupted, e.g. it has keys for non-existing files
 			return
 		}
