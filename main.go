@@ -30,7 +30,7 @@ import (
 // Global variables
 var (
 	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
-	PathToStaticFiles string
+	PathToStaticFiles, cacheDir string
 	GOSWIstore syncmap.Store	// this stores tokens for password reset links
 	imageCache *diskv.Diskv		// and this is the cache for images (gwyneth 20200726)
 	slideshow []string			// slideshow is a slice of strings representing all images for the splash-screen slideshow.
@@ -56,7 +56,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"sidebarCollapsed"	: flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
 	"slides"		: flag.String("slides", "", "Comma-separated list of URLs for slideshow images"),
 	"convertExt"	: flag.String("convertExt", ".png", "Filename extension or type for cached resources (depends on the converter actually supporting this particular extension; if not, conversion will fail)"),
-	"cache"			: flag.String("cache", "./cache/", "File path to the assets cache"),
+	"cache"			: flag.String("cache", "/cache/", "File path to the assets cache"),
 	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
 	"ROBUSTserver"	: flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
 	"gridstats"		: flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
@@ -95,7 +95,7 @@ func main() {
 	if *config["cookieStore"] == "" {
 		log.Fatal("[ERROR] Empty random string for 'cookieStore'; please set it either on the .INI file or pass it via a flag!\nAborting for security reasons.")
 	}
-	
+
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
 	if *config["ginMode"] == "release" { gin.SetMode(gin.ReleaseMode) }
 
@@ -128,20 +128,20 @@ func main() {
 		CacheSizeMax:		100 * 1024 * 1024,	// possibly will become a config.ini option
 	})
 
-	// Prepare a directory for the cache (i.e. create it if it doesn't exist) (20200718 gwyneth)
+	// Prepare a directory for the cache (i.e. create it if it doesn't exist) (gwyneth 20200718)
 	// Note: in the future we might use diskv for the cache and pretty much ignore this
-	err := os.MkdirAll(*config["cache"], os.ModePerm)
+	// Note 2: We *are* using diskv for the cache, but allegedly this is still 'needed'. (gwyneth 20200909)
+	cacheDir := filepath.Join(PathToStaticFiles, *config["cache"])
+	err := os.MkdirAll(cacheDir, os.ModePerm)
 	if err != nil {
-		log.Println("[WARN] Creating/accessing cache directory", *config["cache"], "returned error", err)
+		log.Println("[WARN] Creating/accessing cache directory", cacheDir, "returned error:", err)
 		// we might not be able to use a cache if this doesn't work
-		// so we'll try creating a temporary cache instead
-		newCacheDir := filepath.Join(os.TempDir(), *config["cache"])
-		err = os.MkdirAll(newCacheDir, os.ModePerm)
-		if err == nil {
-			// ok, this worked, so let's inform the *config["cache"] and change *config["cache"]
-			*config["cache"] = newCacheDir
-		} else {
-			*config["cache"] = ""
+		// so we'll try to create a temporary cache instead
+
+		cacheDir = filepath.Join(os.TempDir(), *config["cache"])
+		err = os.MkdirAll(cacheDir, os.ModePerm)
+		if err != nil {
+			log.Println("[WARN] Creating temporary cache directory", cacheDir, "also returned error:", err)
 		}
 	}
 
@@ -150,10 +150,10 @@ func main() {
 	router.Static("/lib", filepath.Join(PathToStaticFiles, "/lib"))
 	router.Static("/assets", filepath.Join(PathToStaticFiles, "/assets"))
 	if *config["cache"] != "" {
-		router.Static("/cache", *config["cache"])
-		log.Println("[INFO] Cache directory set up at", *config["cache"])
+		router.Static("/cache", cacheDir)
+		log.Println("[INFO] Cache directory set up at", cacheDir)
 	} else {
-		log.Println("[ERROR] Could not access or create cache directory, this means there will be trouble ahead... error was (possibly)", err)
+		log.Println("[ERROR] Could not access or create cache directory with", cacheDir, "— this means there will be trouble ahead... error was (possibly)", err)
 	}
 	router.StaticFile("/favicon.ico", filepath.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
 	router.StaticFile("/browserconfig.xml", filepath.Join(PathToStaticFiles, "/assets/favicons/browserconfig.xml"))
