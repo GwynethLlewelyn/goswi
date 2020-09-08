@@ -730,7 +730,7 @@ func isUsernameAvailable(username string) bool {
 }
 
 // getLibravatar returns a Libravatar, Gravatar, or Unicorn and returns the URL to the image.
-// In the future, it will also save the image to cache, but now we just need a quick & dirty approach (gwyneth 20200811).
+// The image is then saved to our diskv cache (gwyneth 20200908).
 func getLibravatar(email string, username string, size uint) string {
 	avt := libravatar.New()
 	avt.SetAvatarSize(size)
@@ -816,6 +816,7 @@ func getLibravatar(email string, username string, size uint) string {
 			log.Println("[ERROR] getLibravatar(): Could not store ", avatarURL, "in the cache, error was:", err)
 		}
 	}
+
 	// assemble the path to return to user; from now on, this is a static image residing in _our_ filesystem!
-	return filepath.Join(PathToStaticFiles, "/", hashedAvatarURL /* + imageExtension */)
+	return filepath.Join(PathToStaticFiles, hashedAvatarURL /* + imageExtension */)
 }

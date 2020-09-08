@@ -103,8 +103,8 @@ func GetProfile(c *gin.Context) {
 	// see if we have this image already
 	// Note: in the future, we might simplify the call by just using the UUID + file extension... (gwyneth 20200727)
 	// Note 2: We *also* retrieve a Retina image and store it in the cache, but we do not specifically check for it. The idea is that proper HTML will deal with selecting the 'correct' image, we only need to check for one of them. Also, if the conversion to Retina fails for some reason, that's not a problem, we'll fall back to whatever has been downloaded so far...
-	profileImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileImage + *config["convertExt"])
-	profileRetinaImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileImage + "@2x" + *config["convertExt"]) // we need the path, but we won't check for it directly
+	profileImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileData.ProfileImage + *config["convertExt"])
+	profileRetinaImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileData.ProfileImage + "@2x" + *config["convertExt"]) // we need the path, but we won't check for it directly
 	/*
 	if profileImage[0] != '/' {
 		profileImage = "/" + profileImage
@@ -168,8 +168,8 @@ func GetProfile(c *gin.Context) {
 	// An idea would be just to get a Libravatar! We have it, after all...
 
 	// Do the same for the profile image for First (=Real) Life. Comments as above!
-	profileFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + *config["convertExt"])
-	profileRetinaFirstImage := filepath.Join(PathToStaticFiles, "/", *config["cache"], profileData.ProfileFirstImage + "@2x" + *config["convertExt"])
+	profileFirstImage := filepath.Join(/*PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage + *config["convertExt"])
+	profileRetinaFirstImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage + "@2x" + *config["convertExt"])
 
 	if !imageCache.Has(profileFirstImage) {
 		if *config["ginMode"] == "debug" {

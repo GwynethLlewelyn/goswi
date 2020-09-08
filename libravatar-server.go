@@ -10,12 +10,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
-//	"strings"
+	"strings"
 )
 
 // LibravatarParams is required by the ShouldBindURI() call, it cannot be a simple string for some reason...
@@ -31,7 +34,7 @@ func Libravatar(c *gin.Context) {
 	if err := c.ShouldBindUri(&params); err != nil {
 		// this is fatal!
 		c.String(http.StatusInternalServerError, "Libravatar: Cannot bind to hash parameters")
-		return // not necessary, I think
+		return
 	}
 	size, err := strconv.Atoi(c.DefaultQuery("s", "80"))
 	if size == 80 {
@@ -39,10 +42,49 @@ func Libravatar(c *gin.Context) {
 	}
 	if err != nil {
 		log.Println("[WARN] Libravatar: size is not an integer, 80 assumed")
+		size = 80
 	}
 	var defaultParam string = c.DefaultQuery("d", "")
 	if (defaultParam == "") {
 		defaultParam = c.DefaultQuery("default", "")
 	}
-	c.String(http.StatusNotImplemented, fmt.Sprintf("Libravatar: Not implemented, but received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
+	// create filename (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
+
+	profileImageFilename := strings.TrimPrefix(c.Request.URL.RequestURI(), "/avatar/")
+
+	if *config["ginMode"] == "debug" {
+		log.Println("[DEBUG] PathToStaticFiles is", PathToStaticFiles, "and profileImageFilename is now", profileImageFilename)
+	}
+	// check if image exists on the diskv cache; code shares similarities with profile.go (gwyneth 20200908)
+	profileImage := filepath.Join(PathToStaticFiles, *config["cache"], profileImageFilename)
+
+	if imageCache.Has(profileImage) {
+		if *config["ginMode"] == "debug" {
+			log.Println("[DEBUG] Libravatar: returning file", profileImage)
+		}
+		// c.Header("Content-Transfer-Encoding", "binary")
+		// c.Header("Content-Type", "image/png")
+		// c.File(profileImage)
+		if fileContent, err := ioutil.ReadFile(profileImage); err != nil {
+			mime := mimetype.Detect(fileContent)
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Libravatar: file %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(fileContent))
+			}
+			c.Data(http.StatusOK, mime.String(), fileContent)	// note: mime.String() will return "application/octet-stream" if the image type was not detected
+			return
+		} else {
+			c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not found for received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
+			log.Printf("[ERROR] Libravatar: imageCache error; file %q is in hash table but not on filesystem! Error was: %s\n",
+				profileImage, err)
+			// this probably means that the imageCache is corrupted, e.g. it has keys for non-existing files
+			return
+		}
+	} else {
+		// Image not found in cache, let's get it from OpenSimulator!
+		// Again, this is very similar to profile.go (gwyneth 20200908).
+	}
+	// If all else fails:
+
+	c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not in image cache but could not retrieve it anyway; received hash was %q; desired size was: %d and default param was %q\n", params.Hash, size, defaultParam))
+
 }
