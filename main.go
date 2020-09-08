@@ -249,7 +249,7 @@ func main() {
 	}
 	router.GET("/mapdata", GetMapData)
 	router.GET("/avatar/:hash", Libravatar)	// note that there might be further parameters beyond the hash (gwyneth 20200908)
-	
+
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",
@@ -262,7 +262,7 @@ func main() {
 	})
 	// Ping handler (who knows, it might be useful in some contexts... such as Let's Encrypt certificates
 	router.GET("/ping", func(c *gin.Context) {
-		c.String(200, "pong")
+		c.String(http.StatusOK, "pong")
 	})
 
 	// initialize our KV store (gwyneth 20200705)
