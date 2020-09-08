@@ -68,7 +68,7 @@ var config = map[string]*string	{// just a place to keep them all together
 func main() {
 	// figure out where the configuration is
 	_, callerFile, _, _ := runtime.Caller(0)
-	PathToStaticFiles := filepath.Dir(callerFile)
+	PathToStaticFiles = filepath.Dir(callerFile)
 	if *config["ginMode"] == "debug" {
 		log.Println("[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
 	}
