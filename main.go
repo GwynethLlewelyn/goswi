@@ -248,6 +248,8 @@ func main() {
 		userRoutes.POST("/profile",	ensureLoggedIn(), saveProfile)
 	}
 	router.GET("/mapdata", GetMapData)
+	router.GET("/avatar/:hash", Libravatar)	// note that there might be further parameters beyond the hash (gwyneth 20200908)
+	
 	router.NoRoute(func(c *gin.Context) {
 		c.HTML(http.StatusNotFound, "404.tpl", environment(c, gin.H{
 			"titleCommon"	: *config["titleCommon"] + " - 404",
