@@ -95,7 +95,7 @@ func main() {
 	if *config["cookieStore"] == "" {
 		log.Fatal("[ERROR] Empty random string for 'cookieStore'; please set it either on the .INI file or pass it via a flag!\nAborting for security reasons.")
 	}
-
+	
 	// prepare Gin router/render — first, set it to debug or release (debug is default)
 	if *config["ginMode"] == "release" { gin.SetMode(gin.ReleaseMode) }
 
