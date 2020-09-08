@@ -72,7 +72,7 @@ func Libravatar(c *gin.Context) {
 			log.Printf("[DEBUG] Libravatar: pathToProfileImage is now %q\n", pathToProfileImage)
 		}
 
-		if fileContent, err := ioutil.ReadFile(pathToProfileImage); err != nil {
+		if fileContent, err := ioutil.ReadFile(pathToProfileImage); err == nil {
 			mime := mimetype.Detect(fileContent)
 			if *config["ginMode"] == "debug" {
 				log.Printf("[DEBUG] Libravatar: file %q for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", pathToProfileImage, profileImage, mime.String(), len(fileContent))
