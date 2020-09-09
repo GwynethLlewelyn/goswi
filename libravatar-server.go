@@ -9,17 +9,25 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
+//	"gopkg.in/gographics/imagick.v3/imagick"	// not needed since we call the conversion function (gwyneth 20200910)
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
 )
+
+// Database fields that we will retrieve later for checking email, names, profile image, etc.
+type LibravatarProfile struct {
+	ProfileID, FirstName, LastName, Email, ProfileImage string
+}
 
 // LibravatarParams is required by the ShouldBindURI() call, it cannot be a simple string for some reason...
 type LibravatarParams struct {
@@ -36,9 +44,11 @@ func Libravatar(c *gin.Context) {
 		c.String(http.StatusInternalServerError, "Libravatar: Cannot bind to hash parameters")
 		return
 	}
-	size, err := strconv.Atoi(c.DefaultQuery("s", "80"))
+	//var size uint
+
+	size, err := strconv.ParseUint(c.DefaultQuery("s", "80"), 10, 0)
 	if size == 80 {
-		size, err = strconv.Atoi(c.DefaultQuery("size", "80"))
+		size, err = strconv.ParseUint(c.DefaultQuery("size", "80"), 10, 0)
 	}
 	if err != nil {
 		log.Println("[WARN] Libravatar: size is not an integer, 80 assumed")
@@ -87,11 +97,96 @@ func Libravatar(c *gin.Context) {
 			return
 		}
 	} else {
-		// Image not found in cache, let's get it from OpenSimulator!
-		// Again, this is very similar to profile.go (gwyneth 20200908).
-	}
-	// If all else fails:
+		/*
+		Image not found in cache, let's get it from OpenSimulator!
+		Again, this is very similar to profile.go (gwyneth 20200908).
+		The difference is that we need to do the following:
+		- Check entries on the database
+		- See if we get a match on the hash for the email address stored on the database (try MD5 or SHA256 depending on key size)
+		- If not, check for a hash of (email) AvatarFirstName.AvatarLastName@<hostname> and/or (OpenID) <hostname>/AvatarFirstName.AvatarLastName
+		*/
+		var (
+			hashType string = "MD5"	// try this first
+			oneLibravatarProfile LibravatarProfile
+//			username string				// not needed yet!
+		)
+		if len(params.Hash) > 32 {
+			hashType = "SHA256"
+		}
 
+		// SELECT ProfileID, FirstName, LastName, Email, profileImage FROM `UserAccounts`, userprofile WHERE MD5(LOWER(Email)) = 'fcece751ef40a4cec6df28bfdd52fff5' and useruuid = `PrincipalID` and profileImage <> '00000000-0000-0000-0000-000000000000'
+
+		// open database connection
+		if *config["dsn"] == "" {
+			log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		}
+		db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
+		checkErrFatal(err)
+
+		defer db.Close()
+
+		err = db.QueryRow("SELECT ProfileID, FirstName, LastName, Email, profileImage FROM userprofile WHERE " + hashType + " (LOWER(Email)) = ? AND useruuid = PrincipalID AND profileImage <> '00000000-0000-0000-0000-000000000000'", params.Hash).Scan(
+				&oneLibravatarProfile.ProfileID,
+				&oneLibravatarProfile.FirstName,
+				&oneLibravatarProfile.LastName,
+				&oneLibravatarProfile.Email,
+				&oneLibravatarProfile.ProfileImage,
+			)
+
+		if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
+			if *config["ginMode"] == "debug" {
+				log.Printf("[ERROR] Libravatar: retrieving profile for hash %q failed; database error was %v\n", params.Hash, err)
+			}
+		} else {
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Libravatar: retrieving profile for hash %q: %+v\n", params.Hash, oneLibravatarProfile)
+			}
+
+			// get the image from OpenSimulator!
+			profileImageAssetURL := *config["assetServer"] + path.Join("/assets/", oneLibravatarProfile.ProfileImage, "/data")
+			resp, err := http.Get(profileImageAssetURL)
+			if err != nil {
+				// handle error
+				log.Println("[ERROR] Libravatar: Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
+			}
+			defer resp.Body.Close()
+			newImage, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				log.Println("[ERROR] Libravatar: Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
+			}
+			if len(newImage) == 0 {
+				log.Println("[ERROR] Libravatar: Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
+				// we might have to get out of here
+			} else {
+				if *config["ginMode"] == "debug" {
+					log.Println("[INFO] Libravatar: Image retrieved from OpenSimulator", profileImageAssetURL, "has", len(newImage), "bytes.")
+				}
+			}
+			// Now use ImageMagick to convert this image!
+			// Unlike what happened on GetProfile(), here We're ignoring the Retina version (gwyneth 20200910)
+			convertedImage, _, err := ImageConvert(newImage, uint(size), uint(size), 100)
+			if err != nil {
+				log.Println("[ERROR] Libravatar: Could not convert", profileImageAssetURL, " - error was:", err)
+			}
+			if convertedImage == nil || len(convertedImage) == 0 {
+				log.Println("[ERROR] Libravatar: Converted image is empty")
+			}
+			if *config["ginMode"] == "debug" {
+				log.Println("[INFO] Libravatar: Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes.")
+			}
+			// put it into KV cache:
+			if err := imageCache.Write(profileImage, convertedImage); err != nil {
+				log.Println("[ERROR] Libravatar: Could not store converted", profileImage, "in the cache, error was:", err)
+			}
+
+			mime := mimetype.Detect(convertedImage)
+			if *config["ginMode"] == "debug" {
+				log.Printf("[DEBUG] Libravatar: file for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(convertedImage))
+			}
+			c.Data(http.StatusOK, mime.String(), convertedImage)
+			return
+		}
+	}
 	c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not in image cache but could not retrieve it anyway; received hash was %q; desired size was: %d and default param was %q\n", params.Hash, size, defaultParam))
 
 }
