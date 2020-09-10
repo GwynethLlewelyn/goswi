@@ -114,8 +114,6 @@ func Libravatar(c *gin.Context) {
 			hashType = "SHA256"
 		}
 
-		// SELECT ProfileID, FirstName, LastName, Email, profileImage FROM `UserAccounts`, userprofile WHERE MD5(LOWER(Email)) = 'fcece751ef40a4cec6df28bfdd52fff5' and useruuid = `PrincipalID` and profileImage <> '00000000-0000-0000-0000-000000000000'
-
 		// open database connection
 		if *config["dsn"] == "" {
 			log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
@@ -125,7 +123,7 @@ func Libravatar(c *gin.Context) {
 
 		defer db.Close()
 
-		err = db.QueryRow("SELECT ProfileID, FirstName, LastName, Email, profileImage FROM userprofile WHERE " + hashType + " (LOWER(Email)) = ? AND useruuid = PrincipalID AND profileImage <> '00000000-0000-0000-0000-000000000000'", params.Hash).Scan(
+		err = db.QueryRow("SELECT PrincipalID, FirstName, LastName, Email, profileImage FROM UserAccounts, userprofile WHERE " + hashType + " (LOWER(Email)) = ? AND useruuid = PrincipalID AND profileImage <> '00000000-0000-0000-0000-000000000000'", params.Hash).Scan(
 				&oneLibravatarProfile.ProfileID,
 				&oneLibravatarProfile.FirstName,
 				&oneLibravatarProfile.LastName,
