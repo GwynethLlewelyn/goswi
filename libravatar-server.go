@@ -161,7 +161,7 @@ func Libravatar(c *gin.Context) {
 				}
 			}
 			// Now use ImageMagick to convert this image!
-			// Unlike what happened on GetProfile(), here We're ignoring the Retina version (gwyneth 20200910)
+			// Unlike what happened on GetProfile(), here we're ignoring the Retina version (gwyneth 20200910)
 			convertedImage, _, err := ImageConvert(newImage, uint(size), uint(size), 100)
 			if err != nil {
 				log.Println("[ERROR] Libravatar: Could not convert", profileImageAssetURL, " - error was:", err)
@@ -182,7 +182,7 @@ func Libravatar(c *gin.Context) {
 				log.Printf("[DEBUG] Libravatar: file for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(convertedImage))
 			}
 			c.Data(http.StatusOK, mime.String(), convertedImage)
-			return
+			return st
 		}
 	}
 	c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not in image cache but could not retrieve it anyway; received hash was %q; desired size was: %d and default param was %q\n", params.Hash, size, defaultParam))
