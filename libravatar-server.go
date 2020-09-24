@@ -182,7 +182,7 @@ func Libravatar(c *gin.Context) {
 				log.Printf("[DEBUG] Libravatar: file for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(convertedImage))
 			}
 			c.Data(http.StatusOK, mime.String(), convertedImage)
-			return st
+			return
 		}
 	}
 	c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not in image cache but could not retrieve it anyway; received hash was %q; desired size was: %d and default param was %q\n", params.Hash, size, defaultParam))
