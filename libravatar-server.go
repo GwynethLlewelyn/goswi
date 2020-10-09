@@ -135,7 +135,13 @@ func Libravatar(c *gin.Context) {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[ERROR] Libravatar: retrieving profile for hash %q failed; database error was %v\n", params.Hash, err)
 			}
+			// no rows found, so we can assume that either the email is NULL or possibly there isn't a profileImage
+			// First we will attempt to do some hashing on the 'fake' email:
+			
+			
+			
 		} else {
+			// match found for email on database!
 			if *config["ginMode"] == "debug" {
 				log.Printf("[DEBUG] Libravatar: retrieving profile for hash %q: %+v\n", params.Hash, oneLibravatarProfile)
 			}
