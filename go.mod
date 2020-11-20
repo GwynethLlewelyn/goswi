@@ -5,7 +5,7 @@ go 1.14
 require (
 	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/dustin/go-humanize v1.0.0
-	github.com/gabriel-vasile/mimetype v1.1.1
+	github.com/gabriel-vasile/mimetype v1.1.2
 	github.com/gin-contrib/location v0.0.2
 	github.com/gin-contrib/sessions v0.0.3
 	github.com/gin-gonic/gin v1.6.3
@@ -24,11 +24,11 @@ require (
 	github.com/philippgille/gokv/syncmap v0.6.0
 	github.com/philippgille/gokv/util v0.6.0 // indirect
 	github.com/quasoft/memstore v0.0.0-20191010062613-2bce066d2b0b // indirect
-	github.com/ugorji/go v1.1.12 // indirect
+	github.com/ugorji/go v1.2.0 // indirect
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	golang.org/x/crypto v0.0.0-20201016220609-9e8e0b390897 // indirect
-	golang.org/x/net v0.0.0-20201016165138-7b1cca2348c0 // indirect
-	golang.org/x/sys v0.0.0-20201018230417-eeed37f84f13 // indirect
+	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
+	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
+	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/gographics/imagick.v3 v3.3.0
 	gopkg.in/yaml.v2 v2.3.0 // indirect

@@ -10815,7 +10815,7 @@ a:focus {
 	font-weight: 900;
 	content: '\f107';
 	font-family: 'Font Awesome 5 Free';
-	color: var(--light);
+	color: var(--primary);
 }
 
 .card .card-header[data-toggle="collapse"].collapsed {
