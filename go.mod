@@ -12,9 +12,10 @@ require (
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/golang/protobuf v1.4.3 // indirect
-	github.com/google/uuid v1.1.2
+	github.com/google/uuid v1.1.5
 	github.com/gorilla/sessions v1.2.1 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
+	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.4
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
@@ -24,13 +25,13 @@ require (
 	github.com/philippgille/gokv/syncmap v0.6.0
 	github.com/philippgille/gokv/util v0.6.0 // indirect
 	github.com/quasoft/memstore v0.0.0-20191010062613-2bce066d2b0b // indirect
-	github.com/ugorji/go v1.2.0 // indirect
+	github.com/ugorji/go v1.2.3 // indirect
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
-	golang.org/x/net v0.0.0-20201110031124-69a78807bb2b // indirect
-	golang.org/x/sys v0.0.0-20201119102817-f84b799fce68 // indirect
+	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad // indirect
+	golang.org/x/net v0.0.0-20201224014010-6772e930b67b // indirect
+	golang.org/x/sys v0.0.0-20210113181707-4bcb84eeeb78 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 	gopkg.in/gographics/imagick.v3 v3.3.0
-	gopkg.in/yaml.v2 v2.3.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0 // indirect
 	strk.kbt.io/projects/go/libravatar v0.0.0-20191008002943-06d1c002b251
 )
