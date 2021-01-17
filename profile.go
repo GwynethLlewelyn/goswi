@@ -26,8 +26,8 @@ import (
 type UserProfile struct {
 	UserUUID string 			`form:"UserUUID" json:"useruuid"`
 	ProfilePartner string		`form:"ProfilePartner" json:"profilePartner"`
-	ProfileAllowPublish bool	`form:"ProfileAllowPublish" json:"profileAllowPublish"`	// inside the database, this is binary(1)
-	ProfileMaturePublish bool	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
+	ProfileAllowPublish byte	`form:"ProfileAllowPublish" json:"profileAllowPublish"`	// inside the database, this is binary(1)
+	ProfileMaturePublish byte	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
 	ProfilePublish []string		`form:"ProfilePublish" json:"profilePublish"`	// seems to be needed; values are Allow and Mature
 	ProfileURL string			`form:"ProfileURL" json:"profileURL"`
 	ProfileWantToMask int		`form:"ProfileWantToMask" json:"profileWantToMask"`
@@ -86,8 +86,9 @@ func GetProfile(c *gin.Context) {
 		profileData.ProfileLanguages		= bluemondaySafeHTML.Sanitize(unsafeProfileLanguages)
 		profileData.ProfileAboutText		= bluemondaySafeHTML.Sanitize(unsafeProfileAboutText)
 		profileData.ProfileFirstText		= bluemondaySafeHTML.Sanitize(unsafeProfileFirstText)
-		profileData.ProfileAllowPublish		= (allowPublish[0] != 0)
-		profileData.ProfileMaturePublish	= (maturePublish[0] != 0)
+//		Since we get a int(1) = byte, I'll stick with a byte... (gwyneth 20210117)
+		profileData.ProfileAllowPublish		= allowPublish[0]	// hm!
+		profileData.ProfileMaturePublish	= maturePublish[0]
 
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
@@ -337,23 +338,28 @@ func saveProfile(c *gin.Context) {
 	}
 
 	var allowPublish, maturePublish []byte // see comment under GetProfile
+	
+	allowPublish[0] = 0
+	maturePublish[0] = 0
 
 	// we always seem to get checkboxes as a group inside an array, so we do something similar as above with the bitmasks
 	//  however
 	for _, publish := range(oneProfile.ProfilePublish) {
 		switch publish {
 			case "Allow":
-				allowPublish = append(allowPublish, 1)
+//				allowPublish = append(allowPublish, 1)
+				allowPublish[0] = 1
 			case "Mature":
-				maturePublish = append(maturePublish, 1)
+//				maturePublish = append(maturePublish, 1)
+				maturePublish[0] = 1
 		}
 	}
-	if len(allowPublish) == 0 {
-		allowPublish = append(allowPublish, 0)
-	}
-	if len(maturePublish) == 0 {
-		maturePublish = append(maturePublish, 0)
-	}
+	// if len(allowPublish) == 0 {
+	// 	allowPublish = append(allowPublish, 0)
+	// }
+	// if len(maturePublish) == 0 {
+	// 	maturePublish = append(maturePublish, 0)
+	// }
 
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] oneProfile.ProfilePublish is %+v, allowPublish is %+v, maturePublish is %+v\n", oneProfile.ProfilePublish, allowPublish, maturePublish)

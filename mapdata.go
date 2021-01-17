@@ -11,16 +11,16 @@ import (
 )
 
 type Map struct {
-	Grid []aRegion		`xml:Grid`
+	Grid []aRegion		`xml:"Grid"`
 }
 
 type aRegion struct {
-	Uuid string			`xml:Uuid`
-	RegionName string	`xml:RegionName`
-	LocX int			`xml:LocX`
-	LocY int			`xml:LocY`
-	SizeX int			`xml:SizeX`
-	SizeY int			`xml:SizeY`
+	Uuid string			`xml:"Uuid"`
+	RegionName string	`xml:"RegionName"`
+	LocX int			`xml:"LocX"`
+	LocY int			`xml:"LocY"`
+	SizeX int			`xml:"SizeX"`
+	SizeY int			`xml:"SizeY"`
 }
 
 // GetMapaData is the Go equivalent of data/map.php from https://github.com/hawddamor/opensimmaps.
