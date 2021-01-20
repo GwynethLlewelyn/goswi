@@ -128,7 +128,8 @@ func isUserValid(username, password string) (bool, string, string) {
 		return false, "", ""
 	}
 	// never reached
-	return true, email, principalID
+	// commented out to make sure that `go vet` doesn't crash here (20210117)
+	// return true, email, principalID
 }
 
 // performLogin is what the login form will call as the method to pass username/password.

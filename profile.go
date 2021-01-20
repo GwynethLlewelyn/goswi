@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"encoding/binary"
 //	 "encoding/json"
 	"errors"
 	"fmt"
@@ -26,8 +27,8 @@ import (
 type UserProfile struct {
 	UserUUID string 			`form:"UserUUID" json:"useruuid"`
 	ProfilePartner string		`form:"ProfilePartner" json:"profilePartner"`
-	ProfileAllowPublish byte	`form:"ProfileAllowPublish" json:"profileAllowPublish"`	// inside the database, this is binary(1)
-	ProfileMaturePublish byte	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
+	ProfileAllowPublish bool	`form:"ProfileAllowPublish" json:"profileAllowPublish"`	// inside the database, this is binary(1)
+	ProfileMaturePublish bool	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
 	ProfilePublish []string		`form:"ProfilePublish" json:"profilePublish"`	// seems to be needed; values are Allow and Mature
 	ProfileURL string			`form:"ProfileURL" json:"profileURL"`
 	ProfileWantToMask int		`form:"ProfileWantToMask" json:"profileWantToMask"`
@@ -61,9 +62,15 @@ func GetProfile(c *gin.Context) {
 	var (
 		profileData UserProfile
 //		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
-		allowPublish, maturePublish []byte // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
+		// allowPublish, maturePublish []byte // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
+		allowPublishInt, maturePublishInt uint64	// intermediary things
 		unsafeProfileURL, unsafeProfileWantToText, unsafeProfileLanguages, unsafeProfileAboutText, unsafeProfileFirstText string 	// user-provided data requiring strict sanitising (gwyneth 20200815)
 		)
+	// Allegedly, this is the only way to extract a binary(n) type into a variable;
+	//  we need these so-called '[]byte buffers' to temporarily store conversion results (gwyneth 20210118)   
+	allowPublish  := make([]byte, binary.MaxVarintLen64)
+	maturePublish := make([]byte, binary.MaxVarintLen64)
+		
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
 			&profileData.UserUUID,
 			&profileData.ProfilePartner,
@@ -87,8 +94,11 @@ func GetProfile(c *gin.Context) {
 		profileData.ProfileAboutText		= bluemondaySafeHTML.Sanitize(unsafeProfileAboutText)
 		profileData.ProfileFirstText		= bluemondaySafeHTML.Sanitize(unsafeProfileFirstText)
 //		Since we get a int(1) = byte, I'll stick with a byte... (gwyneth 20210117)
-		profileData.ProfileAllowPublish		= allowPublish[0]	// hm!
-		profileData.ProfileMaturePublish	= maturePublish[0]
+//		That approach doesn't work, so we'll try using encode/binary instead
+		allowPublishInt, _ = binary.Uvarint(allowPublish)
+		profileData.ProfileAllowPublish		= allowPublishInt > 0	// hm!
+		maturePublishInt, _ = binary.Uvarint(maturePublish)
+		profileData.ProfileMaturePublish	= maturePublishInt > 0
 
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
@@ -97,6 +107,7 @@ func GetProfile(c *gin.Context) {
 	} else {
 		if *config["ginMode"] == "debug" {
 			log.Printf("[DEBUG]: while retrieving profile, allowPublish is %v while maturePublish is %v\n", allowPublish, maturePublish)
+			log.Printf("[DEBUG]: after some magic, allowPublishInt is %d while maturePublishInt is %d\n", allowPublishInt, maturePublishInt)
 			log.Printf("[DEBUG]: retrieving profile from user %q (%s): %+v\n", username, uuid, profileData)
 		}
 	}
@@ -337,10 +348,11 @@ func saveProfile(c *gin.Context) {
 		log.Printf("[DEBUG] oneProfile.ProfileAllowPublish is %+v, oneProfile.ProfileMaturePublish is %+v\n", oneProfile.ProfileAllowPublish, oneProfile.ProfileMaturePublish)
 	}
 
-	var allowPublish, maturePublish []byte // see comment under GetProfile
+	allowPublish  := make([]byte, binary.MaxVarintLen64)
+	maturePublish := make([]byte, binary.MaxVarintLen64)
 	
-	allowPublish[0] = 0
-	maturePublish[0] = 0
+	_ = binary.PutUvarint(allowPublish, 0)
+	_ = binary.PutUvarint(maturePublish, 0)
 
 	// we always seem to get checkboxes as a group inside an array, so we do something similar as above with the bitmasks
 	//  however
@@ -348,10 +360,12 @@ func saveProfile(c *gin.Context) {
 		switch publish {
 			case "Allow":
 //				allowPublish = append(allowPublish, 1)
-				allowPublish[0] = 1
+//				allowPublish = 1
+				_ = binary.PutUvarint(allowPublish, 1)
 			case "Mature":
 //				maturePublish = append(maturePublish, 1)
-				maturePublish[0] = 1
+//				maturePublish = 1
+				_ = binary.PutUvarint(maturePublish, 1)
 		}
 	}
 	// if len(allowPublish) == 0 {
