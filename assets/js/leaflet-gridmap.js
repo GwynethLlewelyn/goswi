@@ -4,6 +4,7 @@
 */
 
 // Make sure that leaflet.js and leaflet.css have already been loaded!
+// TO-DO(gwyneth): have a 'sample' with defaults
 
 /**
 *	Set the MAP_URL to wherever you have your tiles; you can call them on :8002 if you have gOSWI *and* ROBUST running under http
@@ -14,7 +15,7 @@ const GRID_URL = 'opensim.betatechnologies.info';
 const GRID_PORT = ':8002';
 const MAP_PROTOCOL = 'https://';
 const MAP_URL = MAP_PROTOCOL + GRID_URL + '/maptiles/00000000-0000-0000-0000-000000000000';
-const ATTRIBUTION_LINE = 'Map data © 2020 by Beta Technologies';
+const ATTRIBUTION_LINE = 'Map data © 2021 by Beta Technologies';
 const showUUID = false;	// if true, this will also show region UUIDs on the popups
 const LOADING = "(Loading...)";
 const NO_DATA_YET = "[No data yet]";

@@ -12,7 +12,7 @@ Another area that is underdeveloped is the management of local grid users. Altho
 
 Thus, since OpenSimulator's inception, several 'grid management solutions' have been around, many of which free and open-source. Some are merely plugins for larger content management systems (such as jOpensim for Joomla, Xoopensim for XOOPS, d4os for Drupal); others are standalone (see a 'complete' list on http://opensimulator.org/wiki/Webinterface); most, unfortunately, have stopped their development ages ago. This is especially true of PHP administration tools which relied on pre-PHP PDO functions to connect to the database; unfortunately, such functions have been deprecated and require a lot of time to rewrite... I tried to do that with Xoopensim, but after two weeks of making change after change, and stumbling over and over again on deprecated usage of old PHP functions, I gave up.
 
-Therefore, this project was born — not in PHP, not in C# (which I hate with passion), but in [Go](https://golang.com) — because it's easy to compile in pretty much everything out there (and I revere the creators of Go with all my heart!). If you're not really willing to learn how to do Go programming and/or [basic installation](https://golang.org/doc/install), no worries, you will just need to get the appropriate binaries (once I compile them, of course).
+Therefore, this project was born — not in PHP, not in C# (which I hate with passion), but in [Go](https://golang.org) — because it's easy to compile in pretty much everything out there (and I revere the creators of Go with all my heart!). If you're not really willing to learn how to do Go programming and/or [basic installation](https://golang.org/doc/install), no worries, you will just need to get the appropriate binaries (once I compile them, of course).
 
 ## Configuration
 
@@ -22,6 +22,7 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 	- Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
   My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
 - Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
+- To get a fully-functional map, adjust `assets/js/leaflet-gridmap.js` with your system's configuration
 - Do *not* forget to set `cookieStore` to a randomly generated password!
 - Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
 - I had to move from session storage in cookies to a memory-based approach, simply because the session data stored in cookies was growing and growing until it blew the established 4K limit. Now, if the application is _not_ running, all the stored session data is _lost_. I've been toying around the following possibilities:
@@ -30,6 +31,8 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
   - Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
 
   I haven't still decided what I'll do...
+
+
 
 ### TLS
 
