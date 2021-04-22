@@ -2,28 +2,27 @@ package main
 
 import (
 	"flag"
-	// "fmt"
+	"html/template"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"runtime"
+	"strings"
+
 	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
 	"github.com/microcosm-cc/bluemonday"
+	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
+	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/peterbourgon/diskv/v3"
 	_ "github.com/philippgille/gokv"
 	"github.com/philippgille/gokv/syncmap"
 	"github.com/vharitonsky/iniflags"
 	"gopkg.in/gographics/imagick.v3/imagick"
-	"html/template"
-//	"io"
-	"log"
-//	"net"
-	"net/http"
-//	"net/http/fcgi"
-	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
-//	"time"
+
 	syslog "github.com/RackSec/srslog"
 )
 
@@ -60,6 +59,8 @@ var config = map[string]*string	{// just a place to keep them all together
 	"assetServer"	: flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
 	"ROBUSTserver"	: flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
 	"gridstats"		: flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
+	"NewRelicAppName" : flag.String("NewRelicAppName", "", "Name of your New Relic application (empty: disabled)"),
+	"NewRelicLicenseKey" : flag.String("NewRelicLicenseKey", "", "Your New Relic license key"),
 }
 
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
@@ -116,6 +117,23 @@ func main() {
 	router.LoadHTMLGlob(filepath.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
+	
+	// If we have a valid New Relic configuration, add it to the middleware list first (gwyneth 20210422)
+	// @see https://github.com/newrelic/go-agent/blob/v3.11.0/_integrations/nrgin/v1/example/main.go
+	// TODO(gwyneth): get New Relic license key from the environment for extra security (gwyneth 20210422)
+	if (*config["NewRelicAppName"] != "" && *config["NewRelicLicenseKey"] != "") {
+		app, err := newrelic.NewApplication(
+			newrelic.ConfigAppName(*config["NewRelicAppName"]),
+			newrelic.ConfigLicense(*config["NewRelicLicenseKey"]),
+			newrelic.ConfigDebugLogger(os.Stdout),
+		)
+		if nil != err {
+			log.Println("Failed to init New Relic", err)
+			// os.Exit(1)
+		} else {
+			router.Use(nrgin.Middleware(app))
+		}
+	}
 	store := memstore.NewStore([]byte(*config["cookieStore"]))	// now using sessions (Gorilla sessions via Gin extension) stored in memory (gwyneth 20200812)
 	router.Use(sessions.Sessions("goswisession", store))
 
