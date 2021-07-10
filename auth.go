@@ -261,7 +261,7 @@ func registerNewUser(c *gin.Context) {
 		"WrongEmail"	: oneUser.Email,
 	}))
 
-	return
+	// return
 }
 
 // changePassword asks for the current password (unless it comes from an email link) and a new one (plus validation). Not done yet.

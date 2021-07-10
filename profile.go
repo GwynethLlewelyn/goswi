@@ -67,10 +67,10 @@ func GetProfile(c *gin.Context) {
 		unsafeProfileURL, unsafeProfileWantToText, unsafeProfileLanguages, unsafeProfileAboutText, unsafeProfileFirstText string 	// user-provided data requiring strict sanitising (gwyneth 20200815)
 		)
 	// Allegedly, this is the only way to extract a binary(n) type into a variable;
-	//  we need these so-called '[]byte buffers' to temporarily store conversion results (gwyneth 20210118)   
+	//  we need these so-called '[]byte buffers' to temporarily store conversion results (gwyneth 20210118)
 	allowPublish  := make([]byte, binary.MaxVarintLen64)
 	maturePublish := make([]byte, binary.MaxVarintLen64)
-		
+
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
 			&profileData.UserUUID,
 			&profileData.ProfilePartner,
@@ -156,10 +156,10 @@ func GetProfile(c *gin.Context) {
 		if err != nil {
 			log.Println("[ERROR] Could not convert", profileImageAssetURL, " - error was:", err)
 		}
-		if convertedImage == nil || len(convertedImage) == 0 {
+		if /* convertedImage == nil || */ len(convertedImage) == 0 {
 			log.Println("[ERROR] Converted image is empty")
 		}
-		if retinaImage == nil || len(retinaImage) == 0 {
+		if /* retinaImage == nil || */ len(retinaImage) == 0 {
 			log.Println("[ERROR] Converted Retina image is empty")
 		}
 		if *config["ginMode"] == "debug" {
@@ -208,10 +208,10 @@ func GetProfile(c *gin.Context) {
 		if err != nil {
 			log.Println("[ERROR] Could not convert", profileFirstImageAssetURL, " - error was:", err)
 		}
-		if convertedImage == nil || len(convertedImage) == 0 {
+		if /* convertedImage == nil || */ len(convertedImage) == 0 {
 			log.Println("[ERROR] Converted image is empty")
 		}
-		if retinaImage == nil || len(retinaImage) == 0 {
+		if /* retinaImage == nil || */ len(retinaImage) == 0 {
 			log.Println("[ERROR] Converted Retina image is empty")
 		}
 		if *config["ginMode"] == "debug" {
@@ -350,7 +350,7 @@ func saveProfile(c *gin.Context) {
 
 	allowPublish  := make([]byte, binary.MaxVarintLen64)
 	maturePublish := make([]byte, binary.MaxVarintLen64)
-	
+
 	_ = binary.PutUvarint(allowPublish, 0)
 	_ = binary.PutUvarint(maturePublish, 0)
 
@@ -456,8 +456,8 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 	if compression == 0 {
 		compression = 75
 	}
-	if aImage == nil || len(aImage) == 0 {
-		return nil, nil, errors.New("Empty image passed to ImageConvert")
+	if /* aImage == nil || */ len(aImage) == 0 {
+		return nil, nil, errors.New("empty image passed to ImageConvert")
 	}
 	// Now that we have checked all parameters, it's time to setup ImageMagick:
 	mw := imagick.NewMagickWand()

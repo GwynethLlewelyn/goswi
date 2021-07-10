@@ -137,9 +137,9 @@ func Libravatar(c *gin.Context) {
 			}
 			// no rows found, so we can assume that either the email is NULL or possibly there isn't a profileImage
 			// First we will attempt to do some hashing on the 'fake' email:
-			
-			
-			
+
+
+
 		} else {
 			// match found for email on database!
 			if *config["ginMode"] == "debug" {
@@ -172,7 +172,7 @@ func Libravatar(c *gin.Context) {
 			if err != nil {
 				log.Println("[ERROR] Libravatar: Could not convert", profileImageAssetURL, " - error was:", err)
 			}
-			if convertedImage == nil || len(convertedImage) == 0 {
+			if /* convertedImage == nil || */ len(convertedImage) == 0 {
 				log.Println("[ERROR] Libravatar: Converted image is empty")
 			}
 			if *config["ginMode"] == "debug" {
