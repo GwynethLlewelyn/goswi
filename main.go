@@ -80,7 +80,7 @@ func main() {
 	iniflags.Parse()
 	// initialise slideshow (all the URLs should be at the end of the commandline)
 	slideshow = strings.Split(*config["slides"], ",")
-	if (len(slideshow) == 0) {
+	if len(slideshow) == 0 {
 		slideshow = append(slideshow, "https://source.unsplash.com/K4mSJ7kc0As/700x300", "https://source.unsplash.com/Mv9hjnEUHR4/700x300", "https://source.unsplash.com/oWTW-jNGl9I/700x300")
 	} else {
 		for i := 0; i < len(slideshow); i++ {
@@ -106,8 +106,8 @@ func main() {
 		"bitTest": bitTest,
 	})
 	// figure out where the templates are
-	if (*config["templatePath"] != "") {
-		if (!strings.HasSuffix(*config["templatePath"], "/")) {
+	if *config["templatePath"] != "" {
+		if !strings.HasSuffix(*config["templatePath"], "/") {
 			*config["templatePath"] += "/"
 		}
 	} else {
@@ -117,11 +117,11 @@ func main() {
 	router.LoadHTMLGlob(filepath.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
-	
+
 	// If we have a valid New Relic configuration, add it to the middleware list first (gwyneth 20210422)
 	// @see https://github.com/newrelic/go-agent/blob/v3.11.0/_integrations/nrgin/v1/example/main.go
 	// TODO(gwyneth): get New Relic license key from the environment for extra security (gwyneth 20210422)
-	if (*config["NewRelicAppName"] != "" && *config["NewRelicLicenseKey"] != "") {
+	if *config["NewRelicAppName"] != "" && *config["NewRelicLicenseKey"] != "" {
 		app, err := newrelic.NewApplication(
 			newrelic.ConfigAppName(*config["NewRelicAppName"]),
 			newrelic.ConfigLicense(*config["NewRelicLicenseKey"]),
