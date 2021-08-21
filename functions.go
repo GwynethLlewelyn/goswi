@@ -60,18 +60,6 @@ func expandPath(path string) (string, error) {
 	return filepath.Join(usr.HomeDir, path[1:]), nil
 }
 
-// formatAsDate is a function for the templating system, which will be registered below.
-func formatAsDate(t time.Time) string {
-	year, month, day := t.Date()
-	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
-}
-
-// formatAsYear is another function for the templating system, which will be registered below.
-func formatAsYear(t time.Time) string {
-	year, _, _ := t.Date()
-	return fmt.Sprintf("%d", year)
-}
-
 /**
 *	Cryptographic helper functions
 **/
@@ -122,7 +110,7 @@ func isValidExtension(lookup string) bool {
 }
 
 // MergeMaps adds lots of map[string]interface{} together, returning the merged map[string]interface{}.
-// It overwrites duplicate keys, maps tp the right overwriting whatever keys are on the left.
+// It overwrites duplicate keys, maps to the right overwriting whatever keys are on the left.
 // This allows for setting 'default' arguments later below, which can be overriden.
 // See https://play.golang.org/p/8a9cXdSL_o3 as well as https://stackoverflow.com/a/39406305/1035977.
 func MergeMaps(maps ...map[string]interface{}) map[string]interface{} {
@@ -135,12 +123,30 @@ func MergeMaps(maps ...map[string]interface{}) map[string]interface{} {
 	return result
 }
 
-// Functions to deal with bitfield comparisons inside templates.
+/**
+ * Functions used inside templates.
+ **/
 
 // bitTest applies a mask to a flag and returns true if the bit is set in the mask, false otherwise.
 func bitTest(flag int, mask int) bool {
 	return (flag & mask) != 0
 }
+
+// formatAsDate is a function for the templating system.
+func formatAsDate(t time.Time) string {
+	year, month, day := t.Date()
+	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
+}
+
+// formatAsYear is another function for the templating system.
+func formatAsYear(t time.Time) string {
+	year, _, _ := t.Date()
+	return fmt.Sprintf("%d", year)
+}
+
+/**
+ * Auxiliary functions for the Gin Gonic environment.
+ **/
 
 // environment pushes a lot of stuff into the common environment
 func environment(c *gin.Context, env gin.H) gin.H {
