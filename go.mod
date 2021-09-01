@@ -3,7 +3,6 @@ module github.com/GwynethLlewelyn/goswi
 go 1.14
 
 require (
-	github.com/RackSec/srslog v0.0.0-20180709174129-a4725f04ec91
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gabriel-vasile/mimetype v1.3.1
 	github.com/gin-contrib/location v0.0.2
@@ -28,10 +27,10 @@ require (
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
-	golang.org/x/net v0.0.0-20210813160813-60bc85c4be6d // indirect
-	golang.org/x/sys v0.0.0-20210818153620-00dd8d7831e7 // indirect
+	golang.org/x/net v0.0.0-20210825183410-e898025ed96a // indirect
+	golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20210816143620-e15ff196659d // indirect
+	google.golang.org/genproto v0.0.0-20210831024726-fe130286e0e2 // indirect
 	gopkg.in/gographics/imagick.v3 v3.4.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	strk.kbt.io/projects/go/libravatar v0.0.0-20191008002943-06d1c002b251

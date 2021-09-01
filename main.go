@@ -23,12 +23,12 @@ import (
 	"github.com/vharitonsky/iniflags"
 	"gopkg.in/gographics/imagick.v3/imagick"
 
-	syslog "github.com/RackSec/srslog"
+//	syslog "github.com/RackSec/srslog"
 )
 
 // Global variables
 var (
-	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR, "gOSWI")
+//	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR | syslog.LOG_LOCAL0, "gOSWI")	// write to syslog.
 	PathToStaticFiles, cacheDir string
 	GOSWIstore syncmap.Store	// this stores tokens for password reset links
 	imageCache *diskv.Diskv		// and this is the cache for images (gwyneth 20200726)
@@ -125,7 +125,9 @@ func main() {
 		app, err := newrelic.NewApplication(
 			newrelic.ConfigAppName(*config["NewRelicAppName"]),
 			newrelic.ConfigLicense(*config["NewRelicLicenseKey"]),
-			newrelic.ConfigDebugLogger(os.Stdout),
+//			newrelic.ConfigDebugLogger(os.Stdout),			// this was sending debug logs to syslog!
+			newrelic.ConfigInfoLogger(gin.DefaultWriter),	// now sending only info to the gin
+
 		)
 		if nil != err {
 			log.Println("Failed to init New Relic", err)
