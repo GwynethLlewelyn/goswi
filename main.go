@@ -126,8 +126,8 @@ func main() {
 			newrelic.ConfigAppName(*config["NewRelicAppName"]),
 			newrelic.ConfigLicense(*config["NewRelicLicenseKey"]),
 //			newrelic.ConfigDebugLogger(os.Stdout),			// this was sending debug logs to syslog!
-			newrelic.ConfigInfoLogger(gin.DefaultWriter),	// now sending only info to the gin
-
+//			newrelic.ConfigInfoLogger(gin.DefaultWriter),	// now sending only info to the gin logger.
+															// NO LOGGING, duh! (gwyneth 20210901)
 		)
 		if nil != err {
 			log.Println("Failed to init New Relic", err)
