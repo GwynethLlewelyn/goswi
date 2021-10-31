@@ -54,7 +54,7 @@ func Libravatar(c *gin.Context) {
 		log.Println("[WARN] Libravatar: size is not an integer, 80 assumed")
 		size = 80
 	}
-	var defaultParam string = c.DefaultQuery("d", "")
+	var defaultParam = c.DefaultQuery("d", "")
 	if (defaultParam == "") {
 		defaultParam = c.DefaultQuery("default", "")
 	}
@@ -106,7 +106,7 @@ func Libravatar(c *gin.Context) {
 		- If not, check for a hash of (email) AvatarFirstName.AvatarLastName@<hostname> and/or (OpenID) <hostname>/AvatarFirstName.AvatarLastName
 		*/
 		var (
-			hashType string = "MD5"	// try this first
+			hashType = "MD5"	// try this first
 			oneLibravatarProfile LibravatarProfile
 //			username string				// not needed yet!
 		)

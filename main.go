@@ -219,7 +219,7 @@ func main() {
 	// 3) Gin does not give us the headers by default, so we need to add middleware for that;
 	// 4) The middleware seems to be buggy and the default returns the IP address of the client, not of the server!
 	//
-	var locationMiddleware gin.HandlerFunc = location.New(location.Config{
+	var locationMiddleware = location.New(location.Config{
 		Headers: location.Headers{Host: "X-Forwarded-Host"},
 	})
 

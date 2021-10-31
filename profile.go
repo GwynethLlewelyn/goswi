@@ -497,7 +497,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 	mw.SetIteratorIndex(0)
 
     // Convert into PNG
-	var formatType string = *config["convertExt"]
+	var formatType = *config["convertExt"]
 	if *config["ginMode"] == "debug" {
 		log.Println("[DEBUG] Setting format type to", formatType[1:])
 	}
