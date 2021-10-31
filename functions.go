@@ -151,7 +151,7 @@ func formatAsYear(t time.Time) string {
 // environment pushes a lot of stuff into the common environment
 func environment(c *gin.Context, env gin.H) gin.H {
 	session := sessions.Default(c)
-	var sidebarCollapsed string = ""	// false by default
+	var sidebarCollapsed = ""	// false by default
 	if session.Get("sidebarCollapsed") == "true" {
 		sidebarCollapsed = "true"
 	} else if *config["sidebarCollapsed"] == "true" {

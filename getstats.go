@@ -150,8 +150,8 @@ var cachedArr gin.H	// this will store the last retrieval from the database, wit
 func OSSimpleStats(c *gin.Context) {
 	var (
 		arr gin.H
-		currentTime time.Time = time.Now()
-		cachedTime time.Time = currentTime.Add(-15 * time.Minute) // somewhen in the past
+		currentTime = time.Now()
+		cachedTime = currentTime.Add(-15 * time.Minute) // somewhen in the past
 		format ResponseFormatType
 	)
 	// first handle formats by type; e.g. .../stats?format=json replies with JSON
@@ -167,8 +167,8 @@ func OSSimpleStats(c *gin.Context) {
 		cachedTime = cachedArr["timestamp"].(time.Time)
 	}
 	if currentTime.Sub(cachedTime).Minutes() > 5 {
-		var gStatus string = "ONLINE"
-		var server string = *config["ROBUSTserver"]
+		var gStatus = "ONLINE"
+		var server = *config["ROBUSTserver"]
 
 		i := strings.Index(server, "//")
 		if i != -1 {
