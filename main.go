@@ -40,7 +40,7 @@ var config = map[string]*string	{// just a place to keep them all together
 	"local"			: flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000"),
 	"dsn"			: flag.String("dsn", "", "DSN for calling MySQL database"),
 	"templatePath"	: flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect"),
-	"ginMode"		: flag.String("ginMode", "debug", "Default is 'debug' (more logging) but you can set it to 'release' (production-level logging)"),
+	"ginMode"		: flag.String("ginMode", "release", "Default is 'release' (production-level logging) but you can set it to 'debug' (more logging)"),
 	"tlsCRT"		: flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP"),
 	"tlsKEY"		: flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP"),
 	"author"		: flag.String("author", "--nobody--", "Author name"),
@@ -97,8 +97,12 @@ func main() {
 		log.Fatal("[ERROR] Empty random string for 'cookieStore'; please set it either on the .INI file or pass it via a flag!\nAborting for security reasons.")
 	}
 
-	// prepare Gin router/render — first, set it to debug or release (debug is default)
-	if *config["ginMode"] == "release" { gin.SetMode(gin.ReleaseMode) }
+	// prepare Gin router/render — first, set it to debug or release (release is default)
+	if *config["ginMode"] == "debug" {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 
 	router := gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
@@ -128,6 +132,7 @@ func main() {
 //			newrelic.ConfigDebugLogger(os.Stdout),			// this was sending debug logs to syslog!
 //			newrelic.ConfigInfoLogger(gin.DefaultWriter),	// now sending only info to the gin logger.
 															// NO LOGGING, duh! (gwyneth 20210901)
+//			newrelic.ConfigLogger(gin.DefaultWriter),
 		)
 		if nil != err {
 			log.Println("Failed to init New Relic", err)

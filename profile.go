@@ -171,7 +171,7 @@ func GetProfile(c *gin.Context) {
 		}
 		// put Retina image into KV cache as well:
 		if err := imageCache.Write(profileRetinaImage, retinaImage); err != nil {
-			log.Println("[ERROR] Could not store retina image", retinaImage, "in the cache, error was:", err)
+			log.Println("[ERROR] Could not store retina image", string(retinaImage), "in the cache, error was:", err)
 		}
 	}
 	// note that the code will now assume that profileImage does, indeed, have a valid
@@ -222,7 +222,7 @@ func GetProfile(c *gin.Context) {
 		}
 		// put Retina image into KV cache as well:
 		if err := imageCache.Write(profileRetinaFirstImage, retinaImage); err != nil {
-			log.Println("[ERROR] Could not store retina image", retinaImage, "in the cache, error was:", err)
+			log.Println("[ERROR] Could not store retina image", string(retinaImage), "in the cache, error was:", err)
 		}
 	}
 
