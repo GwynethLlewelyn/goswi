@@ -7,7 +7,7 @@ import (
 // 	"encoding/json"
 	"fmt"
 	"github.com/gin-contrib/location"
-	"github.com/gin-contrib/sessions"
+//	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 //	jsoniter "github.com/json-iterator/go"
@@ -120,26 +120,18 @@ func GetStats(c *gin.Context) {
 	if *config["ginMode"] == "debug" {
 		log.Println("[DEBUG] Data from userTable:", userTable)
 	}
-	session := sessions.Default(c)
 
-	c.HTML(http.StatusOK, "welcome.tpl", gin.H{
-			"now"			: formatAsYear(time.Now()),
+	c.HTML(http.StatusOK, "welcome.tpl", environment(c,
+		gin.H{
 			"needsTables"	: true,
 			"needsMap"		: true,
-			"author"		: *config["author"],
-			"description"	: *config["description"],
-			"logo"			: *config["logo"],
-			"logoTitle"		: *config["logoTitle"],
-			"sidebarCollapsed" : *config["sidebarCollapsed"],
 			"slideshow"		: slideshow,
 			"viewerInfo"	: viewerInfo,
 			"regionsTable"	: regionsTable,
 			"usersOnline"	: userTable,
 			"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
 			"titleCommon"	: *config["titleCommon"] + "Welcome!",
-			"Username"		: session.Get("Username"),
-			"Libravatar"	: session.Get("Libravatar"),
-	})
+	}))
 }
 
 // Implementation of OpenSimulator statistics according to https://github.com/BillBlight/OS_Simple_Stats/blob/master/stats.php (gwyneth 20200816)
