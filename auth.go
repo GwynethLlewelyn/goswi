@@ -100,10 +100,12 @@ func isUserValid(username, password string) (bool, string, string) {
 		}
 		return false, "", ""
 	}
+/* 	// Log authentication data for debugging purposes.
+	// This was flagged as a security issue by GitHub's CodeQL and therefore removed (gwyneth 20211116).
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] Authentication data for: '%s %s' (%s): user-submitted password: %q Hash on DB: %q Salt on DB: %q",
 			avatarFirstName, avatarLastName, principalID, password, passwordHash, passwordSalt)
-	}
+	} */
 	// md5(md5("password") + ":" + passwordSalt) according to http://opensimulator.org/wiki/Auth
 
 	var hashedPassword, hashed, interior string // make sure they are strings, or comparison might fail
@@ -174,8 +176,10 @@ func performLogin(c *gin.Context) {
 		return
 	}
 	if *config["ginMode"] == "debug" {
-		// warning: this will expose a password!!
-		log.Printf("[INFO] User: %q Password: %q Remember me? %q", oneUser.Username, oneUser.Password, oneUser.RememberMe)
+/* 		// warning: this will expose a password!!
+		log.Printf("[INFO] User: %q Password: %q Remember me? %q", oneUser.Username, oneUser.Password, oneUser.RememberMe) */
+		// Sanitised because GitHub's CodeQL complained about the security issue (with reason!) (gwyneth 20211116).
+		log.Printf("[INFO] User: %q (password omitted) Remember me? %q", oneUser.Username, oneUser.RememberMe)
 	}
 	if ok, email, principalID := isUserValid(oneUser.Username, oneUser.Password); ok {
 		session.Set("Username", oneUser.Username)
@@ -429,11 +433,13 @@ func changePassword(c *gin.Context) {
 		interior = hashedPassword + ":" + passwordSalt
 		hashed = GetMD5Hash(interior)
 
+/*
+		// Commented out because it exposes a password salt to the logs (flagged by GitHub's CodeQL) (gwyneth 20211116).
 		if *config["ginMode"] == "debug" {
 			log.Printf("[DEBUG] UUID: %q, md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q",
 			thisUUID, hashedPassword, interior, hashed)
 		}
-
+*/
 		result, err := db.Exec("UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?", hashed, passwordSalt, thisUUID)
 		checkErr(err)
 
@@ -502,9 +508,10 @@ func resetPassword(c *gin.Context) {
 		return
 	}
 
+/* 	// Commented out because it exposes sensitive data on the logs; flagged by GitHub's CodeQL (gwyneth 20211116).
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] aPasswordReset: %+v", aPasswordReset)
-	}
+	} */
 
 	// check if this email address is in the database
 	if *config["dsn"] == "" {

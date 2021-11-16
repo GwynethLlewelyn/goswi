@@ -26,11 +26,11 @@ require (
 	github.com/philippgille/gokv/util v0.6.0 // indirect
 	github.com/ugorji/go v1.2.6 // indirect
 	github.com/vharitonsky/iniflags v0.0.0-20180513140207-a33cd0b5f3de
-	golang.org/x/crypto v0.0.0-20211108221036-ceb1ce70b4fa // indirect
-	golang.org/x/net v0.0.0-20211111160137-58aab5ef257a // indirect
-	golang.org/x/sys v0.0.0-20211110154304-99a53858aa08 // indirect
+	golang.org/x/crypto v0.0.0-20211115234514-b4de73f9ece8 // indirect
+	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
+	golang.org/x/sys v0.0.0-20211116061358-0a5406a5449c // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/genproto v0.0.0-20211104193956-4c6863e31247 // indirect
+	google.golang.org/genproto v0.0.0-20211115160612-a5da7257a6f7 // indirect
 	google.golang.org/grpc v1.42.0 // indirect
 	gopkg.in/gographics/imagick.v3 v3.4.0
 	gopkg.in/yaml.v2 v2.4.0 // indirect

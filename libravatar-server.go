@@ -76,8 +76,8 @@ func Libravatar(c *gin.Context) {
 		// c.Header("Content-Type", "image/png")
 		// c.File(profileImage)
 
-		// assemble path to static file on disk, because, path complications (gwyneth 20200908)
-		pathToProfileImage := filepath.Join(PathToStaticFiles, profileImage)
+		// assemble path to static file on disk, because, path complications (gwyneth 20200908).
+		pathToProfileImage := filepath.Clean(filepath.Join(PathToStaticFiles, profileImage))
 		if *config["ginMode"] == "debug" {
 			log.Printf("[DEBUG] Libravatar: pathToProfileImage is now %q\n", pathToProfileImage)
 		}
@@ -90,7 +90,7 @@ func Libravatar(c *gin.Context) {
 			c.Data(http.StatusOK, mime.String(), fileContent)	// note: mime.String() will return "application/octet-stream" if the image type was not detected
 			return
 		} else {
-			c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not found for received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
+			c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: file not found for received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
 			log.Printf("[ERROR] Libravatar: imageCache error; file %q is in hash table but %q is not on filesystem! Error was: %v\n",
 				profileImage, pathToProfileImage, err)
 			// this probably means that the imageCache is corrupted, e.g. it has keys for non-existing files
