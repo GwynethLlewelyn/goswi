@@ -1,5 +1,4 @@
-// Implementation
-
+// Implementation of the many authentication functions.
 package main
 
 import (

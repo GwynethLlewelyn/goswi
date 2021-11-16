@@ -1,7 +1,7 @@
 // This implements a minimalistic Libravatar-compatible, federated server, which will run as part of gOSWI.
 // It returns Profile images from OpenSim to be used as Libravatars.
 // For this to work, DNS needs to be properly setup with:
-//
+//  (... mumble mumble needs further explanation... )
 //
 // Partially based on Surrogator, written in PHP by Christian Weiske (cweiske@cweiske.de) and licensed under the AGPL v3
 
