@@ -1,10 +1,14 @@
 ![gOSWI logo](assets/logos/gOSWI-logo-smaller.png)
+
 # gOSWI
+
 ## Go (lang) OpenSimulator Web Interface
 
-## Purpose of this project
+**gOSWI** (**G**o **O**penSimulator **W**eb **I**nterface) is a Web-based, backend administration console for virtual world grids running the [OpenSimulator](http://opensimulator.org) software.
 
-**Note:** if you don't know what [OpenSimulator](http://opensimulator.org) is, then very likely you won't need this package _ever_.
+**Note:** if you don't know what OpenSimulator is, then very likely you won't need this package _ever_!
+
+## Purpose of this project
 
 While OpenSimulator adds a _lot_ of base functionality to pretty much run everything 'out of the box', historically, a handful of functions were _deliberately_ left out of the 'core' system, and left to third-party modules in C#, or, through a few APIs (mostly using XML-RPC, but not all), delegated to external systems (thus allowing a distributed approach in terms of deployment of a 'whole' grid). Relatively simple things (such as the 'splash screen' — what is shown when you select a grid on Firestorm and other OpenSimulator-compatible viewers) as well as much complex ones (such as running the economy system) have been pushed out of the core code, for several reasons, including ideological/theological ones (i.e. the concept that OpenSimulator-based grids should _not_ have an economy because [the love of money is the root of all evil](https://www.kingjamesbibleonline.org/1-Timothy-6-10/) — defended both by extreme-left, atheist, progressive activists, as well as right-wing, conservative Christians), legal ones (running a virtual economy might be illegal in several jurisdictions, or at least require a special license to do so), and practical ones (the 'splash screen' is often used to convey information about the grid which may rely upon statistics processed 'outside' the core OpenSimulator code).
 
@@ -16,21 +20,22 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 
 ## Configuration
 
-- Because Second Life and OpenSimulator internally use JPEG2000 for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
-	- install ImageMagick according to https://github.com/gographics/imagick (go for version 7)
-	- make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
-	- Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
-  My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
-- Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
-- To get a fully-functional map, adjust `assets/js/leaflet-gridmap.js` with your system's configuration
-- Do *not* forget to set `cookieStore` to a randomly generated password!
-- Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
-- I had to move from session storage in cookies to a memory-based approach, simply because the session data stored in cookies was growing and growing until it blew the established 4K limit. Now, if the application is _not_ running, all the stored session data is _lost_. I've been toying around the following possibilities:
-  - Using either Redis/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all would have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
-  - Adapt Gin-Gonic to use the Gorilla FileSystem storage (Gin-Gonic sessions use Gorilla sessions underneath)
-  - Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
+-   Because Second Life and OpenSimulator internally use JPEG2000 for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
+    -   install ImageMagick according to https://github.com/gographics/imagick (go for version 7)
+    -   make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
+    -   Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
+        My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
+-   Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
+-   To get a fully-functional map, adjust `assets/js/leaflet-gridmap.js` with your system's configuration
+-   Do _not_ forget to set `cookieStore` to a randomly generated password!
+-   Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
+-   I had to move from session storage in cookies to a memory-based approach, simply because the session data stored in cookies was growing and growing until it blew the established 4K limit. Now, if the application is _not_ running, all the stored session data is _lost_. I've been toying around the following possibilities:
 
-  I haven't still decided what I'll do...
+    -   Using either Redis/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all would have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
+    -   Adapt Gin-Gonic to use the Gorilla FileSystem storage (Gin-Gonic sessions use Gorilla sessions underneath)
+    -   Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
+
+    I haven't still decided what I'll do...
 
 ### TLS
 
@@ -42,7 +47,7 @@ The latest versions come with (experimental) support for [New Relic](https://new
 
 ## Disclaimers and Licenses
 
-The *gopher* (the Go mascot) is an [original design](https://blog.golang.org/gopher) created by renowned illustrator [Renne French](https://www.instagram.com/reneefrench/) and released with a [Creative Commons Attribution 3.0 (Unported) License](https://creativecommons.org/licenses/by/3.0/), to be used on Go-related projects, but is _not_ the official logo.
+The _gopher_ (the Go mascot) is an [original design](https://blog.golang.org/gopher) created by renowned illustrator [Renne French](https://www.instagram.com/reneefrench/) and released with a [Creative Commons Attribution 3.0 (Unported) License](https://creativecommons.org/licenses/by/3.0/), to be used on Go-related projects, but is _not_ the official logo.
 
 Parts of the [OpenSimulator logo](http://opensimulator.org/wiki/File:Opensimulator.svg), released under a [Creative Commons Attribution 2.5 Australia (CC BY 2.5 AU)](https://creativecommons.org/licenses/by/2.5/au/) were shamelessly scavenged and ravaged by yours truly.
 
@@ -64,10 +69,31 @@ The [Libravatar](https://libravatar.org/) code is partially inspired on [Surroga
 
 All favicons were generated by [RealFaviconGenerator](https://realfavicongenerator.net/).
 
+### Licensing of specific packages
+
+Some packages imported by this application include different licenses, which may or may not be relevant if you wish to freely distribute a version of my code; you might require either to comply with their own licensing terms, or replace them with alternatives:
+
+-   The [go-sql-driver](https://github.com/go-sql-driver/mysql) package, which allows direct connection to a MySQL server using native Go code (i.e. without requiring linking to an external C library):
+
+    > This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+    > If a copy of the MPL was not distributed with this file,
+    > you can obtain one at http://mozilla.org/MPL/2.0/.
+
+    Drop-in replacements exist (namely, those using a C library!), since the code accesses the database via the standard `database/sql` module.
+
+-   The [gokv](https://github.com/philippgille/gokv) module, a simple key-value store abstraction and implementations for Go, which serves as a front-end to a lot of different possible implementations. It uses the Mozilla Public License Version 2.0 as well.
+
+    It can, if needed, be fully replaced by any other key-value store module (especially one that might be less abstract); however, it will require some code rewriting.
+
+-   The [New Relic Go Agent](https://github.com/newrelic/go-agent/). While most software provided by New Relic is encumbered by some licensing restrictions, their Go Agent, used for instrumenting this package, is fully open-sourced under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.txt).
+
+    If you do not wish to abide by the Apache 2.0 License in your own code, the simplest solution is to remove all references to the New Relic instrumentation, and/or replace it by a different solution. This is not required in the least to get gOSWI working.
+
 ## GPG Fingerprint
 
 In case you need it to send me encrypted emails:
 [![Keybase](https://img.shields.io/keybase/pgp/gwynethllewelyn)](https://keybase.io/gwynethllewelyn)
 
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=GwynethLlewelyn_goswi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=GwynethLlewelyn_goswi)
-[![Total alerts](https://img.shields.io/lgtm/alerts/g/GwynethLlewelyn/goswi.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/GwynethLlewelyn/goswi/alerts/)
+---
+
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=GwynethLlewelyn_goswi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=GwynethLlewelyn_goswi) [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2FGwynethLlewelyn%2Fgoswi.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2FGwynethLlewelyn%2Fgoswi?ref=badge_shield) [![Codacy Security Scan](https://github.com/GwynethLlewelyn/goswi/actions/workflows/codacy.yml/badge.svg)](https://github.com/GwynethLlewelyn/goswi/actions/workflows/codacy.yml)
