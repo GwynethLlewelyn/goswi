@@ -14,7 +14,7 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-//	"gopkg.in/gographics/imagick.v3/imagick"	// not needed since we call the conversion function (gwyneth 20200910)
+	//	"gopkg.in/gographics/imagick.v3/imagick"	// not needed since we call the conversion function (gwyneth 20200910)
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -55,7 +55,7 @@ func Libravatar(c *gin.Context) {
 		size = 80
 	}
 	var defaultParam = c.DefaultQuery("d", "")
-	if (defaultParam == "") {
+	if defaultParam == "" {
 		defaultParam = c.DefaultQuery("default", "")
 	}
 	// create filename (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
@@ -66,7 +66,7 @@ func Libravatar(c *gin.Context) {
 		log.Println("[DEBUG] PathToStaticFiles is", PathToStaticFiles, "and profileImageFilename is now", profileImageFilename)
 	}
 	// check if image exists on the diskv cache; code shares similarities with profile.go (gwyneth 20200908)
-	profileImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileImageFilename)
+	profileImage := filepath.Join( /* PathToStaticFiles, */ *config["cache"], profileImageFilename)
 
 	if imageCache.Has(profileImage) {
 		if *config["ginMode"] == "debug" {
@@ -87,7 +87,7 @@ func Libravatar(c *gin.Context) {
 			if *config["ginMode"] == "debug" {
 				log.Printf("[DEBUG] Libravatar: file %q for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", pathToProfileImage, profileImage, mime.String(), len(fileContent))
 			}
-			c.Data(http.StatusOK, mime.String(), fileContent)	// note: mime.String() will return "application/octet-stream" if the image type was not detected
+			c.Data(http.StatusOK, mime.String(), fileContent) // note: mime.String() will return "application/octet-stream" if the image type was not detected
 			return
 		} else {
 			c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: file not found for received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
@@ -98,17 +98,17 @@ func Libravatar(c *gin.Context) {
 		}
 	} else {
 		/*
-		Image not found in cache, let's get it from OpenSimulator!
-		Again, this is very similar to profile.go (gwyneth 20200908).
-		The difference is that we need to do the following:
-		- Check entries on the database
-		- See if we get a match on the hash for the email address stored on the database (try MD5 or SHA256 depending on key size)
-		- If not, check for a hash of (email) AvatarFirstName.AvatarLastName@<hostname> and/or (OpenID) <hostname>/AvatarFirstName.AvatarLastName
+			Image not found in cache, let's get it from OpenSimulator!
+			Again, this is very similar to profile.go (gwyneth 20200908).
+			The difference is that we need to do the following:
+			- Check entries on the database
+			- See if we get a match on the hash for the email address stored on the database (try MD5 or SHA256 depending on key size)
+			- If not, check for a hash of (email) AvatarFirstName.AvatarLastName@<hostname> and/or (OpenID) <hostname>/AvatarFirstName.AvatarLastName
 		*/
 		var (
-			hashType = "MD5"	// try this first
+			hashType             = "MD5" // try this first
 			oneLibravatarProfile LibravatarProfile
-//			username string				// not needed yet!
+			//			username string				// not needed yet!
 		)
 		if len(params.Hash) > 32 {
 			hashType = "SHA256"
@@ -123,13 +123,13 @@ func Libravatar(c *gin.Context) {
 
 		defer db.Close()
 
-		err = db.QueryRow("SELECT PrincipalID, FirstName, LastName, Email, profileImage FROM UserAccounts, userprofile WHERE " + hashType + " (LOWER(Email)) = ? AND useruuid = PrincipalID AND profileImage <> '00000000-0000-0000-0000-000000000000'", params.Hash).Scan(
-				&oneLibravatarProfile.ProfileID,
-				&oneLibravatarProfile.FirstName,
-				&oneLibravatarProfile.LastName,
-				&oneLibravatarProfile.Email,
-				&oneLibravatarProfile.ProfileImage,
-			)
+		err = db.QueryRow("SELECT PrincipalID, FirstName, LastName, Email, profileImage FROM UserAccounts, userprofile WHERE "+hashType+" (LOWER(Email)) = ? AND useruuid = PrincipalID AND profileImage <> '00000000-0000-0000-0000-000000000000'", params.Hash).Scan(
+			&oneLibravatarProfile.ProfileID,
+			&oneLibravatarProfile.FirstName,
+			&oneLibravatarProfile.LastName,
+			&oneLibravatarProfile.Email,
+			&oneLibravatarProfile.ProfileImage,
+		)
 
 		if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 			if *config["ginMode"] == "debug" {
@@ -137,8 +137,6 @@ func Libravatar(c *gin.Context) {
 			}
 			// no rows found, so we can assume that either the email is NULL or possibly there isn't a profileImage
 			// First we will attempt to do some hashing on the 'fake' email:
-
-
 
 		} else {
 			// match found for email on database!

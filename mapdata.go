@@ -2,75 +2,75 @@ package main
 
 import (
 	"database/sql"
-//	"fmt"
+	//	"fmt"
 	"github.com/gin-gonic/gin"
-//	. "github.com/siongui/godom"
+	//	. "github.com/siongui/godom"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"net/http"
 )
 
 type Map struct {
-	Grid []aRegion		`xml:"Grid"`
+	Grid []aRegion `xml:"Grid"`
 }
 
 type aRegion struct {
-	Uuid string			`xml:"Uuid"`
-	RegionName string	`xml:"RegionName"`
-	LocX int			`xml:"LocX"`
-	LocY int			`xml:"LocY"`
-	SizeX int			`xml:"SizeX"`
-	SizeY int			`xml:"SizeY"`
+	Uuid       string `xml:"Uuid"`
+	RegionName string `xml:"RegionName"`
+	LocX       int    `xml:"LocX"`
+	LocY       int    `xml:"LocY"`
+	SizeX      int    `xml:"SizeX"`
+	SizeY      int    `xml:"SizeY"`
 }
 
 // GetMapaData is the Go equivalent of data/map.php from https://github.com/hawddamor/opensimmaps.
 func GetMapData(c *gin.Context) {
-/*
-	// Original PHP Code is here
-	<?
-	include("../../../settings/config.php");
-	include("../../../settings/mysql.php");
+	/*
+		// Original PHP Code is here
+		<?
+		include("../../../settings/config.php");
+		include("../../../settings/mysql.php");
 
-	//Creates XML string and XML document using the DOM
-	$dom = new DomDocument('1.0', "UTF-8");
+		//Creates XML string and XML document using the DOM
+		$dom = new DomDocument('1.0', "UTF-8");
 
-	$map = $dom->appendChild($dom->createElement('Map'));
+		$map = $dom->appendChild($dom->createElement('Map'));
 
-	$DbLink = new DB;
-	$DbLink->query("SELECT uuid,regionName,locX,locY,sizeX,sizeY FROM ".C_REGIONS_TBL);
-		while(list($UUID,$regionName,$locX,$locY,$dbsizeX,$dbsizeY) = $DbLink->next_record())
-		{
-			$grid = $map->appendChild($dom->createElement('Grid'));
+		$DbLink = new DB;
+		$DbLink->query("SELECT uuid,regionName,locX,locY,sizeX,sizeY FROM ".C_REGIONS_TBL);
+			while(list($UUID,$regionName,$locX,$locY,$dbsizeX,$dbsizeY) = $DbLink->next_record())
+			{
+				$grid = $map->appendChild($dom->createElement('Grid'));
 
-			$uuid = $grid->appendChild($dom->createElement('Uuid'));
-			$uuid->appendChild($dom->createTextNode($UUID));
+				$uuid = $grid->appendChild($dom->createElement('Uuid'));
+				$uuid->appendChild($dom->createTextNode($UUID));
 
-			$region = $grid->appendChild($dom->createElement('RegionName'));
-			$region->appendChild($dom->createTextNode($regionName));
+				$region = $grid->appendChild($dom->createElement('RegionName'));
+				$region->appendChild($dom->createTextNode($regionName));
 
-			$locationX = $grid->appendChild($dom->createElement('LocX'));
-			$locationX->appendChild($dom->createTextNode($locX/256));
+				$locationX = $grid->appendChild($dom->createElement('LocX'));
+				$locationX->appendChild($dom->createTextNode($locX/256));
 
-			$locationY = $grid->appendChild($dom->createElement('LocY'));
-			$locationY->appendChild($dom->createTextNode($locY/256));
+				$locationY = $grid->appendChild($dom->createElement('LocY'));
+				$locationY->appendChild($dom->createTextNode($locY/256));
 
-	        $sizeX = $grid->appendChild($dom->createElement('SizeX'));
-	        $sizeX->appendChild($dom->createTextNode($dbsizeX));
+		        $sizeX = $grid->appendChild($dom->createElement('SizeX'));
+		        $sizeX->appendChild($dom->createTextNode($dbsizeX));
 
-	        $sizeY = $grid->appendChild($dom->createElement('SizeY'));
-	        $sizeY->appendChild($dom->createTextNode($dbsizeY));
-		}
+		        $sizeY = $grid->appendChild($dom->createElement('SizeY'));
+		        $sizeY->appendChild($dom->createTextNode($dbsizeY));
+			}
 
-	$dom->formatOutput = true; // set the formatOutput attribute of
-	                            // domDocument to true
-	// save XML as string or file
-	$test1 = $dom->saveXML(); // put string in test1
-	//echo $test1;
-	header("Content-type: text/xml");
-	echo $test1;
+		$dom->formatOutput = true; // set the formatOutput attribute of
+		                            // domDocument to true
+		// save XML as string or file
+		$test1 = $dom->saveXML(); // put string in test1
+		//echo $test1;
+		header("Content-type: text/xml");
+		echo $test1;
 
-	?>
-*/
+		?>
+	*/
 	// open database connection
 	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
@@ -81,7 +81,7 @@ func GetMapData(c *gin.Context) {
 	defer db.Close()
 
 	var (
-		oneMap Map
+		oneMap    Map
 		oneRegion aRegion
 	)
 
@@ -104,9 +104,9 @@ func GetMapData(c *gin.Context) {
 		oneMap.Grid = append(oneMap.Grid, oneRegion)
 	}
 	checkErr(err)
-//	log.Println("[DEBUG] XML response from mapdata.go:", oneMap)
+	//	log.Println("[DEBUG] XML response from mapdata.go:", oneMap)
 
-	c.Header("Access-Control-Allow-Origin", "*")	// because of CORS
+	c.Header("Access-Control-Allow-Origin", "*") // because of CORS
 	// TODO(gwyneth): also see https://github.com/gin-contrib/cors as a much better solution.
 	c.XML(http.StatusOK, oneMap)
 }

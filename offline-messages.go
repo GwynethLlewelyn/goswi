@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
-//	"fmt"
+	//	"fmt"
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -13,17 +13,17 @@ import (
 )
 
 type OfflineIM struct {
-	ID string			`json:"ID"`
-	PrincipalID string	`json:"PrincipalID"`
-	Username string		`json:"Username"`	// will be constructed by getting it from the UserAccounts table
-	Libravatar string	`json:"Libravatar"`
-	FromID string		`json:"FromID"`
-	Message template.HTML		`json:"Message"`	// may contain HTML, so it will be sanitised later on (gwyneth 20200815)
-	TMStamp string		`json:"TMStamp"`
+	ID          string        `json:"ID"`
+	PrincipalID string        `json:"PrincipalID"`
+	Username    string        `json:"Username"` // will be constructed by getting it from the UserAccounts table
+	Libravatar  string        `json:"Libravatar"`
+	FromID      string        `json:"FromID"`
+	Message     template.HTML `json:"Message"` // may contain HTML, so it will be sanitised later on (gwyneth 20200815)
+	TMStamp     string        `json:"TMStamp"`
 }
 type OfflineIMList []OfflineIM
 
-const MaxNumberMessages int = 5	// maximum number of messages to retrieve
+const MaxNumberMessages int = 5 // maximum number of messages to retrieve
 
 // For some very, very, very stupid reason, we need to register our message type (and probably others) when starting...
 func init() {
@@ -32,9 +32,9 @@ func init() {
 
 // GetTopOfflineMessages will retrieve the top first 5 messages and put it on the session, to avoid constant reloading
 func GetTopOfflineMessages(c *gin.Context) {
-	session		:= sessions.Default(c)
-	username	:= session.Get("Username")
-	uuid		:= session.Get("UUID")
+	session := sessions.Default(c)
+	username := session.Get("Username")
+	uuid := session.Get("UUID")
 
 	if uuid == "" {
 		log.Println("[WARN]: GetTopOfflineMessages(): No UUID stored; messages for this user cannot get retrieved")
@@ -43,7 +43,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
-	db, err := sql.Open("mysql", *config["dsn"] + "?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
+	db, err := sql.Open("mysql", *config["dsn"]+"?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
 	checkErrFatal(err)
 
 	defer db.Close()
@@ -63,13 +63,13 @@ func GetTopOfflineMessages(c *gin.Context) {
 		defer rows.Close()
 
 		var (
-			oneMessage OfflineIM
-			messages OfflineIMList
+			oneMessage                                OfflineIM
+			messages                                  OfflineIMList
 			firstName, lastName, email, unsafeMessage string
-			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
+			messageTimeStamp                          sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
 
-		for /* i := 1; */ rows.Next() /* ; i++ */ {		// uncomment for special
+		for /* i := 1; */ rows.Next() /* ; i++ */ { // uncomment for special
 			err = rows.Scan(
 				&oneMessage.ID,
 				&oneMessage.PrincipalID,
@@ -103,7 +103,7 @@ func GetTopOfflineMessages(c *gin.Context) {
 
 		session.Set("Messages", messages)
 		session.Set("numberMessages", numberMessages)
-	} else {	// no messages for this user
+	} else { // no messages for this user
 		session.Set("Messages", nil)
 		session.Set("numberMessages", numberMessages)
 	}

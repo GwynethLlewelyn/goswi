@@ -6,7 +6,7 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
-//	"fmt"
+	//	"fmt"
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -16,22 +16,22 @@ import (
 )
 
 type FeedMessage struct {
-	PostParentID string	`json:"PostParentID"`
-	PosterID string		`json:"PosterID"`	// UUID of poster. Feed messages are seen by everyone.
-	PostID string		`json:"PostID"`		// primary key
-	Username string		`json:"Username"`	// will be constructed by getting it from the UserAccounts table
-	Libravatar string	`json:"Libravatar"`
-	PostMarkup template.HTML	`json:"PostMarkup"`	// actual message. May contain HTML.
-	Chronostamp string	`json:"Chronostamp"`
-	Visibility int		`json:"Visibility"`	// Ignored on this implementation
-	Comment int			`json:"Comment"`	// Ignored on this implementation
-	Commentlock string	`json:"Commentlock"`	// possibly the UUID of the avatar locking this thread for commenting
-	Editlock string		`json:"Editlock"`	// possibly the UUID of the avatar locking this message for editing
-	Feedgroup string	`json:"Feedgroup"`
+	PostParentID string        `json:"PostParentID"`
+	PosterID     string        `json:"PosterID"` // UUID of poster. Feed messages are seen by everyone.
+	PostID       string        `json:"PostID"`   // primary key
+	Username     string        `json:"Username"` // will be constructed by getting it from the UserAccounts table
+	Libravatar   string        `json:"Libravatar"`
+	PostMarkup   template.HTML `json:"PostMarkup"` // actual message. May contain HTML.
+	Chronostamp  string        `json:"Chronostamp"`
+	Visibility   int           `json:"Visibility"`  // Ignored on this implementation
+	Comment      int           `json:"Comment"`     // Ignored on this implementation
+	Commentlock  string        `json:"Commentlock"` // possibly the UUID of the avatar locking this thread for commenting
+	Editlock     string        `json:"Editlock"`    // possibly the UUID of the avatar locking this message for editing
+	Feedgroup    string        `json:"Feedgroup"`
 }
 type FeedMessageList []FeedMessage
 
-const MaxNumberFeedMessages int = 5	// maximum number of feed messages to retrieve
+const MaxNumberFeedMessages int = 5 // maximum number of feed messages to retrieve
 
 // For some very, very, very stupid reason, we need to register our message type (and probably others) when starting...
 func init() {
@@ -40,9 +40,9 @@ func init() {
 
 // GetTopFeedMessages will retrieve the top first 5 feed messages and put it on the session, to avoid constant reloading
 func GetTopFeedMessages(c *gin.Context) {
-	session		:= sessions.Default(c)
-	username	:= session.Get("Username")
-	uuid		:= session.Get("UUID")
+	session := sessions.Default(c)
+	username := session.Get("Username")
+	uuid := session.Get("UUID")
 
 	if uuid == "" {
 		log.Println("[WARN]: GetTopFeedMessages(): No UUID stored; messages for this user cannot get retrieved")
@@ -51,7 +51,7 @@ func GetTopFeedMessages(c *gin.Context) {
 	if *config["dsn"] == "" {
 		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
-	db, err := sql.Open("mysql", *config["dsn"] + "?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
+	db, err := sql.Open("mysql", *config["dsn"]+"?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
 	checkErrFatal(err)
 
 	defer db.Close()
@@ -71,13 +71,13 @@ func GetTopFeedMessages(c *gin.Context) {
 		defer rows.Close()
 
 		var (
-			oneMessage FeedMessage
-			messages FeedMessageList
+			oneMessage                                FeedMessage
+			messages                                  FeedMessageList
 			firstName, lastName, email, unsafeMessage string
-			messageTimeStamp sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
+			messageTimeStamp                          sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
 
-		for /* i := 1; */ rows.Next() /* ; i++ */ {		// uncomment for special
+		for /* i := 1; */ rows.Next() /* ; i++ */ { // uncomment for special
 			err = rows.Scan(
 				&oneMessage.PostParentID,
 				&oneMessage.PosterID,
@@ -116,7 +116,7 @@ func GetTopFeedMessages(c *gin.Context) {
 
 		session.Set("FeedMessages", messages)
 		session.Set("numberFeedMessages", numberFeedMessages)
-	} else {	// no messages for this user
+	} else { // no messages for this user
 		session.Set("FeedMessages", nil)
 		session.Set("numberFeedMessages", numberFeedMessages)
 	}

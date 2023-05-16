@@ -3,14 +3,14 @@ package main
 import (
 	"crypto/md5"
 	"crypto/rand"
-	"encoding/hex"
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"github.com/gin-contrib/sessions"
-//	"github.com/gin-contrib/sessions/cookie"
+	//	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-//	"html/template"
+	//	"html/template"
 	"log"
 	"math"
 	"os"
@@ -38,7 +38,8 @@ func checkErrPanic(err error) {
 }
 
 // checkErr checks if there is an error, and if yes, it logs it out and continues.
-//  this is for 'normal' situations when we want to get a log if something goes wrong but do not need to terminate execution.
+//
+//	this is for 'normal' situations when we want to get a log if something goes wrong but do not need to terminate execution.
 func checkErr(err error) {
 	if err != nil {
 		pc, file, line, ok := runtime.Caller(1)
@@ -47,7 +48,8 @@ func checkErr(err error) {
 }
 
 // expandPath expands the tilde as the user's home directory.
-//  found at http://stackoverflow.com/a/43578461/1035977
+//
+//	found at http://stackoverflow.com/a/43578461/1035977
 func expandPath(path string) (string, error) {
 	if len(path) == 0 || path[0] != '~' {
 		return path, nil
@@ -77,19 +79,19 @@ func generateSessionToken() string {
 
 // randomBase64String is Steven Soroka's simple solution to generate a cryptographically secure random string with base64 encoding (see https://stackoverflow.com/a/55860599/1035977) (gwyneth 20200706)
 func randomBase64String(l int) string {
-    buff := make([]byte, int(math.Round(float64(l)/float64(1.33333333333))))
-    rand.Read(buff)
-    str := base64.RawURLEncoding.EncodeToString(buff)
-    return str[:l] // strip 1 extra character we get from odd length results
+	buff := make([]byte, int(math.Round(float64(l)/float64(1.33333333333))))
+	rand.Read(buff)
+	str := base64.RawURLEncoding.EncodeToString(buff)
+	return str[:l] // strip 1 extra character we get from odd length results
 }
 
 // isValidExtension looks up a file extension and checks if it is valid for using inside HTML <img>.
 // It's a switch because it's more efficient: https://stackoverflow.com/a/52710077/1035977
 func isValidExtension(lookup string) bool {
 	switch strings.ToLower(lookup) {
-		// A full list of valid extensions is here: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
-		// I've added .mp4 for the sake of convenience (gwyneth 20200722)
-		case
+	// A full list of valid extensions is here: https://developer.mozilla.org/en-US/docs/Web/HTML/Element/img
+	// I've added .mp4 for the sake of convenience (gwyneth 20200722)
+	case
 		".bmp",
 		".cur",
 		".ico",
@@ -151,7 +153,7 @@ func formatAsYear(t time.Time) string {
 // environment pushes a lot of stuff into the common environment
 func environment(c *gin.Context, env gin.H) gin.H {
 	session := sessions.Default(c)
-	var sidebarCollapsed = ""	// false by default
+	var sidebarCollapsed = "" // false by default
 	if session.Get("sidebarCollapsed") == "true" {
 		sidebarCollapsed = "true"
 	} else if *config["sidebarCollapsed"] == "true" {
@@ -160,24 +162,24 @@ func environment(c *gin.Context, env gin.H) gin.H {
 
 	var data = gin.H{
 		/* common environment */
-		"now"			: formatAsYear(time.Now()),
-		"author"		: *config["author"],
-		"description"	: *config["description"],
-		"logo"			: *config["logo"],
-		"logoTitle"		: *config["logoTitle"],
-		"sidebarCollapsed" : sidebarCollapsed,
-		"titleCommon"	: *config["titleCommon"],
-		"StatsDir"		: *config["gridstats"],
+		"now":              formatAsYear(time.Now()),
+		"author":           *config["author"],
+		"description":      *config["description"],
+		"logo":             *config["logo"],
+		"logoTitle":        *config["logoTitle"],
+		"sidebarCollapsed": sidebarCollapsed,
+		"titleCommon":      *config["titleCommon"],
+		"StatsDir":         *config["gridstats"],
 		/* session data */
-		"Username"		: session.Get("Username"),
-		"UUID"			: session.Get("UUID"),
-		"Libravatar"	: session.Get("Libravatar"),
-		"Token"			: session.Get("Token"),
-		"Email"			: session.Get("Email"),
-		"RememberMe"	: session.Get("RememberMe"),
-		"Messages"		: session.Get("Messages"),
-		"numberMessages": session.Get("numberMessages"),
-		"FeedMessages"		: session.Get("FeedMessages"),
+		"Username":           session.Get("Username"),
+		"UUID":               session.Get("UUID"),
+		"Libravatar":         session.Get("Libravatar"),
+		"Token":              session.Get("Token"),
+		"Email":              session.Get("Email"),
+		"RememberMe":         session.Get("RememberMe"),
+		"Messages":           session.Get("Messages"),
+		"numberMessages":     session.Get("numberMessages"),
+		"FeedMessages":       session.Get("FeedMessages"),
 		"numberFeedMessages": session.Get("numberFeedMessages"),
 	}
 

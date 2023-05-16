@@ -3,7 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/binary"
-//	 "encoding/json"
+	//	 "encoding/json"
 	"errors"
 	"fmt"
 	"github.com/gin-contrib/sessions"
@@ -13,7 +13,7 @@ import (
 	"gopkg.in/gographics/imagick.v3/imagick"
 	"html/template"
 	"io/ioutil"
-//	jsoniter "github.com/json-iterator/go"
+	//	jsoniter "github.com/json-iterator/go"
 	"log"
 	"net/http"
 	// "os"
@@ -21,34 +21,34 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-//	"time"
+	// "time"
 )
 
 type UserProfile struct {
-	UserUUID string 			`form:"UserUUID" json:"useruuid"`
-	ProfilePartner string		`form:"ProfilePartner" json:"profilePartner"`
-	ProfileAllowPublish bool	`form:"ProfileAllowPublish" json:"profileAllowPublish"`	// inside the database, this is binary(1)
-	ProfileMaturePublish bool	`form:"ProfileMaturePublish" json:"profileMaturePublish"`
-	ProfilePublish []string		`form:"ProfilePublish" json:"profilePublish"`	// seems to be needed; values are Allow and Mature
-	ProfileURL string			`form:"ProfileURL" json:"profileURL"`
-	ProfileWantToMask int		`form:"ProfileWantToMask" json:"profileWantToMask"`
-	ProfileWantTo []string		`form:"ProfileWantTo[]"`
-	ProfileWantToText string	`form:"ProfileWantToText" json:"profileWantToText"`
-	ProfileSkillsMask int		`form:"ProfileSkillsMask" json:"profileSkillsMask"`
-	ProfileSkills []string		`form:"ProfileSkills[]"`
-	ProfileSkillsText string	`form:"ProfileSkillsText" json:"profileSkillsText"`
-	ProfileLanguages string		`form:"ProfileLanguages" json:"profileLanguages"`
-	ProfileImage string			`form:"ProfileImage" json:"profileImage"`
-	ProfileAboutText string		`form:"ProfileAboutText" json:"profileAboutText"`
-	ProfileFirstImage string	`form:"ProfileFirstImage" json:"profileFirstImage"`
-	ProfileFirstText string		`form:"ProfileFirstText" json:"profileFirstText"`
+	UserUUID             string   `form:"UserUUID" json:"useruuid"`
+	ProfilePartner       string   `form:"ProfilePartner" json:"profilePartner"`
+	ProfileAllowPublish  bool     `form:"ProfileAllowPublish" json:"profileAllowPublish"` // inside the database, this is binary(1)
+	ProfileMaturePublish bool     `form:"ProfileMaturePublish" json:"profileMaturePublish"`
+	ProfilePublish       []string `form:"ProfilePublish" json:"profilePublish"` // seems to be needed; values are Allow and Mature
+	ProfileURL           string   `form:"ProfileURL" json:"profileURL"`
+	ProfileWantToMask    int      `form:"ProfileWantToMask" json:"profileWantToMask"`
+	ProfileWantTo        []string `form:"ProfileWantTo[]"`
+	ProfileWantToText    string   `form:"ProfileWantToText" json:"profileWantToText"`
+	ProfileSkillsMask    int      `form:"ProfileSkillsMask" json:"profileSkillsMask"`
+	ProfileSkills        []string `form:"ProfileSkills[]"`
+	ProfileSkillsText    string   `form:"ProfileSkillsText" json:"profileSkillsText"`
+	ProfileLanguages     string   `form:"ProfileLanguages" json:"profileLanguages"`
+	ProfileImage         string   `form:"ProfileImage" json:"profileImage"`
+	ProfileAboutText     string   `form:"ProfileAboutText" json:"profileAboutText"`
+	ProfileFirstImage    string   `form:"ProfileFirstImage" json:"profileFirstImage"`
+	ProfileFirstText     string   `form:"ProfileFirstText" json:"profileFirstText"`
 }
 
 // GetProfile connects to the database, does its magic, and spews out a profile. That's the theory at least.
 func GetProfile(c *gin.Context) {
-	session		:= sessions.Default(c)
-	username	:= session.Get("Username")
-	uuid		:= session.Get("UUID")
+	session := sessions.Default(c)
+	username := session.Get("Username")
+	uuid := session.Get("UUID")
 
 	// open database connection
 	if *config["dsn"] == "" {
@@ -61,44 +61,44 @@ func GetProfile(c *gin.Context) {
 
 	var (
 		profileData UserProfile
-//		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
+		//		avatarProfileImage string	// constructed URL for the profile image (gwyneth 20200719) Note: not used any longer (gwyneth 20200728)
 		// allowPublish, maturePublish []byte // it has to be this way to get around a bug in the mySQL driver which is impossible to fix
-		allowPublishInt, maturePublishInt uint64	// intermediary things
-		unsafeProfileURL, unsafeProfileWantToText, unsafeProfileLanguages, unsafeProfileAboutText, unsafeProfileFirstText string 	// user-provided data requiring strict sanitising (gwyneth 20200815)
-		)
+		allowPublishInt, maturePublishInt                                                                                 uint64 // intermediary things
+		unsafeProfileURL, unsafeProfileWantToText, unsafeProfileLanguages, unsafeProfileAboutText, unsafeProfileFirstText string // user-provided data requiring strict sanitising (gwyneth 20200815)
+	)
 	// Allegedly, this is the only way to extract a binary(n) type into a variable;
 	//  we need these so-called '[]byte buffers' to temporarily store conversion results (gwyneth 20210118)
-	allowPublish  := make([]byte, binary.MaxVarintLen64)
+	allowPublish := make([]byte, binary.MaxVarintLen64)
 	maturePublish := make([]byte, binary.MaxVarintLen64)
 
 	err = db.QueryRow("SELECT useruuid, profilePartner, profileAllowPublish, profileMaturePublish, profileURL, profileWantToMask, profileWantToText, profileSkillsMask, profileSkillsText, profileLanguages, profileImage, profileAboutText, profileFirstImage, profileFirstText FROM userprofile WHERE useruuid = ?", uuid).Scan(
-			&profileData.UserUUID,
-			&profileData.ProfilePartner,
-			&allowPublish,	// &profileData.ProfileAllowPublish,
-			&maturePublish,	// &profileData.ProfileMaturePublish,
-			&unsafeProfileURL,
-			&profileData.ProfileWantToMask,
-			&unsafeProfileWantToText,
-			&profileData.ProfileSkillsMask,
-			&profileData.ProfileSkillsText,
-			&unsafeProfileLanguages,
-			&profileData.ProfileImage,
-			&unsafeProfileAboutText,
-			&profileData.ProfileFirstImage,
-			&unsafeProfileFirstText,
-		)
+		&profileData.UserUUID,
+		&profileData.ProfilePartner,
+		&allowPublish,  // &profileData.ProfileAllowPublish,
+		&maturePublish, // &profileData.ProfileMaturePublish,
+		&unsafeProfileURL,
+		&profileData.ProfileWantToMask,
+		&unsafeProfileWantToText,
+		&profileData.ProfileSkillsMask,
+		&profileData.ProfileSkillsText,
+		&unsafeProfileLanguages,
+		&profileData.ProfileImage,
+		&unsafeProfileAboutText,
+		&profileData.ProfileFirstImage,
+		&unsafeProfileFirstText,
+	)
 
-		profileData.ProfileURL				= bluemondaySafeHTML.Sanitize(unsafeProfileURL)
-		profileData.ProfileWantToText		= bluemondaySafeHTML.Sanitize(unsafeProfileWantToText)
-		profileData.ProfileLanguages		= bluemondaySafeHTML.Sanitize(unsafeProfileLanguages)
-		profileData.ProfileAboutText		= bluemondaySafeHTML.Sanitize(unsafeProfileAboutText)
-		profileData.ProfileFirstText		= bluemondaySafeHTML.Sanitize(unsafeProfileFirstText)
-//		Since we get a int(1) = byte, I'll stick with a byte... (gwyneth 20210117)
-//		That approach doesn't work, so we'll try using encode/binary instead
-		allowPublishInt, _ = binary.Uvarint(allowPublish)
-		profileData.ProfileAllowPublish		= allowPublishInt > 0	// hm!
-		maturePublishInt, _ = binary.Uvarint(maturePublish)
-		profileData.ProfileMaturePublish	= maturePublishInt > 0
+	profileData.ProfileURL = bluemondaySafeHTML.Sanitize(unsafeProfileURL)
+	profileData.ProfileWantToText = bluemondaySafeHTML.Sanitize(unsafeProfileWantToText)
+	profileData.ProfileLanguages = bluemondaySafeHTML.Sanitize(unsafeProfileLanguages)
+	profileData.ProfileAboutText = bluemondaySafeHTML.Sanitize(unsafeProfileAboutText)
+	profileData.ProfileFirstText = bluemondaySafeHTML.Sanitize(unsafeProfileFirstText)
+	//		Since we get a int(1) = byte, I'll stick with a byte... (gwyneth 20210117)
+	//		That approach doesn't work, so we'll try using encode/binary instead
+	allowPublishInt, _ = binary.Uvarint(allowPublish)
+	profileData.ProfileAllowPublish = allowPublishInt > 0 // hm!
+	maturePublishInt, _ = binary.Uvarint(maturePublish)
+	profileData.ProfileMaturePublish = maturePublishInt > 0
 
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
 		if *config["ginMode"] == "debug" {
@@ -115,12 +115,12 @@ func GetProfile(c *gin.Context) {
 	// see if we have this image already
 	// Note: in the future, we might simplify the call by just using the UUID + file extension... (gwyneth 20200727)
 	// Note 2: We *also* retrieve a Retina image and store it in the cache, but we do not specifically check for it. The idea is that proper HTML will deal with selecting the 'correct' image, we only need to check for one of them. Also, if the conversion to Retina fails for some reason, that's not a problem, we'll fall back to whatever has been downloaded so far...
-	profileImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileData.ProfileImage + *config["convertExt"])
-	profileRetinaImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileData.ProfileImage + "@2x" + *config["convertExt"]) // we need the path, but we won't check for it directly
+	profileImage := filepath.Join( /* PathToStaticFiles, */ *config["cache"], profileData.ProfileImage+*config["convertExt"])
+	profileRetinaImage := filepath.Join( /* PathToStaticFiles, */ *config["cache"], profileData.ProfileImage+"@2x"+*config["convertExt"]) // we need the path, but we won't check for it directly
 	/*
-	if profileImage[0] != '/' {
-		profileImage = "/" + profileImage
-	}
+		if profileImage[0] != '/' {
+			profileImage = "/" + profileImage
+		}
 	*/
 	// either this URL exists and is in the cache, or not, and we need to get the image from
 	//  OpenSimulator and attempt to convert it... we won't change the URL in the process.
@@ -180,8 +180,8 @@ func GetProfile(c *gin.Context) {
 	// An idea would be just to get a Libravatar! We have it, after all...
 
 	// Do the same for the profile image for First (=Real) Life. Comments as above!
-	profileFirstImage := filepath.Join(/*PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage + *config["convertExt"])
-	profileRetinaFirstImage := filepath.Join(/* PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage + "@2x" + *config["convertExt"])
+	profileFirstImage := filepath.Join( /*PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage+*config["convertExt"])
+	profileRetinaFirstImage := filepath.Join( /* PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage+"@2x"+*config["convertExt"])
 
 	if !imageCache.Has(profileFirstImage) {
 		if *config["ginMode"] == "debug" {
@@ -227,28 +227,28 @@ func GetProfile(c *gin.Context) {
 	}
 
 	c.HTML(http.StatusOK, "profile.tpl", environment(c, gin.H{
-		"needsTables"	: false,
-		"needsMap"		: false,
-		"moreValidation" : true,
-		"Debug"			: false,	// we will probably need two versions of 'debug mode'... (gwyneth 20200622)
-		"titleCommon"	: *config["titleCommon"] + profileData.UserUUID + " Profile",
-		"ProfileData"	: fmt.Sprintf("%+v", profileData),
-		"ProfileURL"	: template.HTML(profileData.ProfileURL),
-		"UserUUID"				: profileData.UserUUID,
-		"ProfilePartner"		: profileData.ProfilePartner,
-		"ProfileAllowPublish"	: profileData.ProfileAllowPublish,
-		"ProfileMaturePublish"	: profileData.ProfileMaturePublish,
-		"ProfileWantToMask"	: profileData.ProfileWantToMask,
-		"ProfileWantToText"	: template.HTML(profileData.ProfileWantToText),
-		"ProfileSkillsMask"	: profileData.ProfileSkillsMask,
-		"ProfileSkillsText"	: template.HTML(profileData.ProfileSkillsText),
-		"ProfileLanguages"	: template.HTML(profileData.ProfileLanguages),
-		"ProfileImage"		: profileImage,						// OpenSimulator/Second Life profile image
-		"ProfileRetinaImage"	: profileRetinaImage,			// Generated Retina image
-		"ProfileAboutText"	: template.HTML(profileData.ProfileAboutText),
-		"ProfileFirstImage"	: profileFirstImage,				// Real life, i.e. 'First Life' image
-		"ProfileRetinaFirstImage"	: profileRetinaFirstImage,	// Another generated Retina image
-		"ProfileFirstText"	: template.HTML(profileData.ProfileFirstText),
+		"needsTables":             false,
+		"needsMap":                false,
+		"moreValidation":          true,
+		"Debug":                   false, // we will probably need two versions of 'debug mode'... (gwyneth 20200622)
+		"titleCommon":             *config["titleCommon"] + profileData.UserUUID + " Profile",
+		"ProfileData":             fmt.Sprintf("%+v", profileData),
+		"ProfileURL":              template.HTML(profileData.ProfileURL),
+		"UserUUID":                profileData.UserUUID,
+		"ProfilePartner":          profileData.ProfilePartner,
+		"ProfileAllowPublish":     profileData.ProfileAllowPublish,
+		"ProfileMaturePublish":    profileData.ProfileMaturePublish,
+		"ProfileWantToMask":       profileData.ProfileWantToMask,
+		"ProfileWantToText":       template.HTML(profileData.ProfileWantToText),
+		"ProfileSkillsMask":       profileData.ProfileSkillsMask,
+		"ProfileSkillsText":       template.HTML(profileData.ProfileSkillsText),
+		"ProfileLanguages":        template.HTML(profileData.ProfileLanguages),
+		"ProfileImage":            profileImage,       // OpenSimulator/Second Life profile image
+		"ProfileRetinaImage":      profileRetinaImage, // Generated Retina image
+		"ProfileAboutText":        template.HTML(profileData.ProfileAboutText),
+		"ProfileFirstImage":       profileFirstImage,       // Real life, i.e. 'First Life' image
+		"ProfileRetinaFirstImage": profileRetinaFirstImage, // Another generated Retina image
+		"ProfileFirstText":        template.HTML(profileData.ProfileFirstText),
 	}))
 }
 
@@ -261,10 +261,10 @@ func saveProfile(c *gin.Context) {
 
 	if c.Bind(&oneProfile) != nil { // nil means no errors
 		c.HTML(http.StatusBadRequest, "404.tpl", environment(c, gin.H{
-			"errorcode"		: http.StatusBadRequest,
-			"errortext"		: "Saving profile failed",
-			"errorbody"		: "No form data posted",
-			"titleCommon"	: *config["titleCommon"] + " - Profile",
+			"errorcode":   http.StatusBadRequest,
+			"errortext":   "Saving profile failed",
+			"errorbody":   "No form data posted",
+			"titleCommon": *config["titleCommon"] + " - Profile",
 		}))
 		log.Println("[ERROR] No form data posted for saving profile")
 
@@ -278,13 +278,13 @@ func saveProfile(c *gin.Context) {
 	// check if we really are who we claim to be
 	if thisUUID != oneProfile.UserUUID {
 		c.HTML(http.StatusUnauthorized, "404.tpl", environment(c, gin.H{
-			"errorcode"		: http.StatusUnauthorized,
-			"errortext"		: "No permission",
-			"errorbody"		: fmt.Sprintf("You have no permission to change the profile for %q", session.Get("Username")),
-			"titleCommon"	: *config["titleCommon"] + " - Profile",
+			"errorcode":   http.StatusUnauthorized,
+			"errortext":   "No permission",
+			"errorbody":   fmt.Sprintf("You have no permission to change the profile for %q", session.Get("Username")),
+			"titleCommon": *config["titleCommon"] + " - Profile",
 		}))
 		log.Printf("[ERROR] Session UUID %q is not the same as Profile UUID %q - profile data change for %q not allowed\n",
-		thisUUID, oneProfile.UserUUID, session.Get("Username"))
+			thisUUID, oneProfile.UserUUID, session.Get("Username"))
 
 		return
 	}
@@ -302,41 +302,41 @@ func saveProfile(c *gin.Context) {
 
 	var wantToMask, skillsMask int
 
-	for _, bitfield := range(oneProfile.ProfileWantTo) {
+	for _, bitfield := range oneProfile.ProfileWantTo {
 		switch bitfield {
-			case "Build":
-				wantToMask += 1
-			case "Meet":
-				wantToMask += 4
-			case "Group":
-				wantToMask += 8
-			case "Sell":
-				wantToMask += 32
-			case "Explore":
-				wantToMask += 2
-			case "BeHired":
-				wantToMask += 64
-			case "Buy":
-				wantToMask += 16
-			case "Hire":
-				wantToMask += 128
+		case "Build":
+			wantToMask += 1
+		case "Meet":
+			wantToMask += 4
+		case "Group":
+			wantToMask += 8
+		case "Sell":
+			wantToMask += 32
+		case "Explore":
+			wantToMask += 2
+		case "BeHired":
+			wantToMask += 64
+		case "Buy":
+			wantToMask += 16
+		case "Hire":
+			wantToMask += 128
 		}
 	}
 
-	for _, bitfield := range(oneProfile.ProfileSkills) {
+	for _, bitfield := range oneProfile.ProfileSkills {
 		switch bitfield {
-			case "Textures":
-				skillsMask += 1
-			case "Modeling":
-				skillsMask += 8
-			case "Scripting":
-				skillsMask += 16
-			case "Architecture":
-				skillsMask += 2
-			case "EventPlanning":
-				skillsMask += 4
-			case "CustomCharacters":
-				skillsMask += 32
+		case "Textures":
+			skillsMask += 1
+		case "Modeling":
+			skillsMask += 8
+		case "Scripting":
+			skillsMask += 16
+		case "Architecture":
+			skillsMask += 2
+		case "EventPlanning":
+			skillsMask += 4
+		case "CustomCharacters":
+			skillsMask += 32
 		}
 	}
 
@@ -348,7 +348,7 @@ func saveProfile(c *gin.Context) {
 		log.Printf("[DEBUG] oneProfile.ProfileAllowPublish is %+v, oneProfile.ProfileMaturePublish is %+v\n", oneProfile.ProfileAllowPublish, oneProfile.ProfileMaturePublish)
 	}
 
-	allowPublish  := make([]byte, binary.MaxVarintLen64)
+	allowPublish := make([]byte, binary.MaxVarintLen64)
 	maturePublish := make([]byte, binary.MaxVarintLen64)
 
 	_ = binary.PutUvarint(allowPublish, 0)
@@ -356,16 +356,16 @@ func saveProfile(c *gin.Context) {
 
 	// we always seem to get checkboxes as a group inside an array, so we do something similar as above with the bitmasks
 	//  however
-	for _, publish := range(oneProfile.ProfilePublish) {
+	for _, publish := range oneProfile.ProfilePublish {
 		switch publish {
-			case "Allow":
-//				allowPublish = append(allowPublish, 1)
-//				allowPublish = 1
-				_ = binary.PutUvarint(allowPublish, 1)
-			case "Mature":
-//				maturePublish = append(maturePublish, 1)
-//				maturePublish = 1
-				_ = binary.PutUvarint(maturePublish, 1)
+		case "Allow":
+			//				allowPublish = append(allowPublish, 1)
+			//				allowPublish = 1
+			_ = binary.PutUvarint(allowPublish, 1)
+		case "Mature":
+			//				maturePublish = append(maturePublish, 1)
+			//				maturePublish = 1
+			_ = binary.PutUvarint(maturePublish, 1)
 		}
 	}
 	// if len(allowPublish) == 0 {
@@ -385,9 +385,9 @@ func saveProfile(c *gin.Context) {
 		allowPublish,
 		maturePublish,
 		bluemondaySafeHTML.Sanitize(oneProfile.ProfileURL),
-		wantToMask,						// oneProfile.ProfileWantToMask,	// images are read-only!
+		wantToMask, // oneProfile.ProfileWantToMask,	// images are read-only!
 		bluemondaySafeHTML.Sanitize(oneProfile.ProfileWantToText),
-		skillsMask,						// oneProfile.ProfileSkillsMask,
+		skillsMask, // oneProfile.ProfileSkillsMask,
 		bluemondaySafeHTML.Sanitize(oneProfile.ProfileSkillsText),
 		bluemondaySafeHTML.Sanitize(oneProfile.ProfileLanguages),
 		bluemondaySafeHTML.Sanitize(oneProfile.ProfileAboutText),
@@ -399,10 +399,10 @@ func saveProfile(c *gin.Context) {
 
 	if numRowsAffected, err := result.RowsAffected(); err != nil {
 		c.HTML(http.StatusOK, "404.tpl", environment(c, gin.H{
-			"errorcode"		: http.StatusInternalServerError,
-			"errortext"		: "Saving profile failed",
-			"errorbody"		: fmt.Sprintf("Database error was: %q [%d row(s) affected]", err, numRowsAffected),
-			"titleCommon"	: *config["titleCommon"] + " - Profile",
+			"errorcode":   http.StatusInternalServerError,
+			"errortext":   "Saving profile failed",
+			"errorbody":   fmt.Sprintf("Database error was: %q [%d row(s) affected]", err, numRowsAffected),
+			"titleCommon": *config["titleCommon"] + " - Profile",
 		}))
 
 		log.Printf("[ERROR] Updating database with new profile for %q failed, error was %s\n", thisUUID, err)
@@ -435,7 +435,7 @@ func imageCacheTransform(key string) *diskv.PathKey {
 func imageCacheInverseTransform(pathKey *diskv.PathKey) string {
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] imageCacheInverseTransform: pathKey %v which will be returned as %q\n",
-			pathKey, strings.Join(pathKey.Path, "/") + pathKey.FileName) // inefficient but we're just debugging... (gwyneth 20200727)
+			pathKey, strings.Join(pathKey.Path, "/")+pathKey.FileName) // inefficient but we're just debugging... (gwyneth 20200727)
 	}
 	return strings.Join(pathKey.Path, "/") + pathKey.FileName
 }
@@ -463,18 +463,18 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 	mw := imagick.NewMagickWand()
 	defer mw.Destroy()
 
-    // Load the image into imagemagick
-    if err := mw.ReadImageBlob(aImage); err != nil {
+	// Load the image into imagemagick
+	if err := mw.ReadImageBlob(aImage); err != nil {
 		return nil, nil, err
 	}
 
 	if *config["ginMode"] == "debug" {
-		filename		:= mw.GetFilename()
-		format			:= mw.GetFormat()
-		resX, resY, _	:= mw.GetResolution()
-		x, y, _			:= mw.GetSize()
-		imageProfile	:= mw.GetImageProfile("generic")
-		length,	_		:= mw.GetImageLength()
+		filename := mw.GetFilename()
+		format := mw.GetFormat()
+		resX, resY, _ := mw.GetResolution()
+		x, y, _ := mw.GetSize()
+		imageProfile := mw.GetImageProfile("generic")
+		length, _ := mw.GetImageLength()
 		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and size %d (%.f ppi), %d (%.f ppi), Generic profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
 	}
 
@@ -482,38 +482,38 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 		return nil, nil, err
 	}
 
-    // Must be *after* ReadImage
-    // Flatten image and remove alpha channel, to prevent alpha turning black in jpg
-    if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OFF); err != nil {
-        return nil, nil, err
-    }
+	// Must be *after* ReadImage
+	// Flatten image and remove alpha channel, to prevent alpha turning black in jpg
+	if err := mw.SetImageAlphaChannel(imagick.ALPHA_CHANNEL_OFF); err != nil {
+		return nil, nil, err
+	}
 
-    // Set any compression (100 = max quality)
-    if err := mw.SetCompressionQuality(compression); err != nil {
-        return nil, nil, err
-    }
+	// Set any compression (100 = max quality)
+	if err := mw.SetCompressionQuality(compression); err != nil {
+		return nil, nil, err
+	}
 
 	// Move to first image
 	mw.SetIteratorIndex(0)
 
-    // Convert into PNG
+	// Convert into PNG
 	var formatType = *config["convertExt"]
 	if *config["ginMode"] == "debug" {
 		log.Println("[DEBUG] Setting format type to", formatType[1:])
 	}
-    if err := mw.SetFormat(formatType[1:]); err != nil {
-        return nil, nil, err
-    }
+	if err := mw.SetFormat(formatType[1:]); err != nil {
+		return nil, nil, err
+	}
 
-    // Return []byte for this image
+	// Return []byte for this image
 	blob := mw.GetImageBlob()
 
 	// now do the same for the Retina size
-	if err := mw.ResizeImage(height * 2, width * 2, imagick.FILTER_LANCZOS_SHARP); err != nil {
+	if err := mw.ResizeImage(height*2, width*2, imagick.FILTER_LANCZOS_SHARP); err != nil {
 		return blob, nil, err
 	}
 
 	blobRetina := mw.GetImageBlob()
 
-    return blob, blobRetina, nil
+	return blob, blobRetina, nil
 }
