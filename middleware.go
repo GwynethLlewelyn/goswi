@@ -1,6 +1,6 @@
 /***
-*	Middleware for dealing with login/session cookies
-*/
+ *	Middleware for dealing with login/session cookies
+ */
 package main
 
 import (
