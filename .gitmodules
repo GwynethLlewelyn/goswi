@@ -1,0 +1,3 @@
+[submodule "lib/startbootstrap-sb-admin-2"]
+	path = lib/startbootstrap-sb-admin-2
+	url = https://github.com/StartBootstrap/startbootstrap-sb-admin-2
