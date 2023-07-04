@@ -11,17 +11,19 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"github.com/gabriel-vasile/mimetype"
-	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	//	"gopkg.in/gographics/imagick.v3/imagick"	// not needed since we call the conversion function (gwyneth 20200910)
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"github.com/gabriel-vasile/mimetype"
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	//	"gopkg.in/gographics/imagick.v3/imagick"	// not needed since we call the conversion function (gwyneth 20200910)
 )
 
 // Database fields that we will retrieve later for checking email, names, profile image, etc.
@@ -82,7 +84,7 @@ func Libravatar(c *gin.Context) {
 			log.Printf("[DEBUG] Libravatar: pathToProfileImage is now %q\n", pathToProfileImage)
 		}
 
-		if fileContent, err := ioutil.ReadFile(pathToProfileImage); err == nil {
+		if fileContent, err := os.ReadFile(pathToProfileImage); err == nil {
 			mime := mimetype.Detect(fileContent)
 			if *config["ginMode"] == "debug" {
 				log.Printf("[DEBUG] Libravatar: file %q for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", pathToProfileImage, profileImage, mime.String(), len(fileContent))
@@ -152,7 +154,7 @@ func Libravatar(c *gin.Context) {
 				log.Println("[ERROR] Libravatar: Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
 			}
 			defer resp.Body.Close()
-			newImage, err := ioutil.ReadAll(resp.Body)
+			newImage, err := io.ReadAll(resp.Body)
 			if err != nil {
 				log.Println("[ERROR] Libravatar: Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
 			}

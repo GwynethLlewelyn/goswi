@@ -6,25 +6,18 @@ import (
 	"crypto/subtle"
 	"database/sql"
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	// 	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	//	jsoniter "github.com/json-iterator/go"
-	//	"github.com/peterbourgon/diskv/v3"
-	//	"github.com/philippgille/gokv"
-	//	"github.com/philippgille/gokv/syncmap"
-	//	"html/template"
-	"io/ioutil"
+	"io"
 	"log"
-	//	"mime"
-	// 	"math/rand"
 	"net/http"
 	"net/smtp"
 	"path/filepath"
 	"strings"
-	"strk.kbt.io/projects/go/libravatar"
 	"time"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"strk.kbt.io/projects/go/libravatar"
 )
 
 // UserForm is used for capturing form data from the login page and adds decoration for JSON.
@@ -786,7 +779,7 @@ func getLibravatar(email string, username string, size uint) string {
 		}
 		defer resp.Body.Close()
 
-		newImage, err := ioutil.ReadAll(resp.Body)
+		newImage, err := io.ReadAll(resp.Body)	// deprecated
 		if err != nil {
 			log.Println("[ERROR] Oops — could not get image contents of", avatarURL, "from getLibravatar, error was:", err)
 		}

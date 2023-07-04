@@ -12,7 +12,7 @@ import (
 	"github.com/peterbourgon/diskv/v3"
 	"gopkg.in/gographics/imagick.v3/imagick"
 	"html/template"
-	"io/ioutil"
+	"io"
 	//	jsoniter "github.com/json-iterator/go"
 	"log"
 	"net/http"
@@ -137,7 +137,7 @@ func GetProfile(c *gin.Context) {
 			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
 		}
 		defer resp.Body.Close()
-		newImage, err := ioutil.ReadAll(resp.Body)
+		newImage, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("[ERROR] Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
 		}
@@ -193,7 +193,7 @@ func GetProfile(c *gin.Context) {
 			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileFirstImageAssetURL, "error was:", err)
 		}
 		defer resp.Body.Close()
-		newImage, err := ioutil.ReadAll(resp.Body)
+		newImage, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator, error was:", err)
 		}
