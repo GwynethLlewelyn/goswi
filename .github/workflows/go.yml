@@ -1,11 +1,12 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+# A workflow to build `gOSWI` using GitHub Actions.
 
-# Note the extra complexity to make sure this compiles with CGo
-# meaning that we need to install the ImageMagick 7 tools
-# ... which in turn means getting the package from Debian, since Ubuntu doesn't have it
+# Note the extra complexity to make sure this compiles with Cgo,
+# meaning that we need to install the ImageMagick 7 C/C++ development libraries & headers
+# ... which, in turn, means getting the packages from Debian, since Ubuntu doesn't
+#     have the latest versions; they're still stuck with ImageMagick 6.9, as of late 2024,
+#     (Ubuntu 24.04).
 
-name: Go
+name: 'gOSWI build with Debian packages'
 
 on:
   push:
@@ -22,56 +23,56 @@ jobs:
 
     # Note: Ubuntu doesn't like ImageMagick 7
     - name: Download ImageMagick Debian libraries and dependencies to /tmp
+      # Need more packages? Just add their URLs below
+      #
       run: |
         mkdir -p /tmp/imagemagick7
         cd /tmp/imagemagick7
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libsharpyuv0_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libsharpyuv-dev_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebp7_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpdemux2_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpmux3_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpdecoder3_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebp-dev_1.4.0-0.1+b1_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7-arch-config_7.1.1.39+dfsg1-3_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-10-extra_7.1.1.39+dfsg1-3_amd64.deb
-        # wget --no-verbose librsvg2-dev
-        # wget --no-verbose libtiff-dev
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
-        wget --no-verbose http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
-        pwd
-        ls -la
+        echo "
+        http://http.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libsharpyuv0_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libsharpyuv-dev_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebp7_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpdemux2_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpmux3_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpdecoder3_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebp-dev_1.4.0-0.1+b1_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7-arch-config_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-10-extra_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+        " | wget --no-verbose -i -
 
     - name: Install ImageMagick Debian packages
-      run: |
-        sudo apt-get install -y /tmp/imagemagick7/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libsharpyuv0_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libsharpyuv-dev_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libwebp7_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libwebpdemux2_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libwebpmux3_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libwebpdecoder3_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libwebp-dev_1.4.0-0.1+b1_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickwand-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7-arch-config_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7.q16-10-extra_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+      # Note that the order of the packages being installed _might_ be important!
+      run: sudo apt-get install -y /tmp/imagemagick7/libjpeg62-turbo_2.1.5-3+b1_amd64.deb \
+        /tmp/imagemagick7/libsharpyuv0_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/libsharpyuv-dev_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/libwebp7_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/libwebpdemux2_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/libwebpmux3_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/libwebpdecoder3_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/libwebp-dev_1.4.0-0.1+b1_amd64.deb \
+        /tmp/imagemagick7/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb \
+        /tmp/imagemagick7/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb \
+        /tmp/imagemagick7/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb \
+        /tmp/imagemagick7/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb \
+        /tmp/imagemagick7/libmagickcore-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagickwand-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagickcore-7-arch-config_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagickcore-7.q16-10-extra_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb \
+        /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
 
     - name: Set up Go
       uses: actions/setup-go@v5
@@ -79,9 +80,10 @@ jobs:
 #        go-version: '1.23'
         go-version-file: './go.mod'
 
-    # Mqke sure tha CGo is enabled
+    # Make sure tha Cgo is enabled
     - name: Build
       run:  CGO_CFLAGS_ALLOW='-Xpreprocessor' go build -v ./...
 
+# Tests haven't been done yet.
 #    - name: Test
 #      run: go test -v ./...
