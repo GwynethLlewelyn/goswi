@@ -53,25 +53,25 @@ jobs:
 
     - name: Install ImageMagick Debian packages
       # Note that the order of the packages being installed _might_ be important!
-      run: sudo apt-get install -y /tmp/imagemagick7/libjpeg62-turbo_2.1.5-3+b1_amd64.deb \
-        /tmp/imagemagick7/libsharpyuv0_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/libsharpyuv-dev_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/libwebp7_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/libwebpdemux2_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/libwebpmux3_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/libwebpdecoder3_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/libwebp-dev_1.4.0-0.1+b1_amd64.deb \
-        /tmp/imagemagick7/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb \
-        /tmp/imagemagick7/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb \
-        /tmp/imagemagick7/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb \
-        /tmp/imagemagick7/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb \
-        /tmp/imagemagick7/libmagickcore-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb \
-        /tmp/imagemagick7/libmagickwand-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb \
-        /tmp/imagemagick7/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb \
-        /tmp/imagemagick7/libmagickcore-7-arch-config_7.1.1.39+dfsg1-3_amd64.deb \
-        /tmp/imagemagick7/libmagickcore-7.q16-10-extra_7.1.1.39+dfsg1-3_amd64.deb \
-        /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb \
-        /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb \
+      run: sudo apt-get install -y /tmp/imagemagick7/libjpeg62-turbo_2.1.5-3+b1_amd64.deb
+        /tmp/imagemagick7/libsharpyuv0_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/libsharpyuv-dev_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/libwebp7_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/libwebpdemux2_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/libwebpmux3_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/libwebpdecoder3_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/libwebp-dev_1.4.0-0.1+b1_amd64.deb
+        /tmp/imagemagick7/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb
+        /tmp/imagemagick7/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb
+        /tmp/imagemagick7/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb
+        /tmp/imagemagick7/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb
+        /tmp/imagemagick7/libmagickcore-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
+        /tmp/imagemagick7/libmagickwand-7.q16-10_7.1.1.39+dfsg1-3_amd64.deb
+        /tmp/imagemagick7/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb
+        /tmp/imagemagick7/libmagickcore-7-arch-config_7.1.1.39+dfsg1-3_amd64.deb
+        /tmp/imagemagick7/libmagickcore-7.q16-10-extra_7.1.1.39+dfsg1-3_amd64.deb
+        /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+        /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
         /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
 
     - name: Set up Go
