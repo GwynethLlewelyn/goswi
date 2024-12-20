@@ -37,9 +37,10 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 
 ## Configuration
 
--   Because [Second Life](https://secondlife.com) and OpenSimulator internally use [JPEG2000](https://jpeg.org/jpeg2000/) for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
-    -   install ImageMagick according to https://github.com/gographics/imagick (go for version 7)
-    -   make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
+-   Because [Second Life](https://secondlife.com)® and OpenSimulator internally use [JPEG2000](https://jpeg.org/jpeg2000/) for all images (including raw map tiles), we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the [Cgo](https://go.dev/blog/cgo)-based ImageMagick wrapper:
+    -   Install ImageMagick according to https://github.com/gographics/imagick (choose version 7)
+	-   If you're on Ubuntu/Debian Linux, which are still _mostly_ stuck with ImageMagick 6.9, you might be able to install all required dependencies from the Debian repositories. Take a peek at [the GitHub action to compile the code](https://github.com/GwynethLlewelyn/goswi/blob/master/.github/workflows/go.yml) to get a list of the fundamental packages that are needed. Note that GitHub, when running this action, will essentially start with a fresh, clean container, and has to install _everything_ it needs; your mileage may vary (an 'unclean' environment might either not require so many things to be installed, or, worse, get blocked with some dependency conflicts)
+    -   Make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
     -   Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell.
         My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
 -   Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
