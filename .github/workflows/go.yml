@@ -38,10 +38,10 @@ jobs:
 
     - name: Install ImageMagick Debian packages
       run: |
-        sudo apt-get install -y /tmp/imagemagick7/imagemagick-7-common_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7-headers_7.1.1.39+dfsg1-3_amd64.de;
-        sudo apt-get install -y /tmp/imagemagick7/libmagickwand-7-headers_7.1.1.39+dfsg1-3_amd64.deb
-        sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.headers_7.1.1.39+dfsg1-3_amd64.deb
+        sudo apt-get install -y /tmp/imagemagick7/imagemagick-7-common_7.1.1.39+dfsg1-3_all.deb
+        sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7-headers_7.1.1.39+dfsg1-3_all.deb
+        sudo apt-get install -y /tmp/imagemagick7/libmagickwand-7-headers_7.1.1.39+dfsg1-3_all.deb
+        sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.headers_7.1.1.39+dfsg1-3_all.deb
         sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb
         sudo apt-get install -y /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
         sudo apt-get install -y /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
