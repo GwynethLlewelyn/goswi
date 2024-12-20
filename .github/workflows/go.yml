@@ -1,6 +1,10 @@
 # This workflow will build a golang project
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
 
+# Note the extra complexity to make sure this compiles with CGo
+# meaning that we need to install the ImageMagick 7 tools
+# ... which in turn means getting the package from Debian, since Ubuntu doesn't have it
+
 name: Go
 
 on:
