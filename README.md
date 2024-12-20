@@ -4,9 +4,26 @@
 
 ## Go (lang) OpenSimulator Web Interface
 
-**gOSWI** (**G**o **O**penSimulator **W**eb **I**nterface) is a Web-based, backend administration console for virtual world grids running the [OpenSimulator](http://opensimulator.org) software.
+**gOSWI** (**G**o **O**pen**S**imulator **W**eb **I**nterface) is a Web-based, backend administration console for virtual world grids running the [OpenSimulator](http://opensimulator.org) software.
 
 **Note:** if you don't know what OpenSimulator is, then very likely you won't need this package _ever_!
+
+**Note:** Some knowledge of the Go programming language is definitely required; a working Go environment is an absolute necessity!
+
+## Quick-start installation
+
+-   Make sure you have a fairly recent version of the Go environment installed for your system; use your operating system's favourite package manager or [follow the instructions](https://go.dev/doc/install)
+-   Install the _developer_ version of ImageMagick, preferably version 7, according to [the GoGraphics `imagick` instructions](https://github.com/gographics/imagick)
+-   Make sure you have a working, command-line C/C++ compiler installed on your system (e.g., `clang`, GCC, Roslyn, mingw, Xcode for macOS...); if you're on Unix or any of its variants, you should be good to go
+-   Run (under an unprivileged user) the following command on your local shell:
+    ```bash
+    export CGO_CFLAGS_ALLOW='-Xpreprocessor'
+    go build github.com/GwynethLlewelyn/goswi
+    ```
+    If this is the first time compiling anything in Go, this step will populate your home directory with quite a lot of files (under `~/go`), and the overall compilation _may_ take some time to complete. The Go toolchain is notoriously silent, so you might wish to append a `-v` for _some_ additional verbosity.
+-   If all went well, you should have an executable file called `goswi` on the same directory (possibly `goswi.exe` if you've attempted to compile it under Windows)
+-   Note that you _can_ run it from the console, but it's much more likely that you wish to set it up as a proper service (running in the background); also note that `goswi` will need some directories to be present
+-   Now skip the next chapter and go straight to the [Configuration](#Configuration) section!
 
 ## Purpose of this project
 
@@ -20,10 +37,10 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 
 ## Configuration
 
--   Because Second Life and OpenSimulator internally use JPEG2000 for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
+-   Because [Second Life](https://secondlife.com) and OpenSimulator internally use [JPEG2000](https://jpeg.org/jpeg2000/) for all images, we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the CGo-based ImageMagick wrapper:
     -   install ImageMagick according to https://github.com/gographics/imagick (go for version 7)
     -   make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
-    -   Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell
+    -   Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell.
         My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
 -   Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
 -   To get a fully-functional map, adjust `assets/js/leaflet-gridmap.js` with your system's configuration
@@ -31,9 +48,10 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 -   Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
 -   I had to move from session storage in cookies to a memory-based approach, simply because the session data stored in cookies was growing and growing until it blew the established 4K limit. Now, if the application is _not_ running, all the stored session data is _lost_. I've been toying around the following possibilities:
 
-    -   Using either Redis/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all would have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
+    -   Using either [Redis](https://redis.io/)/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all would have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
     -   Adapt Gin-Gonic to use the Gorilla FileSystem storage (Gin-Gonic sessions use Gorilla sessions underneath)
     -   Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
+    -   Use browser-based local storage to replace cookies (which I wasn't originally aware of)
 
     I haven't still decided what I'll do...
 
@@ -46,6 +64,14 @@ If you wish to use TLS (i.e. HTTPS), just add the full path to your certificate 
 The latest versions come with (experimental) support for [New Relic](https://newrelic.com/) instrumentation (embedded Go agent). Setting it up is as easy as registering for the free version of New Relic, adding a new (Go) app and grabbing your license key. You'll only need to add the app name and the license key to `config.ini`, and, in theory at least, you'll be getting data on your New Relic console. Instrumentation is done via middleware, which is only active if gOSWI manages to get a valid connection to New Relic (thus, if you see any problems or slowdown, you can just remove the configuration, and no extra code will be running).
 
 ## Disclaimers and Licenses
+
+Second Life® is a registered trademark of Linden Lab.
+
+OpenSimulator is a trademark of the The OpenSimulator Project.
+
+Redis, memcached, New Relic, Go are trademarks of their respecive owners.
+
+JPEG2000 is a registered trademark of the Joint Photographic Experts Group ([JPEG](htps://jpeg.org)) committee.
 
 The _gopher_ (the Go mascot) is an [original design](https://blog.golang.org/gopher) created by renowned illustrator [Renne French](https://www.instagram.com/reneefrench/) and released with a [Creative Commons Attribution 3.0 (Unported) License](https://creativecommons.org/licenses/by/3.0/), to be used on Go-related projects, but is _not_ the official logo.
 
