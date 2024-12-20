@@ -150,7 +150,7 @@ func GetProfile(c *gin.Context) {
 			}
 		}
 		// Now use ImageMagick to convert this image!
-		// Note: I've avoided using ImageMagick because it's compiled with CGo, but I can't do better
+		// Note: I've avoided using ImageMagick because it's compiled with Cgo, but I can't do better
 		//  than this. See also https://stackoverflow.com/questions/38950909/c-style-conditional-compilation-in-golang for a way to prevent ImageMagick to be used.
 		convertedImage, retinaImage, err := ImageConvert(newImage, 256, 256, 100)
 		if err != nil {
