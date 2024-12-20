@@ -14,3 +14,7 @@ trim_trailing_whitespace = true
 [*.md]
 max_line_length = 108
 word_wrap = true
+
+# YAML cannot have tabs, ever!
+[*.yml]
+indent_style = space
