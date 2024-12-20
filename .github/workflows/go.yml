@@ -33,6 +33,7 @@ jobs:
 #        go-version: '1.23'
         go-version-file: './go.mod'
 
+    # Mqke sure tha CGo is enabled
     - name: Build
       run:  CGO_CFLAGS_ALLOW='-Xpreprocessor' go build -v ./...
 
