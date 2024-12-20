@@ -21,14 +21,14 @@ jobs:
       run: mkdir -p /tmp/imagemagick7; cd /tmp/imagemagick7; wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
 
     - name: Install ImageMagick Debian package
-      run: sudo apt-get install -y ./tmp/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+      run: sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
 
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
 #        go-version: '1.23'
         go-version-file: './go.mod'
-        
+
     - name: Build
       run:  CGO_CFLAGS_ALLOW='-Xpreprocessor' go build -v ./...
 
