@@ -21,11 +21,18 @@ jobs:
     - uses: actions/checkout@v4
 
     # Note: Ubuntu doesn't like ImageMagick 7
-    - name: Download ImageMagick Debian libraries to /tmp
-      run: mkdir -p /tmp/imagemagick7; cd /tmp/imagemagick7; wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+    - name: Download ImageMagick Debian libraries and dependencies to /tmp
+      run: |
+        mkdir -p /tmp/imagemagick7;
+        cd /tmp/imagemagick7;
+        wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7-headers_7.1.1.39+dfsg1-3_all.deb;
+        wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb;
+        wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb;
+        wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb;
+        wget http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb;
 
-    - name: Install ImageMagick Debian package
-      run: sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
+    - name: Install ImageMagick Debian packages
+      run: sudo apt-get install -y /tmp/imagemagick7/libmagick++-7.headers_7.1.1.39+dfsg1-3_amd64.deb /tmp/imagemagick7/libmagick++-7.q16-5_7.1.1.39+dfsg1-3_amd64.deb /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.1.39+dfsg1-3_amd64.deb
 
     - name: Set up Go
       uses: actions/setup-go@v5
