@@ -515,7 +515,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 
 	// now do the same for the Retina size
 	if err := mw.ResizeImage(height*2, width*2, imagick.FILTER_LANCZOS_SHARP); err != nil {
-		// this probably doesn't make sensem but we return the valid image, while
+		// this probably doesn't make sense, but we return the valid image, while
 		// sending back nil for the Retina image *and* the error about why this didn't work.
 		// (gwyneth 20240620)
 		return blob, nil, err
