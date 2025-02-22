@@ -104,6 +104,7 @@ func isValidExtension(lookup string) bool {
 		".jpg",
 		".mp4",
 		".png",
+		".avif",	// new popular file format
 		".svg",
 		".webp":
 		return true
@@ -177,7 +178,7 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"Token":              session.Get("Token"),
 		"Email":              session.Get("Email"),
 		"RememberMe":         session.Get("RememberMe"),
-		"Messages":           session.Get("Messages"),
+		"Messages":           session.Get("Messages"),		// these are offline IMs
 		"numberMessages":     session.Get("numberMessages"),
 		"FeedMessages":       session.Get("FeedMessages"),
 		"numberFeedMessages": session.Get("numberFeedMessages"),

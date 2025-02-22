@@ -107,6 +107,9 @@ func GetTopOfflineMessages(c *gin.Context) {
 		session.Set("Messages", nil)
 		session.Set("numberMessages", numberMessages)
 	}
+	log.Printf("[DEBUG]: GetTopOfflineMessages(): user %q(%s) has %d message(s).\n",
+		username, uuid, numberMessages)
+
 	if err := session.Save(); err != nil {
 		log.Printf("[WARN]: GetTopOfflineMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
 	}
