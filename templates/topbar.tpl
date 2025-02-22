@@ -41,7 +41,7 @@
 			  </div>
 			</li>
 {{ if .Username }}
-			<!-- Nav Item - Alerts -->
+			<!-- Nav Item - Alerts (= feed messages) -->
 			<li class="nav-item dropdown no-arrow mx-1 disabled">
 				<a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown" aria haspopup="true" aria-expanded="false">
 					<i class="fas fa-bell fa-fw"></i>
@@ -83,7 +83,7 @@
 				{{ end }}
 			</li>
 
-			<!-- Nav Item - Messages -->
+			<!-- Nav Item - Offline Messages -->
 			<li class="nav-item dropdown no-arrow mx-1 disabled">
 				<a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 					<i class="fas fa-envelope fa-fw"></i>
