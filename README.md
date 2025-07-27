@@ -23,6 +23,7 @@
     ```
 
     If this is the first time compiling anything in Go, this step will populate your home directory with quite a lot of files (under `~/go`), and the overall compilation _may_ take some time to complete. The Go toolchain is notoriously silent, so you might wish to append a `-v` for _some_ additional verbosity.
+
 - If all went well, you should have an executable file called `goswi` on the same directory (possibly `goswi.exe` if you've attempted to compile it under Windows)
 - Note that you _can_ run it from the console, but it's much more likely that you wish to set it up as a proper service (running in the background); also note that `goswi` will need some directories to be present
 - Now skip the next chapter and go straight to the [Configuration](#configuration) section!
@@ -40,41 +41,36 @@ Therefore, this project was born — not in PHP, not in C# (which I hate with pa
 ## Configuration
 
 - Because [Second Life](https://secondlife.com)® and OpenSimulator internally use [JPEG2000](https://jpeg.org/jpeg2000/) for all images (including raw map tiles), we have to convert those to browser-friendly images, which we'll do with ImageMagick 7 — so make sure you are correctly set up to use the [Cgo](https://go.dev/blog/cgo)-based ImageMagick wrapper:
-  - Install ImageMagick according to <https://github.com/gographics/imagick> (choose version 7)
-  - If you're on Ubuntu/Debian Linux, which are still _mostly_ stuck with ImageMagick 6.9, you might be able to install all required dependencies from the Debian repositories. Take a peek at [the GitHub action to compile the code](https://github.com/GwynethLlewelyn/goswi/blob/master/.github/workflows/go.yml) to get a list of the fundamental packages that are needed. Note that GitHub, when running this action, will essentially start with a fresh, clean container, and has to install _everything_ it needs; your mileage may vary (an 'unclean' environment might either not require so many things to be installed, or, worse, get blocked with some dependency conflicts)
-  - Make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
-  - Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell.
+    - Install ImageMagick according to <https://github.com/gographics/imagick> (choose version 7)
+    - If you're on Ubuntu/Debian Linux, which are still _mostly_ stuck with ImageMagick 6.9, you might be able to install all required dependencies from the Debian repositories. Take a peek at [the GitHub action to compile the code](https://github.com/GwynethLlewelyn/goswi/blob/master/.github/workflows/go.yml) to get a list of the fundamental packages that are needed. Note that GitHub, when running this action, will essentially start with a fresh, clean container, and has to install _everything_ it needs; your mileage may vary (an 'unclean' environment might either not require so many things to be installed, or, worse, get blocked with some dependency conflicts)
+    - Make sure that your particular version of ImageMagick supports `JP2` (that's JPEG2000)
+    - Don't forget to set `export CGO_CFLAGS_ALLOW='-Xpreprocessor'` in your shell.
 
-  My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
+    My apologies for having to resort to ImageMagick, but there is no native Go library to decode JPEG2000 images; believe me, I've tried a _lot_ of alternatives (including several kinds of external applications/commands). Decoding JPEG2000 is immensely complex (even if the code to do so in C is open source) and way, way, way beyond my abilities as a programmer
+
 - Copy `config.sample.ini` to `config.ini` and adjust for your system (namely, adding the DSN to connect to your database)
 - To get a fully-functional map, adjust `assets/js/leaflet-gridmap.js` with your system's configuration
 - Do _not_ forget to set `cookieStore` to a randomly generated password!
 - Note that _by default_ `gOSWI` will try to load `config.ini` from the directory where you've got your sources (e.g. if you used `go get -u github.com/GwynethLlewelyn/goswi`, then the path will be set to `~/go/src/github.com/GwynethLlewelyn/goswi`); the same applies to the static files under `./templates/`, `./lib`, and `./assets/` — no matter where you actually place the compiled binary. You can change that behaviour by changing the `templatePath` (which actually changes more than that) and passing the `-config` parameter directly to the compiled binary (or, at best, have the `config.ini` in the same directory as the executable)
 - I had to move from session storage in cookies to a memory-based approach, simply because the session data stored in cookies was growing and growing until it blew the established 4K limit. Now, if the application is _not_ running, all the stored session data is _lost_. I've been toying around the following possibilities:
+    - Using either [Redis](https://redis.io/)/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all would have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
+    - Adapt Gin-Gonic to use the Gorilla FileSystem storage (Gin-Gonic sessions use Gorilla sessions underneath)
+    - Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
+    - Use browser-based local storage to replace cookies (which I wasn't originally aware of)
 
-  - Using either [Redis](https://redis.io/)/memcached as permanent KV storage for the session data; this, however, requires that people configure one of those servers, and I'd have to offer several possibilities: check if either Redis/memcached is running and call the appropriate library (but all would have to be compiled into the code — or offer a tag-based approach for compiling with one or the other option), and, if not, fall back to the memory store
-  - Adapt Gin-Gonic to use the Gorilla FileSystem storage (Gin-Gonic sessions use Gorilla sessions underneath)
-  - Adapt Gin-Gonic to use one of the embedded KV stores I'm _already_ using for persisting data (e.g. the image cache)
-  - Use browser-based local storage to replace cookies (which I wasn't originally aware of)
-
-    I haven't still decided what I'll do...
+        I haven't still decided what I'll do...
 
 ### Special notes for macOS using MacPorts
 
-Currently, as of 2025, both ImageMagick 6 and 7 are in use, with developers
-undecided about which one to go with. MacPorts allows both to be deployed at
-the same time, the default being ImageMagick 6.9.X, while version 7 has, for
-now, its own package, `ImageMagick7`.
+As of 2025, both ImageMagick versions 6 and 7 are in use, with developers undecided about which to use. MacPorts allows both to be deployed at the same time; the default is ImageMagick 6.9.x, while version 7 currently has its own package, `ImageMagick7`.
 
-The ImageMagick Go wrapper used here is still relying on ImageMagick 6.9.X.
-If that's the only version that you have installed, then you should have no
-problems.
+We're using version 3 of the Go Wrapper, so it requires ImageMagick 7 (unless this code gets tagged one day; see the note below).
 
-But if the Go wrapper gets updated to ImageMagick7, then the `go` tool might not be able to find where the C/C++ MagicWand/ImageMagick
-include & library files are, and needs a gentle hand to figure it out:
+MacPorts (like other package managers) will usually leave the two versions side by side, as it is so common to have code compiled with either of them. The problem is that the go tool might not be able to locate the C/C++ MagicWand/ImageMagick include and library files, so it needs some guidance to work it out:
 
 ```sh
-
+export CGO_CFLAGS_ALLOW="-Xpreprocessor"
+export PKG_CONFIG_PATH="/opt/local/lib/ImageMagick7/lib/pkgconfig:$PKG_CONFIG_PATH"
 export CPPFLAGS="$CPPFLAGS -I/opt/local/lib/ImageMagick7/include/ImageMagick-7"
 export LDFLAGS="$LDFLAGS -L/opt/local/lib/ImageMagick7/lib"
 
@@ -84,7 +80,11 @@ export CGO_LDFLAGS="$CGO_LDFLAGS $LDFLAGS"
 
 ```
 
-Similar configurations may be required for Homebrew as well.
+Note that the `go` tool relies upon `pkg-config` to tell it where to find the libraries/include files. By default, if you have both variants of ImageMagick, you will need to tell `pkg-config` to search _first_ under the `/opt/local/lib/ImageMagick7/lib/pkgconfig` directory, or else it will try to use the files for ImageMagick 6 instead 🙁
+
+(_Caveat:_ If you start compiling via CGO using ImageMagick 6 and it fails, the `go` tool will **not** automagically change the command line to invoke the C compiler; unfortunately, the only solution is to recompile everything from scratch, using `go clean -x -r -cache`.)
+
+Similar configurations may be required for Homebrew as well (I haven't tested)
 
 #### Note
 
@@ -110,9 +110,9 @@ If you wish to use TLS (i.e. HTTPS), just add the full path to your certificate 
 
 The latest versions come with (experimental) support for [New Relic](https://newrelic.com/) instrumentation (embedded Go agent). Setting it up is as easy as registering for the free version of New Relic, adding a new (Go) app and grabbing your license key. You'll only need to add the app name and the license key to `config.ini`, and, in theory at least, you'll be getting data on your New Relic console. Instrumentation is done via middleware, which is only active if gOSWI manages to get a valid connection to New Relic (thus, if you see any problems or slowdown, you can just remove the configuration, and no extra code will be running).
 
-### To-do
+#### To-do
 
-It seems more reasonable to switch to [OpenTelemetry](https://opentelemetry.io), instead of tying up the application with a _specific_ provider. New Relic is actually also compatible with Open Telemetry data collection. Also, I want to compare vendors! 😅
+It makes more sense to switch to [OpenTelemetry](https://opentelemetry.io) than to tie up the application with a _specific_ provider. New Relic is also compatible with OpenTelemetry data collection. Also, I want to compare vendors! 😅
 
 ## Disclaimers and Licenses
 
@@ -160,11 +160,11 @@ Some packages imported by this application include different licenses, which may
 
 - The [gokv](https://github.com/philippgille/gokv) module, a simple key-value store abstraction and implementations for Go, which serves as a front-end to a lot of different possible implementations. It uses the Mozilla Public License Version 2.0 as well.
 
-  It can, if needed, be fully replaced by any other key-value store module (especially one that might be less abstract); however, it will require some code rewriting.
+    It can, if needed, be fully replaced by any other key-value store module (especially one that might be less abstract); however, it will require some code rewriting.
 
 - The [New Relic Go Agent](https://github.com/newrelic/go-agent/). While most software provided by New Relic is encumbered by some licensing restrictions, their Go Agent, used for instrumenting this package, is fully open-sourced under the [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0.txt).
 
-  If you do not wish to abide by the Apache 2.0 License in your own code, the simplest solution is to remove all references to the New Relic instrumentation, and/or replace it by a different solution. This is not required in the least to get gOSWI working.
+    If you do not wish to abide by the Apache 2.0 License in your own code, the simplest solution is to remove all references to the New Relic instrumentation, and/or replace it by a different solution. This is not required in the least to get gOSWI working.
 
 ## GPG Fingerprint
 

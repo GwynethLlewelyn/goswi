@@ -1,5 +1,8 @@
 package main
 
+// NOTE: Before compiling, make sure you read the instructions regarding
+// compilation with ImageMagick 6 vs. 7.
+
 import (
 	"flag"
 	"html/template"
