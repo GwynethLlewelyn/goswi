@@ -8,54 +8,54 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region"
             },
             "agent_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "agent uuid, optionaly agent_first_name and agent_last_name"
             }
         },
         "Optional": {
             "agent_first_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "first name of agent"
             },
             "agent_last_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "last name of agent"
             },
             "pos_x": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "teleport to region position x"
             },
             "pos_y": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "teleport to region position y"
             },
             "pos_z": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "teleport to region position z"
             },
             "lookat_x": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "look in direction x"
             },
             "lookat_y": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "look in direction y"
             },
             "lookat_z": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "look in direction z"
             }
         }
@@ -69,23 +69,23 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region to look for agents (or region_id below)"
             },
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "UUID of the region to look for agents (or region_name above)"
             }
         },
         "Optional": {
             "include_children": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "If true, then return information about child agents as well as root agents."
             }
         }
-    },
+    },    
     "admin_create_user": {
         "group": "User account management",
         "description": "remotely allows to create a new user",
@@ -95,34 +95,34 @@
         "Required": {
             "user_firstname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "first name of user"
             },
             "user_lastname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "last name of user"
             },
             "user_password": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "password of user"
             },
             "start_region_x": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "start region x position in grid"
             },
             "start_region_y": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "start region y position in grid"
             }
         },
         "Optional": {
             "user_email": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "email adress of user"
             }
         }
@@ -136,34 +136,34 @@
         "Required": {
             "user_firstname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "first name of user"
             },
             "user_lastname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "last name of user"
             },
             "user_password": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "password of user"
             },
             "start_region_x": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "start region x position in grid"
             },
             "start_region_y": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "start region y position in grid"
             }
         },
         "Optional": {
             "user_email": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "email adress of user"
             }
         }
@@ -177,12 +177,12 @@
         "Required": {
             "user_firstname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "first name of user"
             },
             "user_lastname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "last name of user"
             }
         },
@@ -197,31 +197,31 @@
         "Required": {
             "user_firstname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "first name of user"
             },
             "user_lastname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "last name of user"
-            }
+            }         
         },
         "Optional": {
             "user_password": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "password of user"
             },
             "start_region_x": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "start region x position in grid start_region_y required"
             },
             "start_region_y": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "start region y position in grid start_region_x required"
-            }
+            }           
         }
     },
     "admin_authenticate_user": {
@@ -233,22 +233,22 @@
         "Required": {
             "user_firstname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "first name of user"
             },
             "user_lastname": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "last name of user"
             },
-            "user_password": {
+             "user_password": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "password of user"
-            },
+            },           
             "token_lifetime": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "the lifetime of the authentication token (max: 30s)"
             }
         },
@@ -263,12 +263,12 @@
         "Required": {
             "message": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Message to be broadcasted"
             }
         },
         "Optional": "No optional parameters"
-    },
+    },    
     "admin_close_region": {
         "group": "Region management",
         "description": "remotely allows to close regions. No changes are done to the database. The region will be shutdown and removed from the map.",
@@ -278,18 +278,18 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region, optionaly use region_id"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "region uuid of the region."
             }
         }
-    },
+    },    
     "admin_create_region": {
         "group": "Region management",
         "description": "remotely allows to create a new regions and adds them to an estate. After creation the region is online and available in the map",
@@ -299,88 +299,88 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region"
             },
             "listen_ip": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "listen ip to be used by region"
             },
             "listen_port": {
-                "default": "",
+                "default": "",                
                 "type": "int",
                 "description": "integer value of port"
             },
             "external_address": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "external address to be used by the region"
             },
             "region_x": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "region x location in grid"
             },
             "region_y": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "region y location in grid"
             },
             "estate_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "estate name that the new region belongs to. Specify estate owner if the estate does not exist yet"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid to be used for new region"
             },
             "estate_owner_uuid": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "estate owner uuid (optionaly use estate_owner_first and estate_owner_last)"
             },
             "estate_owner_first": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "estate owners first name"
             },
             "estate_owner_last": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "estate owners last name"
             },
             "persist": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "saves new region configs to file e.g. region.ini"
             },
             "region_file": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "when using persist you can specify the file to save region configs to (requires persist to be used)"
             },
             "public": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "enable/disable public access to new region"
             },
             "enable_voice": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "enable/disable voice to new region"
             },
             "heightmap_file": {
                 "default": "",
-                "type": "file",
+                "type":  "file",
                 "description": "load a heightmap file once the new region has been created"
             }
         }
-    },
+    },    
     "admin_delete_region": {
         "group": "Region management",
         "description": "remotely allows to delete regions. All region data in the database will be removed. The region will be shutdown and removed from the map.",
@@ -390,12 +390,12 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region"
             }
         },
         "Optional": "No optional parameters"
-    },
+    },    
     "admin_modify_region": {
         "group": "Region management",
         "description": "remotely allows to enable/disable voice and/or enable/disable public access to a region.",
@@ -405,23 +405,23 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region"
             }
         },
         "Optional": {
             "enable_voice": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "enable/disable voice."
             },
             "public": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "enable/disable public region access."
             }
         }
-    },
+    },    
     "admin_region_query": {
         "group": "Region management",
         "description": "remotely allows to query the health of a region.",
@@ -431,18 +431,18 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "region uuid of the region."
             }
         }
-    },
+    },    
     "admin_restart": {
         "group": "Region management",
         "description": "remotely allows to triggers a region to restart.",
@@ -452,12 +452,12 @@
         "Required": {
             "region_id": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "region uuid of the region."
             }
         },
         "Optional": "No optional parameters"
-    },
+    },    
     "admin_shutdown": {
         "group": "Region management",
         "description": "remotely allows to shutdown the simulator. Agents in the Region recieve a warning. All regions in the instance will be shut down. When using the optional shutdown and milliseconds parameter the shut down is delayed by the specified miliseconds.",
@@ -468,16 +468,16 @@
         "Optional": {
             "shutdown": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "use shutdown together with milliseconds to trigger a delayed shutdown."
             },
             "milliseconds": {
                 "default": "",
-                "type": "int",
+                "type":  "int",
                 "description": "miliseconds till region shuts down."
-            }
+            }           
         }
-    },
+    },    
     "admin_load_heightmap": {
         "group": "Region file management",
         "description": "remotely allows to load a hight map files to a region.",
@@ -487,24 +487,24 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region, optionaly use region_id"
             },
             "filename": {
                 "default": "",
-                "type": "file",
+                "type":  "file",
                 "description": "file name of terrain file"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid of the region."
             }
         }
-    },
-    "admin_load_oar": {
+    },    
+     "admin_load_oar": {
         "group": "Region file management",
         "description": "remotely allows to load a saved OAR file into a region",
         "ReturnedParameters": "<table cellspacing=\"0\" cellpadding=\"4\" border=\"1\"><tbody><tr><th> parameter</th><th> Description</th><th> Values</th></tr><tr><td> <i>loaded</i></td><td> true when successfully loaded file</td><td> true, false</td></tr></tbody></table>",
@@ -513,31 +513,31 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region, optionaly use region_id"
             },
             "filename": {
                 "default": "",
-                "type": "file",
+                "type":  "file",
                 "description": "file name of terrain file"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid of the region."
             },
             "merge": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "merge oar with the existing region objects"
             },
             "skip-assets": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "skip loading assets to region objects"
-            }
+            }            
         }
     },
     "admin_save_heightmap": {
@@ -549,19 +549,19 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region, optionaly use region_id"
             },
             "filename": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "file name of terrain file"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid of the region."
             }
         }
@@ -575,34 +575,34 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the region, optionaly use region_id"
             },
             "filename": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "file name of terrain file"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid of the region."
             },
             "noassets": {
                 "default": "",
-                "type": "boolean",
+                "type":  "boolean",
                 "description": "save oar without objects"
             },
             "profile": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "add all names of creators from this world with link to profile. <url> of profile service."
             },
             "perm": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "objects with insufficient permissions will not be saved. C, T, CT."
             }
         }
@@ -616,14 +616,14 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region, optionaly region_uuid"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid"
             }
         }
@@ -637,14 +637,14 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region, optionaly region_uuid"
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid"
             }
         }
@@ -658,22 +658,22 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region, optionaly region_uuid"
             },
             "users": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "list of users names. eg. \"Jon Doe\""
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid"
             }
-        }
+        }            
     },
     "admin_acl_remove": {
         "group": "Region access management",
@@ -684,22 +684,22 @@
         "Required": {
             "region_name": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "Name of the new region, optionaly region_uuid"
             },
             "users": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "list of users names. eg. \"Jon Doe\""
             }
         },
         "Optional": {
             "region_id": {
                 "default": "",
-                "type": "uuid",
+                "type":  "uuid",
                 "description": "region uuid"
             }
-        }
+        }  
     },
     "admin_estate_reload": {
         "group": "Estate management",
@@ -719,10 +719,11 @@
         "Required": {
             "command": {
                 "default": "",
-                "type": "string",
+                "type":  "string",
                 "description": "console command"
             }
         },
         "Optional": "No optional parameters"
     }
 }
+
