@@ -153,7 +153,17 @@ func OSSimpleStats(c *gin.Context) {
 	if *config["ginMode"] == "debug" {
 		log.Printf("[DEBUG] OSSimpleStats(): Format for stats is: %v; current time is %v\n", format, currentTime)
 	}
-	url := location.Get(c) // get info about hostname
+	url := location.Get(c) // get info about URL scheme & hostname
+	// This may return nil, so we force it to something sensible:
+	if len(url.Scheme) == 0 {
+		url.Scheme = *config["assetServer"]
+		colon := strings.Index(url.Scheme, ":")
+		if colon != -1 {
+			url.Scheme = "http" // safe bet
+		}
+		// just keep the first 4 or 5 characters (usually http or https)
+		url.Scheme = url.Scheme[:colon]
+	}
 
 	if cachedArr != nil && cachedArr["timestamp"] != nil { // first make sure that this is valid
 		cachedTime = cachedArr["timestamp"].(time.Time)

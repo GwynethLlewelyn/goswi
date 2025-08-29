@@ -171,7 +171,7 @@ func Libravatar(c *gin.Context) {
 			if err != nil {
 				log.Println("[ERROR] Libravatar: Could not convert", profileImageAssetURL, " - error was:", err)
 			}
-			if /* convertedImage == nil || */ len(convertedImage) == 0 {
+			if len(convertedImage) == 0 {
 				log.Println("[ERROR] Libravatar: Converted image is empty")
 			}
 			if *config["ginMode"] == "debug" {
@@ -191,5 +191,4 @@ func Libravatar(c *gin.Context) {
 		}
 	}
 	c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: File not in image cache but could not retrieve it anyway; received hash was %q; desired size was: %d and default param was %q\n", params.Hash, size, defaultParam))
-
 }
