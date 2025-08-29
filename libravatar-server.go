@@ -60,8 +60,7 @@ func Libravatar(c *gin.Context) {
 	if defaultParam == "" {
 		defaultParam = c.DefaultQuery("default", "")
 	}
-	// create filename (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
-
+	// create filename. (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
 	profileImageFilename := strings.TrimPrefix(c.Request.URL.RequestURI(), "/avatar/")
 
 	if *config["ginMode"] == "debug" {

@@ -662,6 +662,24 @@ func checkTokenForPasswordReset(c *gin.Context) {
 					if *config["ginMode"] == "debug" {
 						log.Printf("[INFO] Password change link: User valid with username: %q UUID: %s Email: <%s> Token: %s", someTokens.Username, someTokens.UserUUID, someTokens.Email, session.Get("Token"))
 					}
+					// Prepare for panic with Libravatar
+					defer func() {
+						if r := recover(); r != nil {
+							log.Printf("[ERROR] Libravatar did not return anything: %v\n", r)
+							// clean up and exit
+							session.Set("Libravatar", "")
+							session.Save()
+
+							// move user to password change template
+							c.HTML(http.StatusOK, "change-password.tpl", environment(c, gin.H{
+								"Debug":         false,
+								"titleCommon":   *config["titleCommon"] + "New password!",
+								"logintemplate": true,
+								"someTokens":    someTokens, // this will allow us to ignore the 'old' password and just ask for new ones.
+							}))
+							return
+						}
+					}()
 
 					session.Set("Libravatar", getLibravatar(someTokens.Email, someTokens.Username, 60))
 					if someTokens.Email != "" {
@@ -732,12 +750,13 @@ func isUsernameAvailable(username string) bool {
 
 // getLibravatar returns a Libravatar, Gravatar, or Unicorn and returns the URL to the image.
 // The image is then saved to our diskv cache (gwyneth 20200908).
-func getLibravatar(email string, username string, size uint) string {
+// Note: named return value to aid with the panics (gwyneth 20250829).
+func getLibravatar(email string, username string, size uint) (hashedAvatarURL string) {
 	avt := libravatar.New()
 	avt.SetAvatarSize(size)
 	avt.SetUseHTTPS(true)
 	var (
-		avatarURL string
+		avatarURL string // URL for external service; placed here for scope reasons.
 		// TODO(gwyneth): We cannot be sure that the extension is valid
 		//		imageExtension string = *config["convertExt"]	// may be wrong, but this is our fallback
 	)
@@ -763,7 +782,7 @@ func getLibravatar(email string, username string, size uint) string {
 		// Note that this may also fail...
 	}
 	// Now see if we have this URL in the KV store (cache). For key we don't use the URL directly because the actual URL may have weird characters; instead we use a simple MD5 hash:
-	hashedAvatarURL := filepath.Join(*config["cache"], GetMD5Hash(avatarURL))
+	hashedAvatarURL = filepath.Join(*config["cache"], GetMD5Hash(avatarURL))
 
 	if !imageCache.Has(hashedAvatarURL) {
 		// Not in the cache; so we will download it and place it in the KV store if all went well.
@@ -773,18 +792,22 @@ func getLibravatar(email string, username string, size uint) string {
 		// Not in the KV store yet, so we dial out to get it from the avatar image provider (whatever it might be).
 		// Note: we want to follow redirects (default policy) and extract the content type of what gets returned
 		resp, err := http.Get(avatarURL)
-		if err != nil {
-			// handle error
-			log.Println("[ERROR] Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
-		}
 		defer resp.Body.Close()
 
-		newImage, err := io.ReadAll(resp.Body)	// deprecated
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get image contents of", avatarURL, "from getLibravatar, error was:", err)
+			// handle error, could be a timeout
+			hashedAvatarURL = ""
+			log.Panic("[ERROR] Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
+		}
+
+		newImage, err := io.ReadAll(resp.Body) // deprecated
+		if err != nil {
+			hashedAvatarURL = ""
+			log.Panic("[ERROR] Oops — could not get image contents of", avatarURL, "from getLibravatar, error was:", err)
 		}
 		if len(newImage) == 0 {
-			log.Println("[ERROR] Image retrieved from getLibravatar", avatarURL, "has zero bytes.")
+			hashedAvatarURL = ""
+			log.Panic("[ERROR] Image retrieved from getLibravatar", avatarURL, "has zero bytes.")
 			// we might have to get out of here
 		} else {
 			if *config["ginMode"] == "debug" {
@@ -815,11 +838,12 @@ func getLibravatar(email string, username string, size uint) string {
 			log.Println("[DEBUG] getLibravatar(): avatarURL is", avatarURL, "while hash is", hashedAvatarURL)
 		}
 		if err := imageCache.Write(hashedAvatarURL, newImage); err != nil {
-			log.Println("[ERROR] getLibravatar(): Could not store ", avatarURL, "in the cache, error was:", err)
+			hashedAvatarURL = ""
+			log.Panic("[ERROR] getLibravatar(): Could not store", avatarURL, "in the cache, error was:", err)
 		}
 	}
 
-	// assemble the path to return to user; from now on, this is a static image residing in _our_ filesystem!
+	// If we haven't panickd by now, assemble the path to return to user; from now on, this is a static image residing in _our_ filesystem!
 	// return filepath.Join(PathToStaticFiles, hashedAvatarURL /* + imageExtension */)
 	return hashedAvatarURL
 }

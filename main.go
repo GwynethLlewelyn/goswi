@@ -38,7 +38,8 @@ var (
 	bluemondaySafeHTML          = bluemonday.UGCPolicy() // Initialise bluemonday: this is the standard, we might do it a little more restrictive (gwyneth 20200815)
 )
 
-var config = map[string]*string{ // just a place to keep them all together
+// Full configuration, which can be retrieved via flags, configure file, environment (TBD)...
+var config = map[string]*string{
 	"local":              flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000"),
 	"dsn":                flag.String("dsn", "", "DSN for calling MySQL database"),
 	"templatePath":       flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect"),
