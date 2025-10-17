@@ -1,11 +1,11 @@
 module github.com/GwynethLlewelyn/goswi/extras/goRemoteAdmin
 
-go 1.14
+go 1.24
+
+require github.com/urfave/cli/v2 v2.27.7
 
 require (
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/urfave/cli/v2 v2.27.7
+	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
+	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/xrash/smetrics v0.0.0-20250705151800-55b8f293f342 // indirect
-	gopkg.in/yaml.v2 v2.2.2 // indirect
 )
