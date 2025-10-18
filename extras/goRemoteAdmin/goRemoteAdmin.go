@@ -13,7 +13,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/mail"
 	"os"
@@ -22,7 +21,8 @@ import (
 
 	"github.com/earthboundkid/versioninfo/v2" // mostly to get the git version of this build!
 	// "github.com/kolo/xmlrpc"
-	"github.com/urfave/cli/v3"
+	_ "github.com/joho/godotenv/autoload" // gets value from OPENSIM_REMOTE_PASSWORD optionally from .env
+	"github.com/urfave/cli/v3"            // main CLI engine
 )
 
 // No harm is done having just one context, which is simoly the background.
@@ -42,14 +42,28 @@ func main() {
 		password              string
 	)
 
+	// Check if we have the remote password on environment.
+	// Note that we are using godotenv/autoload to automatically retrieve .env
+	// and merge with the existing environment.
+	password = os.Getenv("OPENSIM_REMOTE_PASSWORD")
+
 	cmd := &cli.Command{
 		Name: os.Args[0], // use whatever the compiled version says it uses
 		Authors: []any{
 			&mail.Address{Name: "Gwyneth Llewelyn", Address: "gwyneth.llewelyn@gwynethllewelyn.net"},
 		},
 		//		HelpName: "goRemoteAdmin",	// the default is fine
-		Usage:                 "Access OpenSimulator Remote Admin console via XML-RPC calls",
-		UsageText:             "Run it from the shell with a few parameters to send commands.\nYou need to have a copy of a valid RemoteAdmin.json file with all the XML-RPC commands\nknown to OpenSimulator. You can get a copy from https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json\n(which served as inspiration for this command)",
+		Usage: "Access OpenSimulator Remote Admin console via XML-RPC calls",
+		UsageText: `Run it from the shell with a few parameters to send commands.
+You need to have a copy of a valid RemoteAdmin.json file with all the XML-RPC commands
+known to OpenSimulator. You can get a copy from <https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json>
+(which served as inspiration for this command)
+` + func() string {
+			if len(password) < 5 {
+				return "\nSet `OPENSIM_REMOTE_PASSWORD` to avoid passing it on the command line (inside `.env` is fine)"
+			}
+			return "\n`OPENSIM_REMOTE_PASSWORD` set to [..." + password[len(password)-4:] + "]"
+		}(),
 		EnableShellCompletion: true,
 		HideVersion:           false,
 		Flags: []cli.Flag{
@@ -79,12 +93,28 @@ func main() {
 				},
 			*/
 			&cli.StringFlag{
-				Name:        "password",
-				Value:       "",
+				Name: "password",
+				Value: func() string {
+					if len(password) < 5 {
+						return ""
+					}
+					return password
+				}(),
 				Aliases:     []string{"p"},
 				Usage:       "Access `password` or 'secret' for XML-RPC call",
 				Destination: &password,
-				DefaultText: "none, unsafe!",
+				DefaultText: func() string {
+					if len(password) < 5 {
+						return "none, unsafe — set `OPENSIM_REMOTE_PASSWORD` instead"
+					}
+					return "set from OPENSIM_REMOTE_PASSWORD=[..." + password[len(password)-4:] + "]"
+				}(),
+				Action: func(ctx context.Context, c *cli.Command, value string) error {
+					if len(password) < 5 {
+						return errors.New("empty or too small password")
+					}
+					return nil
+				},
 			},
 			&cli.BoolFlag{
 				Name:        "verbose",
@@ -157,9 +187,11 @@ func main() {
 	}
 
 	/*
-		if xmlrpcRawCommandsJSON == nil || app == nil {
-			log.Fatal("Please place the JSON Remote Admin file on the path\n(you can get it from here: https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json)\nand try again")
-	} */
+		if xmlrpcRawCommandsJSON == nil || cmd == nil {
+			fmt.Println("Please place the JSON Remote Admin file on the path\n(you can get it from here: https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json)\nand try again")
+			os.Exit(2)	// ENOENT
+		}
+	*/
 
 	cmd.Copyright = "Licensed as CC-BY " + formatAsYear(time.Now()) + " by " + cmd.Authors[0].(*mail.Address).Name + ". Few rights reserved."
 
@@ -310,7 +342,8 @@ func main() {
 	}
 
 	if err := cmd.Run(ctx, os.Args); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(22) // EINVAL
 	}
 }
 

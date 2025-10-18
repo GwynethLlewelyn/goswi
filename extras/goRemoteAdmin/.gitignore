@@ -43,7 +43,4 @@ goRemoteAdmin
 *.out
 
 # Files that may have sensitive information and should be kept out of GitHub
-
-# Dependency directories (remove the comment below to include it)
-#lib/
-
+.env
