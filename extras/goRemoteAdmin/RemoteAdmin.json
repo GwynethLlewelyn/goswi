@@ -85,7 +85,7 @@
                 "description": "If true, then return information about child agents as well as root agents."
             }
         }
-    },    
+    },
     "admin_create_user": {
         "group": "User account management",
         "description": "remotely allows to create a new user",
@@ -204,7 +204,7 @@
                 "default": "",
                 "type":  "string",
                 "description": "last name of user"
-            }         
+            }
         },
         "Optional": {
             "user_password": {
@@ -221,7 +221,7 @@
                 "default": "",
                 "type":  "int",
                 "description": "start region y position in grid start_region_x required"
-            }           
+            }
         }
     },
     "admin_authenticate_user": {
@@ -245,7 +245,7 @@
                 "default": "",
                 "type":  "string",
                 "description": "password of user"
-            },           
+            },
             "token_lifetime": {
                 "default": "",
                 "type":  "int",
@@ -268,7 +268,7 @@
             }
         },
         "Optional": "No optional parameters"
-    },    
+    },
     "admin_close_region": {
         "group": "Region management",
         "description": "remotely allows to close regions. No changes are done to the database. The region will be shutdown and removed from the map.",
@@ -289,7 +289,7 @@
                 "description": "region uuid of the region."
             }
         }
-    },    
+    },
     "admin_create_region": {
         "group": "Region management",
         "description": "remotely allows to create a new regions and adds them to an estate. After creation the region is online and available in the map",
@@ -308,7 +308,7 @@
                 "description": "listen ip to be used by region"
             },
             "listen_port": {
-                "default": "",                
+                "default": "",
                 "type": "int",
                 "description": "integer value of port"
             },
@@ -380,7 +380,7 @@
                 "description": "load a heightmap file once the new region has been created"
             }
         }
-    },    
+    },
     "admin_delete_region": {
         "group": "Region management",
         "description": "remotely allows to delete regions. All region data in the database will be removed. The region will be shutdown and removed from the map.",
@@ -395,7 +395,7 @@
             }
         },
         "Optional": "No optional parameters"
-    },    
+    },
     "admin_modify_region": {
         "group": "Region management",
         "description": "remotely allows to enable/disable voice and/or enable/disable public access to a region.",
@@ -421,7 +421,7 @@
                 "description": "enable/disable public region access."
             }
         }
-    },    
+    },
     "admin_region_query": {
         "group": "Region management",
         "description": "remotely allows to query the health of a region.",
@@ -442,7 +442,7 @@
                 "description": "region uuid of the region."
             }
         }
-    },    
+    },
     "admin_restart": {
         "group": "Region management",
         "description": "remotely allows to triggers a region to restart.",
@@ -457,7 +457,7 @@
             }
         },
         "Optional": "No optional parameters"
-    },    
+    },
     "admin_shutdown": {
         "group": "Region management",
         "description": "remotely allows to shutdown the simulator. Agents in the Region recieve a warning. All regions in the instance will be shut down. When using the optional shutdown and milliseconds parameter the shut down is delayed by the specified miliseconds.",
@@ -475,9 +475,9 @@
                 "default": "",
                 "type":  "int",
                 "description": "miliseconds till region shuts down."
-            }           
+            }
         }
-    },    
+    },
     "admin_load_heightmap": {
         "group": "Region file management",
         "description": "remotely allows to load a hight map files to a region.",
@@ -503,7 +503,7 @@
                 "description": "region uuid of the region."
             }
         }
-    },    
+    },
      "admin_load_oar": {
         "group": "Region file management",
         "description": "remotely allows to load a saved OAR file into a region",
@@ -537,7 +537,7 @@
                 "default": "",
                 "type":  "boolean",
                 "description": "skip loading assets to region objects"
-            }            
+            }
         }
     },
     "admin_save_heightmap": {
@@ -673,7 +673,7 @@
                 "type":  "uuid",
                 "description": "region uuid"
             }
-        }            
+        }
     },
     "admin_acl_remove": {
         "group": "Region access management",
@@ -699,7 +699,7 @@
                 "type":  "uuid",
                 "description": "region uuid"
             }
-        }  
+        }
     },
     "admin_estate_reload": {
         "group": "Estate management",
@@ -712,7 +712,7 @@
     },
     "admin_console_command": {
         "group": "Administration",
-        "description": "remotely allows to send commands to the console. <br>Caution ! This function gives full permission to execute all available console commands!",
+        "description": "remotely allows to send commands to the console.\nCaution! This function gives full permission to execute all available console commands!",
         "ReturnedParameters": "",
         "ErrorMessages": "",
         "Notes": "A list of availiable commands is at: <a href=\"http://opensimulator.org/wiki/Server_Commands\" target=\"_new\">http://opensimulator.org/wiki/Server_Commands</a><br>Some examples:<ul><li>show regions</li><li>monitor report</li></ul>",

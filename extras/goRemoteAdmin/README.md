@@ -10,3 +10,7 @@ This is a standalone CLI tool just to do some basic testing.
 You can use the 'help' command to get an idea of what commands are available, but here is a complete example:
 
 `goRemoteAdmin -p averydifficulttoguesspassword --host http://my.opensim.server.tld:9150 admin_broadcast message "Look ma, no hands"`
+
+## Future updates
+
+If Marcel ever releases a new version of [`RemoteAdmin.json`](https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json), make sure you get it!
