@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -111,7 +110,7 @@ known to OpenSimulator. You can get a copy from <https://github.com/MarcelEdward
 				}(),
 				Action: func(ctx context.Context, c *cli.Command, value string) error {
 					if len(password) < 5 {
-						return errors.New("empty or too small password")
+						return fmt.Errorf("empty or too small password (length %d)", len(password))
 					}
 					return nil
 				},
@@ -139,7 +138,7 @@ known to OpenSimulator. You can get a copy from <https://github.com/MarcelEdward
 		},
 		Action: func(ctx context.Context, cmd *cli.Command) error {
 			if len(os.Args) < 2 {
-				return errors.New("empty command line; try --help to get a list of available commands")
+				return fmt.Errorf("empty command line; try --help to get a list of available commands")
 			}
 
 			var oneRawCommand, oneRawProperty, oneRawSubProperty map[string]any
@@ -285,8 +284,9 @@ known to OpenSimulator. You can get a copy from <https://github.com/MarcelEdward
 
 						// should do some sanitation here
 
-						fmt.Printf("Request: %v\n", xmlrpcRequest.String())
-
+						if verboseMode {
+							fmt.Printf("Request: %v\n", xmlrpcRequest.String())
+						}
 						var client http.Client
 
 						if req, err := http.NewRequest("POST", opensimServerURL, &xmlrpcRequest); err != nil {
@@ -294,10 +294,16 @@ known to OpenSimulator. You can get a copy from <https://github.com/MarcelEdward
 						} else {
 							req.Header.Add("Content-type", "text/xml")
 							req.Header.Add("Connection", "close")
+							req.ContentLength = int64(xmlrpcRequest.Len())
 							resp, err := client.Do(req)
-
-							fmt.Printf("Response: %v\n", resp)
-							// decode resp to get valid XML, etc.
+							if err == nil {
+								fmt.Printf("Response: %#v\n", resp)
+								// decode resp to get valid XML, etc.se
+								// close response to do TCP keepalive
+								if errClose := resp.Body.Close(); errClose != nil {
+									return fmt.Errorf("XML-RPC: could not close response body, error was: %q", errClose)
+								}
+							}
 							return err
 						}
 						/*

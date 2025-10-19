@@ -11,6 +11,10 @@ You can use the 'help' command to get an idea of what commands are available, bu
 
 `goRemoteAdmin -p averydifficulttoguesspassword --host http://my.opensim.server.tld:9150 admin_broadcast message "Look ma, no hands"`
 
+## Known bugs
+
+- Currently, the request seesm to go through, but it is ignored;
+- Multiple commands sent simultaneously aren't working (due to wrong parameer prssing — bug in the code!)
 ## Future updates
 
 If Marcel ever releases a new version of [`RemoteAdmin.json`](https://github.com/MarcelEdward/OpenSim-RemoteAdmin/blob/master/RemoteAdmin.json), make sure you get it!
