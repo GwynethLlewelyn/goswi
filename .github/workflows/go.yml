@@ -57,7 +57,6 @@ jobs:
       run: |
         cd /tmp/ImageMagick-7.1.2-7
         sudo make install
-        sudo echo "/usr/local/lib/ImageMagick-7.1.2/modules-Q16HDRI/filters" > /etc/ld.so.conf.d/ImageMagick.conf
         sudo ldconfig /usr/local/lib/
 
     - name: Just check if ImageMagick was built successfully
