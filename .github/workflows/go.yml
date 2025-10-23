@@ -6,7 +6,11 @@
 #     have the latest versions; they're still stuck with ImageMagick 6.9, as of late 2024,
 #     (Ubuntu 24.04).
 
-name: 'gOSWI build with Debian packages'
+# This is getting impossible to keep up with; we're switching to compiling everything and
+# see how it goes. Soon, oh, soon we'll just fork/spawn a `magick` process and no more
+# compilation will be required... (gwyneth 20251023)
+
+name: 'gOSWI built with compiled ImageMagick 7'
 
 on:
   push:
@@ -21,66 +25,51 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
-    # Note: Ubuntu doesn't like ImageMagick 7
-    - name: Download ImageMagick Debian libraries and dependencies to /tmp
-      # Need more packages? Just add their URLs below
+    # Note: Ubuntu doesn't like ImageMagick 7, we'll compile everything instead
+    - name: Install packages needed for compilation
+      # Need more packages? Just add their names below!
       #
       run: |
-        mkdir -p /tmp/imagemagick7
-        cd /tmp/imagemagick7
-        echo "
-        http://http.us.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg-dev_2.1.5-4_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libsharpyuv0_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libsharpyuv-dev_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebp7_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpdemux2_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpmux3_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebpdecoder3_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/libw/libwebp/libwebp-dev_1.5.0-0.1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/imagemagick-7-common_7.1.2.7+dfsg1-1_all.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7-headers_7.1.2.7+dfsg1-1_all.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7-headers_7.1.2.7+dfsg1-1_all.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7-headers_7.1.2.7+dfsg1-1_all.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-10_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-10_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-5_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7-arch-config_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-10-extra_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickcore-7.q16-dev_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagickwand-7.q16-dev_7.1.2.7+dfsg1-1_amd64.deb
-        http://http.us.debian.org/debian/pool/main/i/imagemagick/libmagick++-7.q16-dev_7.1.2.7+dfsg1-1_amd64.deb
-        " | wget --no-verbose -i -
+        sudo apt-get update
+        sudo apt-get install -y wget autoconf pkg-config build-essential curl libpng-dev
 
-    - name: Install ImageMagick Debian packages
-      # Note that the order of the packages being installed _might_ be important!
-      run: sudo apt-get install -y /tmp/imagemagick7/libjpeg-dev_2.1.5-4_amd64.deb
-        /tmp/imagemagick7/libsharpyuv0_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/libsharpyuv-dev_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/libwebp7_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/libwebpdemux2_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/libwebpmux3_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/libwebpdecoder3_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/libwebp-dev_1.5.0-0.1_amd64.deb
-        /tmp/imagemagick7/imagemagick-7-common_7.1.2.7+dfsg1-1_all.deb
-        /tmp/imagemagick7/libmagickcore-7-headers_7.1.2.7+dfsg1-1_all.deb
-        /tmp/imagemagick7/libmagickwand-7-headers_7.1.2.7+dfsg1-1_all.deb
-        /tmp/imagemagick7/libmagick++-7-headers_7.1.2.7+dfsg1-1_all.deb
-        /tmp/imagemagick7/libmagickcore-7.q16-10_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagickwand-7.q16-10_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagick++-7.q16-5_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagickcore-7-arch-config_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagickcore-7.q16-10-extra_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagickcore-7.q16-dev_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagickwand-7.q16-dev_7.1.2.7+dfsg1-1_amd64.deb
-        /tmp/imagemagick7/libmagick++-7.q16-dev_7.1.2.7+dfsg1-1_amd64.deb
+    - name: Download ImageMagick source files to /tmp
+      run: |
+        cd /tmp
+        wget https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.2-7.tar.gz
+        tar xzf 7.1.2-7.tar.gz
+        rm 7.1.2-7.tar.gz
 
+    - name: Configure the ImageMagick build
+      run: |
+        cd ImageMagick-7.1.2-7
+        sh ./configure --prefix=/usr/local --with-bzlib=yes --with-fontconfig=yes --with-freetype=yes --with-gslib=yes --with-gvc=yes --with-jpeg=yes --with-jp2=yes --with-png=yes --with-tiff=yes --with-xml=yes --with-gs-font-dir=yes
+
+    - name: Compile ImageMagick
+      run:
+        make -j
+
+    - name: Install ImageMagick
+      # For the sake of completude, we'll also add the required included shared libraries on the path
+      # for dynamically linked binaries via `ld.so`. This may not be necessary for Go, but who knows...
+      # (gwyneth 20251023)
+      run: |
+        sudo make install
+        echo "/usr/local/lib/ImageMagick-7.1.2/modules-Q16HDRI/filters" > /etc/ld.so.conf.d/ImageMagick.conf
+        sudo ldconfig /usr/local/lib/
+
+    - name: Just check if ImageMagick was built successfully
+      # Bote: this is just for debugging the compilation, to make sure it's all fine
+      run: $(which identify) -list configure
+
+    # Moving on to Go...
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-#        go-version: '1.23'
+#        go-version: '1.24'
         go-version-file: './go.mod'
 
-    # Make sure tha Cgo is enabled
+    # Make sure that Cgo is enabled
     - name: Build
       run:  CGO_CFLAGS_ALLOW='-Xpreprocessor' go build -v ./...
 
