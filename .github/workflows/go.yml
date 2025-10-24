@@ -59,8 +59,8 @@ jobs:
         sudo make install
         sudo ldconfig /usr/local/lib/
 
-    - name: Just check if ImageMagick was built successfully
-      # Bote: this is just for debugging the compilation, to make sure it's all fine
+    - name: Check if ImageMagick was built successfully
+      # Note: this is just for debugging the compilation, to make sure it's all fine
       run: $(which identify) -list configure
 
     # Moving on to Go...
