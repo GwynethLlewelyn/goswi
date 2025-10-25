@@ -45,7 +45,7 @@ func GetTopFeedMessages(c *gin.Context) {
 	uuid := session.Get("UUID")
 
 	if uuid == "" {
-		log.Println("[WARN]: GetTopFeedMessages(): No UUID stored; messages for this user cannot get retrieved")
+		config.LogWarn("GetTopFeedMessages(): No UUID stored; messages for this user cannot get retrieved")
 	}
 
 	if *config["dsn"] == "" {
@@ -103,16 +103,13 @@ func GetTopFeedMessages(c *gin.Context) {
 				oneMessage.Chronostamp = ""
 			}
 
-			// if *config["ginMode"] == "debug" {
-			// 	log.Printf("[DEBUG]: message # %d from user %q <%s> to %q is: %q\n", i, oneMessage.Username, email, username, oneMessage.Message)
-			// }
+			config.LogTracef("message from user %q <%s> to %q is: %q\n", oneMessage.Username, email, username, oneMessage.PostMarkup)
+
 			messages = append(messages, oneMessage)
-		}
+		} // end loop
 		checkErr(err)
 
-		// if *config["ginMode"] == "debug" {
-		// 	log.Printf("[DEBUG]: GetTopFeedMessages(): All messages for user %q: %+v\n", username, messages)
-		// }
+		config.LogTracef("GetTopFeedMessages(): All messages for user %q: %+v\n", username, messages)
 
 		session.Set("FeedMessages", messages)
 		session.Set("numberFeedMessages", numberFeedMessages)
@@ -121,6 +118,6 @@ func GetTopFeedMessages(c *gin.Context) {
 		session.Set("numberFeedMessages", numberFeedMessages)
 	}
 	if err := session.Save(); err != nil {
-		log.Printf("[WARN]: GetTopFeedMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
+		config.LogWarnf("GetTopFeedMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
 	}
 }
