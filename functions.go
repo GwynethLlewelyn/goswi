@@ -6,26 +6,23 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	//	"github.com/gin-contrib/sessions/cookie"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	//	"html/template"
-	"log"
 	"math"
-	"os"
 	osUser "os/user"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"time"
+
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // checkErrFatal logs a fatal error and does whatever log.Fatal() is supposed to do.
 func checkErrFatal(err error) {
 	if err != nil {
 		pc, file, line, ok := runtime.Caller(1)
-		log.Fatal(filepath.Base(file), ":", line, ":", pc, ok, " - panic:", err)
+		config.LogFatal(filepath.Base(file), ":", line, ":", pc, ok, " - panic:", err)
 	}
 }
 
@@ -33,7 +30,7 @@ func checkErrFatal(err error) {
 func checkErrPanic(err error) {
 	if err != nil {
 		pc, file, line, ok := runtime.Caller(1)
-		log.Panic(filepath.Base(file), ":", line, ":", pc, ok, " - panic:", err)
+		config.LogPanic(filepath.Base(file), ":", line, ":", pc, ok, " - panic:", err)
 	}
 }
 
@@ -43,7 +40,7 @@ func checkErrPanic(err error) {
 func checkErr(err error) {
 	if err != nil {
 		pc, file, line, ok := runtime.Caller(1)
-		fmt.Fprintln(os.Stderr, filepath.Base(file), ":", line, ":", pc, ok, " - error:", err)
+		config.LogError(filepath.Base(file), ":", line, ":", pc, ok, " - error:", err)
 	}
 }
 
@@ -105,7 +102,9 @@ func isValidExtension(lookup string) bool {
 		".mp4",
 		".png",
 		".avif", // new popular file format
+		".heic", // popular with macOS users
 		".svg",
+		".svgz", // compressed <kl
 		".webp":
 		return true
 	}

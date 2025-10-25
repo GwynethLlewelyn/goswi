@@ -104,7 +104,7 @@ func GetMapData(c *gin.Context) {
 		oneMap.Grid = append(oneMap.Grid, oneRegion)
 	}
 	checkErr(err)
-	//	log.Println("[DEBUG] XML response from mapdata.go:", oneMap)
+	config.LogTrace("XML response from `mapdata.go`:", oneMap)
 
 	c.Header("Access-Control-Allow-Origin", "*") // because of CORS
 	// TODO(gwyneth): also see https://github.com/gin-contrib/cors as a much better solution.

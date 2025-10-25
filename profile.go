@@ -101,15 +101,11 @@ func GetProfile(c *gin.Context) {
 	profileData.ProfileMaturePublish = maturePublishInt > 0
 
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
-		if *config["ginMode"] == "debug" {
-			log.Printf("[ERROR]: retrieving profile from user %q (%s) failed; database error was %v\n", username, uuid, err)
-		}
+		config.LogDebugf("retrieving profile from user %q (%s) failed; database error was %v\n", username, uuid, err)
 	} else {
-		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG]: while retrieving profile, allowPublish is %v while maturePublish is %v\n", allowPublish, maturePublish)
-			log.Printf("[DEBUG]: after some magic, allowPublishInt is %d while maturePublishInt is %d\n", allowPublishInt, maturePublishInt)
-			log.Printf("[DEBUG]: retrieving profile from user %q (%s): %+v\n", username, uuid, profileData)
-		}
+		config.LogDebugf("while retrieving profile, allowPublish is %v while maturePublish is %v\n", allowPublish, maturePublish)
+		config.LogDebugf("after some magic, allowPublishInt is %d while maturePublishInt is %d\n", allowPublishInt, maturePublishInt)
+		config.LogDebugf("retrieving profile from user %q (%s): %+v\n", username, uuid, profileData)
 	}
 
 	// see if we have this image already
@@ -126,52 +122,46 @@ func GetProfile(c *gin.Context) {
 	//  OpenSimulator and attempt to convert it... we won't change the URL in the process.
 	// Note: Other usages of the diskv cache might not be so obvious... or maybe they all are? (gwyneth 20200727)
 	if !imageCache.Has(profileImage) { // this URL is not in the cache yet!
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Cache miss on profileImage:", profileImage, " - attempting to download it...")
-		}
+		config.LogDebug("Cache miss on profileImage:", profileImage, " - attempting to download it...")
 		// get it!
 		profileImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileImage, "/data")
 		resp, err := http.Get(profileImageAssetURL)
 		if err != nil {
 			// handle error
-			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
+			config.LogError("Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
 		}
 		defer resp.Body.Close()
 		newImage, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
+			config.LogError("Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
 		}
 		if len(newImage) == 0 {
-			log.Println("[ERROR] Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
+			config.LogError("Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
 			// we might have to get out of here
 		} else {
-			if *config["ginMode"] == "debug" {
-				log.Println("[INFO] Image retrieved from OpenSimulator", profileImageAssetURL, "has", len(newImage), "bytes.")
-			}
+			config.LogDebug("Image retrieved from OpenSimulator", profileImageAssetURL, "has", len(newImage), "bytes.")
 		}
 		// Now use ImageMagick to convert this image!
 		// Note: I've avoided using ImageMagick because it's compiled with Cgo, but I can't do better
 		//  than this. See also https://stackoverflow.com/questions/38950909/c-style-conditional-compilation-in-golang for a way to prevent ImageMagick to be used.
 		convertedImage, retinaImage, err := ImageConvert(newImage, 256, 256, 100)
 		if err != nil {
-			log.Println("[ERROR] Could not convert", profileImageAssetURL, " - error was:", err)
+			config.LogError("Could not convert", profileImageAssetURL, " - error was:", err)
 		}
 		if /* convertedImage == nil || */ len(convertedImage) == 0 {
-			log.Println("[ERROR] Converted image is empty")
+			config.LogError("Converted image is empty")
 		}
 		if /* retinaImage == nil || */ len(retinaImage) == 0 {
-			log.Println("[ERROR] Converted Retina image is empty")
+			config.LogError("Converted Retina image is empty")
 		}
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
-		}
+		config.LogDebug("Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
 		// put it into KV cache:
 		if err := imageCache.Write(profileImage, convertedImage); err != nil {
-			log.Println("[ERROR] Could not store converted", profileImage, "in the cache, error was:", err)
+			config.LogError("Could not store converted", profileImage, "in the cache, error was:", err)
 		}
 		// put Retina image into KV cache as well:
 		if err := imageCache.Write(profileRetinaImage, retinaImage); err != nil {
-			log.Println("[ERROR] Could not store retina image", string(retinaImage), "in the cache, error was:", err)
+			config.LogError("Could not store retina image", string(retinaImage), "in the cache, error was:", err)
 		}
 	}
 	// note that the code will now assume that profileImage does, indeed, have a valid
@@ -184,45 +174,39 @@ func GetProfile(c *gin.Context) {
 	profileRetinaFirstImage := filepath.Join( /* PathToStaticFiles, */ *config["cache"], profileData.ProfileFirstImage+"@2x"+*config["convertExt"])
 
 	if !imageCache.Has(profileFirstImage) {
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Cache miss on profileFirstImage:", profileFirstImage, " - attempting to download it...")
-		}
+		config.LogDebug("Cache miss on profileFirstImage:", profileFirstImage, " - attempting to download it...")
 		profileFirstImageAssetURL := *config["assetServer"] + path.Join("/assets/", profileData.ProfileFirstImage, "/data")
 		resp, err := http.Get(profileFirstImageAssetURL)
 		if err != nil {
-			log.Println("[ERROR] Oops — OpenSimulator cannot find", profileFirstImageAssetURL, "error was:", err)
+			config.LogError("Oops — OpenSimulator cannot find", profileFirstImageAssetURL, "error was:", err)
 		}
 		defer resp.Body.Close()
 		newImage, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Println("[ERROR] Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator, error was:", err)
+			config.LogError("Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator, error was:", err)
 		}
 		if len(newImage) == 0 {
-			log.Println("[ERROR] Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has zero bytes.")
+			config.LogError("Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has zero bytes.")
 		} else {
-			if *config["ginMode"] == "debug" {
-				log.Println("[INFO] Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
-			}
+			config.LogDebug("Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
 		}
 		convertedImage, retinaImage, err := ImageConvert(newImage, 128, 128, 100)
 		if err != nil {
-			log.Println("[ERROR] Could not convert", profileFirstImageAssetURL, " - error was:", err)
+			config.LogError("Could not convert", profileFirstImageAssetURL, " - error was:", err)
 		}
 		if /* convertedImage == nil || */ len(convertedImage) == 0 {
-			log.Println("[ERROR] Converted image is empty")
+			config.LogError("Converted image is empty")
 		}
 		if /* retinaImage == nil || */ len(retinaImage) == 0 {
-			log.Println("[ERROR] Converted Retina image is empty")
+			config.LogError("Converted Retina image is empty")
 		}
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
-		}
+		config.LogDebug("Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
 		if err := imageCache.Write(profileFirstImage, convertedImage); err != nil {
-			log.Println("[ERROR] Could not store converted", profileFirstImage, "in the cache, error was:", err)
+			config.LogError("Could not store converted", profileFirstImage, "in the cache, error was:", err)
 		}
 		// put Retina image into KV cache as well:
 		if err := imageCache.Write(profileRetinaFirstImage, retinaImage); err != nil {
-			log.Println("[ERROR] Could not store retina image", string(retinaImage), "in the cache, error was:", err)
+			config.LogError("Could not store retina image", string(retinaImage), "in the cache, error was:", err)
 		}
 	}
 
@@ -266,14 +250,12 @@ func saveProfile(c *gin.Context) {
 			"errorbody":   "No form data posted",
 			"titleCommon": *config["titleCommon"] + " - Profile",
 		}))
-		log.Println("[ERROR] No form data posted for saving profile")
+		config.LogError("No form data posted for saving profile")
 
 		return
 	}
 
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] oneProfile is now %+v\n", oneProfile)
-	}
+	config.LogDebugf("oneProfile is now %+v\n", oneProfile)
 
 	// check if we really are who we claim to be
 	if thisUUID != oneProfile.UserUUID {
@@ -283,7 +265,7 @@ func saveProfile(c *gin.Context) {
 			"errorbody":   fmt.Sprintf("You have no permission to change the profile for %q", session.Get("Username")),
 			"titleCommon": *config["titleCommon"] + " - Profile",
 		}))
-		log.Printf("[ERROR] Session UUID %q is not the same as Profile UUID %q - profile data change for %q not allowed\n",
+		config.LogErrorf("Session UUID %q is not the same as Profile UUID %q - profile data change for %q not allowed\n",
 			thisUUID, oneProfile.UserUUID, session.Get("Username"))
 
 		return
@@ -291,7 +273,7 @@ func saveProfile(c *gin.Context) {
 
 	// Allegedly we have successfully bound to the form data, so we can proceed to write it to the database.
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
@@ -340,13 +322,9 @@ func saveProfile(c *gin.Context) {
 		}
 	}
 
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] oneProfile.ProfileWantTo is %v, wantToMask is %d, oneProfile.ProfileSkills is %v, skillsMask is %d\n", oneProfile.ProfileWantTo, wantToMask, oneProfile.ProfileSkills, skillsMask)
-	}
+	config.LogDebugf("oneProfile.ProfileWantTo is %v, wantToMask is %d, oneProfile.ProfileSkills is %v, skillsMask is %d\n", oneProfile.ProfileWantTo, wantToMask, oneProfile.ProfileSkills, skillsMask)
 
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] oneProfile.ProfileAllowPublish is %+v, oneProfile.ProfileMaturePublish is %+v\n", oneProfile.ProfileAllowPublish, oneProfile.ProfileMaturePublish)
-	}
+	config.LogDebugf("oneProfile.ProfileAllowPublish is %+v, oneProfile.ProfileMaturePublish is %+v\n", oneProfile.ProfileAllowPublish, oneProfile.ProfileMaturePublish)
 
 	allowPublish := make([]byte, binary.MaxVarintLen64)
 	maturePublish := make([]byte, binary.MaxVarintLen64)
@@ -375,9 +353,7 @@ func saveProfile(c *gin.Context) {
 	// 	maturePublish = append(maturePublish, 0)
 	// }
 
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] oneProfile.ProfilePublish is %+v, allowPublish is %+v, maturePublish is %+v\n", oneProfile.ProfilePublish, allowPublish, maturePublish)
-	}
+	config.LogDebugf("oneProfile.ProfilePublish is %+v, allowPublish is %+v, maturePublish is %+v\n", oneProfile.ProfilePublish, allowPublish, maturePublish)
 
 	// Update it on database
 	result, err := db.Exec("UPDATE userprofile SET profileAllowPublish = ?, profileMaturePublish = ?, profileURL = ?, profileWantToMask = ?, profileWantToText = ?, profileSkillsMask = ?, profileSkillsText = ?, profileLanguages = ?, profileAboutText = ?, profileFirstText = ? WHERE useruuid = ?",
@@ -405,13 +381,11 @@ func saveProfile(c *gin.Context) {
 			"titleCommon": *config["titleCommon"] + " - Profile",
 		}))
 
-		log.Printf("[ERROR] Updating database with new profile for %q failed, error was %s\n", thisUUID, err)
+		config.LogErrorf("Updating database with new profile for %q failed, error was %s\n", thisUUID, err)
 		// TODO(gwyneth): we
 		return
 	} else {
-		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO] Success updating database with new profile for %q, number of rows affected: %d\n", thisUUID, numRowsAffected)
-		}
+		config.LogDebugf("Success updating database with new profile for %q, number of rows affected: %d\n", thisUUID, numRowsAffected)
 		c.Redirect(http.StatusSeeOther, "/user/profile")
 	}
 }
@@ -422,10 +396,9 @@ func saveProfile(c *gin.Context) {
 func imageCacheTransform(key string) *diskv.PathKey {
 	path := strings.Split(key, "/")
 	last := len(path) - 1
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] imageCacheTransform: got from KV store key %q transformed into path %v and filename %q\n",
-			key, path, path[last])
-	}
+	config.LogDebugf("imageCacheTransform: got from KV store key %q transformed into path %v and filename %q\n",
+		key, path, path[last])
+
 	return &diskv.PathKey{
 		Path:     path[:last],
 		FileName: path[last],
@@ -433,10 +406,8 @@ func imageCacheTransform(key string) *diskv.PathKey {
 }
 
 func imageCacheInverseTransform(pathKey *diskv.PathKey) string {
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] imageCacheInverseTransform: pathKey %v which will be returned as %q\n",
-			pathKey, strings.Join(pathKey.Path, "/")+pathKey.FileName) // inefficient but we're just debugging... (gwyneth 20200727)
-	}
+	config.LogDebugf("imageCacheInverseTransform: pathKey %v which will be returned as %q\n",
+		pathKey, strings.Join(pathKey.Path, "/")+pathKey.FileName) // inefficient but we're just debugging... (g20200727)
 	return strings.Join(pathKey.Path, "/") + pathKey.FileName
 }
 
@@ -475,7 +446,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 		x, y, _ := mw.GetSize()
 		imageProfile := mw.GetImageProfile("generic")
 		length, _ := mw.GetImageLength()
-		log.Printf("[DEBUG] ImageConvert now attempting to convert image with filename %q and format %q and size %d (%.f ppi), %d (%.f ppi), Generic profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
+		config.LogDebugf("ImageConvert now attempting to convert image with filename %q and format %q and size %d (%.f ppi), %d (%.f ppi), Generic profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
 	}
 
 	if err := mw.ResizeImage(height, width, imagick.FILTER_LANCZOS_SHARP); err != nil {
@@ -498,9 +469,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 
 	// Convert into PNG
 	var formatType = *config["convertExt"]
-	if *config["ginMode"] == "debug" {
-		log.Println("[DEBUG] Setting format type to", formatType[1:])
-	}
+	config.LogDebug("Setting format type to", formatType[1:])
 	if err := mw.SetFormat(formatType[1:]); err != nil {
 		return nil, nil, err
 	}

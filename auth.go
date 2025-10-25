@@ -55,7 +55,7 @@ func isUserValid(username, password string) (bool, string, string) {
 	// split username into space-separated fields
 	theUsername := strings.Fields(strings.TrimSpace(username))
 	if len(theUsername) < 2 {
-		log.Printf("[WARN] Invalid first name/last name: %q does not contain spaces! Returning with error", username)
+		config.LogWarnf("Invalid first name/last name: %q does not contain spaces! Returning with error", username)
 		return false, "", ""
 	}
 	// We'll just use the first two
@@ -75,32 +75,20 @@ func isUserValid(username, password string) (bool, string, string) {
 	err = db.QueryRow("SELECT PrincipalID, Email FROM UserAccounts WHERE FirstName = ? AND LastName = ?",
 		avatarFirstName, avatarLastName).Scan(&principalID, &email) // there can be only one, or our database is corrupted
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
-		if *config["ginMode"] == "debug" {
-			log.Println("[DEBUG]: user", username, "not in database")
-		}
+		config.LogDebug("user", username, "not in database")
 		return false, "", ""
 	}
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] Avatar data from database: '%s %s' (%s) Email: %q", avatarFirstName, avatarLastName, principalID, email)
-	}
+	config.LogDebugf("Avatar data from database: '%s %s' (%s) Email: %q", avatarFirstName, avatarLastName, principalID, email)
 
 	var passwordHash, passwordSalt string
 	err = db.QueryRow("SELECT passwordHash, passwordSalt FROM auth WHERE UUID = ?",
 		principalID).Scan(&passwordHash, &passwordSalt)
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
-		if *config["ginMode"] == "debug" {
-			log.Println("[DEBUG]: password not in database")
-		}
+		config.LogDebug("password not in database")
 		return false, "", ""
 	}
-	/* 	// Log authentication data for debugging purposes.
-	   	// This was flagged as a security issue by GitHub's CodeQL and therefore removed (gwyneth 20211116).
-	   	if *config["ginMode"] == "debug" {
-	   		log.Printf("[DEBUG] Authentication data for: '%s %s' (%s): user-submitted password: %q Hash on DB: %q Salt on DB: %q",
-	   			avatarFirstName, avatarLastName, principalID, password, passwordHash, passwordSalt)
-	   	} */
-	// md5(md5("password") + ":" + passwordSalt) according to http://opensimulator.org/wiki/Auth
 
+	// md5(md5("password") + ":" + passwordSalt) according to http://opensimulator.org/wiki/Auth
 	var hashedPassword, hashed, interior string // make sure they are strings, or comparison might fail
 
 	hashedPassword = GetMD5Hash(password)
@@ -108,18 +96,16 @@ func isUserValid(username, password string) (bool, string, string) {
 	hashed = GetMD5Hash(interior) // see OpenSimulator source code in /opensim/OpenSim/Services/PasswordAuthenticationService, method Authenticate()
 
 	// we'll simplify the above code to a one-liner which will be more legible once we debug this properly! (gwyneth 20200626)
+	config.LogDebugf("md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q, which we must compare with %q",
+		hashedPassword, interior, hashed, passwordHash)
 
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q, which we must compare with %q",
-			hashedPassword, interior, hashed, passwordHash)
-	}
 	// compare and see if it matches
 	if passwordHash == hashed {
 		// authenticated! now set session cookie and do all the magic
-		log.Printf("[INFO] User %q authenticated.", username)
+		config.LogInfo("User %q authenticated.", username)
 		return true, email, principalID
 	} else {
-		log.Printf("[WARN] Invalid authentication for %q — either user not found or password is wrong", username)
+		config.LogWarnf("Invalid authentication for %q — either user not found or password is wrong", username)
 		return false, "", ""
 	}
 	// never reached
@@ -134,9 +120,7 @@ func performLogin(c *gin.Context) {
 
 	defer func() {
 		// TODO(gwyneth): we ought to deal with an empty email and/or an empty avatar_url
-		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO] Session for %q set: token %q - Also, Libravatar is %q", session.Get("Username"), session.Get("Token"), session.Get("Libravatar"))
-		}
+		config.LogDebugf("Session for %q set: token %q - Also, Libravatar is %q", session.Get("Username"), session.Get("Token"), session.Get("Libravatar"))
 	}()
 
 	if c.Bind(&oneUser) != nil { // nil means no errors
@@ -149,7 +133,7 @@ func performLogin(c *gin.Context) {
 			"titleCommon":   *config["titleCommon"] + "What?",
 			"logintemplate": true,
 		}))
-		log.Println("[ERROR] No form data posted for login")
+		config.LogError("No form data posted for login")
 
 		return
 	}
@@ -164,23 +148,17 @@ func performLogin(c *gin.Context) {
 			"WrongUsername":   oneUser.Username,
 			"WrongRememberMe": oneUser.RememberMe,
 		}))
-		log.Println("[ERROR] The password can't be empty")
+		config.LogError("The password can't be empty")
 
 		return
 	}
-	if *config["ginMode"] == "debug" {
-		/* 		// warning: this will expose a password!!
-		   		log.Printf("[INFO] User: %q Password: %q Remember me? %q", oneUser.Username, oneUser.Password, oneUser.RememberMe) */
-		// Sanitised because GitHub's CodeQL complained about the security issue (with reason!) (gwyneth 20211116).
-		log.Printf("[INFO] User: %q (password omitted) Remember me? %q", oneUser.Username, oneUser.RememberMe)
-	}
+	config.LogDebugf("User: %q (password omitted) Remember me? %q", oneUser.Username, oneUser.RememberMe)
+
 	if ok, email, principalID := isUserValid(oneUser.Username, oneUser.Password); ok {
 		session.Set("Username", oneUser.Username)
 		session.Set("UUID", principalID)
 		session.Set("Token", generateSessionToken())
-		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO] User valid with username: %q UUID: %q Email: <%s> Token: %q", oneUser.Username, principalID, email, session.Get("Token"))
-		}
+		config.LogDebugf("User valid with username: %q UUID: %q Email: <%s> Token: %q", oneUser.Username, principalID, email, session.Get("Token"))
 
 		session.Set("Libravatar", getLibravatar(email, oneUser.Username, 60))
 		if email != "" {
@@ -195,7 +173,7 @@ func performLogin(c *gin.Context) {
 		GetTopFeedMessages(c)
 	} else {
 		// invalid user, do not set cookies!
-		log.Printf("[ERROR] Invalid username/password combination for user %q!", oneUser.Username)
+		config.LogErrorf("Invalid username/password combination for user %q!", oneUser.Username)
 
 		c.HTML(http.StatusBadRequest, "login.tpl", environment(c, gin.H{
 			"BoxTitle":        "Login Failed",
@@ -239,12 +217,12 @@ func registerNewUser(c *gin.Context) {
 			"titleCommon":   *config["titleCommon"] + "What?",
 			"logintemplate": true,
 		}))
-		log.Println("[ERROR] No form data posted to register a new user")
+		config.LogError("No form data posted to register a new user")
 
 		return
 	}
 	//(username, password string) (*UserForm, error) {
-	log.Printf("[INFO] Not implemented yet")
+	config.LogInfo("Not implemented yet")
 
 	c.HTML(http.StatusBadRequest, "register.tpl", environment(c, gin.H{
 		"BoxTitle":      "Registration Failed",
@@ -280,7 +258,7 @@ func changePassword(c *gin.Context) {
 			"titleCommon":   *config["titleCommon"] + "Say what?",
 			"logintemplate": true,
 		}))
-		log.Println("[ERROR] No form data posted for password change")
+		config.LogError("No form data posted for password change")
 
 		return
 	}
@@ -295,7 +273,7 @@ func changePassword(c *gin.Context) {
 			"logintemplate": true,
 			"t":             aPasswordChange.T,
 		}))
-		log.Println("[ERROR] Confirmation password does not match new password")
+		config.LogError("Confirmation password does not match new password")
 
 		return
 	}
@@ -309,7 +287,7 @@ func changePassword(c *gin.Context) {
 			"logintemplate": true,
 			"t":             aPasswordChange.T,
 		}))
-		log.Println("[ERROR] New password must be different from the old one")
+		config.LogError("New password must be different from the old one")
 
 		return
 	}
@@ -326,7 +304,7 @@ func changePassword(c *gin.Context) {
 			isCurrentPasswordValid = true
 		} else { // user probably mistyped password
 			// we do something similar to what was done for login, i.e. present error message and place the existing information back on the form (20200714)
-			log.Printf("[ERROR] Invalid current password for user UUID %q while trying to change it.", thisUUID)
+			config.LogErrorf("Invalid current password for user UUID %q while trying to change it.", thisUUID)
 
 			c.HTML(http.StatusBadRequest, "change-password.tpl", environment(c, gin.H{
 				"BoxTitle":                "Login Failed",
@@ -356,12 +334,12 @@ func changePassword(c *gin.Context) {
 		found, err := GOSWIstore.Get(selector, &someTokens)
 		if err == nil {
 			if found {
-				log.Printf("[INFO] What we just stored for selector %q: %+v", selector, someTokens)
+				config.LogInfof("What we just stored for selector %q: %+v", selector, someTokens)
 				// check if it is still valid
 				if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
 					// valid, log user in, move to password change template
 					if subtle.ConstantTimeCompare(sha256[:], someTokens.Verifier[:]) == 1 {
-						log.Printf("[INFO] Token still valid for user %q (%q)!", someTokens.Username, someTokens.UserUUID)
+						config.LogInfof("Token still valid for user %q (%q)!", someTokens.Username, someTokens.UserUUID)
 						isCurrentPasswordValid = true
 					}
 				}
@@ -371,7 +349,7 @@ func changePassword(c *gin.Context) {
 		if err := GOSWIstore.Delete(selector); err != nil {
 			// this will rarely happen (unless selector == "", which should not occur) since Store.Delete() will NOT throw
 			//  errors if the key doesn't exist
-			log.Printf("[WARN] Deleting %q from the store threw an error\n", err)
+			config.LogWarnf("Deleting %q from the store threw an error\n", err)
 		}
 	}
 	if isCurrentPasswordValid {
@@ -380,26 +358,20 @@ func changePassword(c *gin.Context) {
 		// 2) or this was called by a logged-in user changing their password, and c.Get(UUID) or session.Get(UUID) will have the UUID.
 		if someTokens.UserUUID != "" {
 			thisUUID = someTokens.UserUUID
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Password change request via token, thisUUID is %q\n", thisUUID)
-			}
+			config.LogDebugf("Password change request via token, thisUUID is %q\n", thisUUID)
 		} else {
 			// some things in Gin are really awful... (gwyneth 20200714)
 			if thisUUID2, ok2 := c.Get("UUID"); ok2 {
 				thisUUID = thisUUID2.(string)
-				if *config["ginMode"] == "debug" {
-					log.Printf("[DEBUG] Password change request via logged-in user, context seems to be fine, thisUUID is %q\n", thisUUID)
-				}
+				config.LogDebugf("Password change request via logged-in user, context seems to be fine, thisUUID is %q\n", thisUUID)
 			}
 		}
 		if thisUUID == "" { // it's not on the token, it's not on the context, our last hope is that it's inside the session (gwyneth 20200714).
 			thisUUID, ok = session.Get("UUID").(string)
 			if ok && (thisUUID != "") {
-				if *config["ginMode"] == "debug" {
-					log.Printf("[DEBUG] Password change request via logged-in user succeeded, retrieved from session cookie, thisUUID is %q\n", thisUUID)
-				}
+				config.LogDebugf("Password change request via logged-in user succeeded, retrieved from session cookie, thisUUID is %q\n", thisUUID)
 			} else {
-				log.Println("[ERROR] Cannot change password because we cannot get a UUID for this user! Hack attempt?")
+				config.LogError("Cannot change password because we cannot get a UUID for this user! Hack attempt?")
 
 				c.HTML(http.StatusForbidden, "404.tpl", environment(c, gin.H{
 					"titleCommon": *config["titleCommon"] + " - 403",
@@ -426,21 +398,14 @@ func changePassword(c *gin.Context) {
 		interior = hashedPassword + ":" + passwordSalt
 		hashed = GetMD5Hash(interior)
 
-		/*
-			// Commented out because it exposes a password salt to the logs (flagged by GitHub's CodeQL) (gwyneth 20211116).
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] UUID: %q, md5(password) = %q, (md5(password) + \":\" + passwordSalt) = %q, md5(md5(password) + \":\" + passwordSalt) = %q",
-				thisUUID, hashedPassword, interior, hashed)
-			}
-		*/
 		result, err := db.Exec("UPDATE auth SET passwordHash = ?, passwordSalt = ? WHERE UUID = ?", hashed, passwordSalt, thisUUID)
 		checkErr(err)
 
 		if numRowsAffected, err := result.RowsAffected(); err != nil {
-			log.Printf("[ERROR] Updating database with new password for %q failed, error was %q\n", thisUUID, err)
+			config.LogErrorf("Updating database with new password for %q failed, error was %q\n", thisUUID, err)
 		} else {
 			if numRowsAffected != 1 {
-				log.Printf("[WARN] Inconsistent database state after password change, numRowsAffected was %d which is unusual", numRowsAffected)
+				config.LogWarnf("Inconsistent database state after password change, numRowsAffected was %d which is unusual", numRowsAffected)
 				c.HTML(http.StatusOK, "index.tpl", environment(c, gin.H{
 					"titleCommon": *config["titleCommon"] + " - Home",
 					"BoxTitle":    "Password probably not changed",
@@ -450,7 +415,7 @@ func changePassword(c *gin.Context) {
 				}))
 				return
 			} else {
-				log.Printf("[INFO] Success updating database with new password for %q; %d rows affected\n", thisUUID, numRowsAffected)
+				config.LogInfof("Success updating database with new password for %q; %d rows affected\n", thisUUID, numRowsAffected)
 			}
 		}
 		c.HTML(http.StatusOK, "index.tpl", environment(c, gin.H{
@@ -469,7 +434,7 @@ func changePassword(c *gin.Context) {
 		"errortext":   "Token incorrect",
 		"errorbody":   fmt.Sprintf("Either your token %q is invalid or it has expired!", token), // token may be empty
 	}))
-	log.Printf("[ERROR] User UUID %q tried to use token %q but it's not valid and/or expired\n", thisUUID, token)
+	config.LogErrorf("User UUID %q tried to use token %q but it's not valid and/or expired\n", thisUUID, token)
 }
 
 // ResetPasswordTokens are stored in a KV store, the key of which is the Selector.
@@ -496,15 +461,13 @@ func resetPassword(c *gin.Context) {
 			"titleCommon":   *config["titleCommon"] + "Whut?",
 			"logintemplate": true,
 		}))
-		log.Println("[WARN] No form data posted for password reset")
+		config.LogWarn("No form data posted for password reset")
 
 		return
 	}
 
 	/* 	// Commented out because it exposes sensitive data on the logs; flagged by GitHub's CodeQL (gwyneth 20211116).
-	   	if *config["ginMode"] == "debug" {
-	   		log.Printf("[DEBUG] aPasswordReset: %+v", aPasswordReset)
-	   	} */
+	   	config.LogDebugf("aPasswordReset: %+v", aPasswordReset) */
 
 	// check if this email address is in the database
 	if *config["dsn"] == "" {
@@ -518,13 +481,9 @@ func resetPassword(c *gin.Context) {
 	var principalID, email, firstName, lastName string
 	err = db.QueryRow("SELECT PrincipalID, Email, FirstName, LastName FROM UserAccounts WHERE Email = ?", aPasswordReset.Email).Scan(&principalID, &email, &firstName, &lastName) // there can be only one, or our database is corrupted
 	if err != nil {                                                                                                                                                               // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
-		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG] email address %q not in database, but we're not telling. Error was: %v", aPasswordReset.Email, err)
-		}
+		config.LogDebugf("email address %q not in database, but we're not telling. Error was: %v", aPasswordReset.Email, err)
 	}
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] Password reset: We have email %q (empty means: not in database) from user %q [UUID %q] (empty means: not in database)", email, firstName+" "+lastName, principalID)
-	}
+	config.LogDebugf("Password reset: We have email %q (empty means: not in database) from user %q [UUID %q] (empty means: not in database)", email, firstName+" "+lastName, principalID)
 
 	if principalID != "" && email != "" {
 		// let's test our KV store by pushing some garbage into it!
@@ -547,20 +506,18 @@ func resetPassword(c *gin.Context) {
 			found, err := GOSWIstore.Get(selector, &someTokens)
 			if err == nil {
 				if found {
-					log.Printf("[DEBUG] What we just stored for selector %q: %+v\n", selector, someTokens)
+					config.LogDebugf("What we just stored for selector %q: %+v\n", selector, someTokens)
 				} else {
-					log.Println("[DEBUG]", selector, "not found in store")
+					config.LogDebug(selector, "not found in store")
 				}
 			} else {
-				log.Println("[WARN] Nothing stored for", selector, "error was", err)
+				config.LogWarn("Nothing stored for", selector, "error was", err)
 			}
 		}
 		// Now send email!
 		// using example from https://riptutorial.com/go/example/20761/sending-email-with-smtp-sendmail-- (gwyneth 20200706)
 		if email != "" {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Request: %+v\n", c.Request)
-			}
+			config.LogDebugf("Request: %+v\n", c.Request)
 			// Build the actual URL for token
 			scheme := "https:"
 			if c.Request.TLS == nil {
@@ -620,7 +577,7 @@ func checkTokenForPasswordReset(c *gin.Context) {
 			"errortext":   "Token not sent",
 			"errorbody":   fmt.Sprintf("Invalid token or token not sent. Error was: %v", err),
 		}))
-		log.Println("[ERROR] Invalid token or token not sent. Error was:", err)
+		config.LogError("Invalid token or token not sent. Error was:", err)
 		return
 	}
 	// assign token with the content of the parameter...
@@ -632,7 +589,7 @@ func checkTokenForPasswordReset(c *gin.Context) {
 			"errortext":   "Empty token payload",
 			"errorbody":   "Invalid token or empty token payload.",
 		}))
-		log.Println("[ERROR] Invalid token or empty token payload.")
+		config.LogError("Invalid token or empty token payload.")
 		return
 
 	}
@@ -648,24 +605,22 @@ func checkTokenForPasswordReset(c *gin.Context) {
 	found, err := GOSWIstore.Get(selector, &someTokens)
 	if err == nil {
 		if found {
-			log.Printf("[INFO] What we just stored for selector %q: %+v", selector, someTokens)
+			config.LogInfof("What we just stored for selector %q: %+v", selector, someTokens)
 			// check if it is still valid
 			if time.Since(someTokens.Timestamp) < (2 * time.Hour) {
 				// valid, log user in, move to password change template
 				if subtle.ConstantTimeCompare(sha256[:], someTokens.Verifier[:]) == 1 {
-					log.Printf("[INFO] Token valid for user %q (%q)!", someTokens.Username, someTokens.UserUUID)
+					config.LogInfof("Token valid for user %q (%q)!", someTokens.Username, someTokens.UserUUID)
 					// user authenticated, get them a session cookie! (gwyneth 20200712)
 					session := sessions.Default(c)
 					session.Set("Username", someTokens.Username)
 					session.Set("UUID", someTokens.UserUUID)
 					session.Set("Token", generateSessionToken())
-					if *config["ginMode"] == "debug" {
-						log.Printf("[INFO] Password change link: User valid with username: %q UUID: %s Email: <%s> Token: %s", someTokens.Username, someTokens.UserUUID, someTokens.Email, session.Get("Token"))
-					}
+					config.LogDebugf("Password change link: User valid with username: %q UUID: %s Email: <%s> Token: %s", someTokens.Username, someTokens.UserUUID, someTokens.Email, session.Get("Token"))
 					// Prepare for panic with Libravatar
 					defer func() {
 						if r := recover(); r != nil {
-							log.Printf("[ERROR] Libravatar did not return anything: %v\n", r)
+							config.LogErrorf("Libravatar did not return anything: %v\n", r)
 							// clean up and exit
 							session.Set("Libravatar", "")
 							session.Save()
@@ -699,13 +654,13 @@ func checkTokenForPasswordReset(c *gin.Context) {
 					return
 				}
 			} else {
-				log.Println("[ERROR] Token expired!")
+				config.LogError("Token expired!")
 			}
 		} else {
-			log.Println("[ERROR]", selector, "not found in store")
+			config.LogError("", selector, "not found in store")
 		}
 	} else {
-		log.Println("[ERROR] Nothing stored for", selector, "error was", err)
+		config.LogError("Nothing stored for", selector, "error was", err)
 	}
 
 	c.HTML(http.StatusForbidden, "404.tpl", environment(c, gin.H{
@@ -739,9 +694,7 @@ func isUsernameAvailable(username string) bool {
 	err = db.QueryRow("SELECT PrincipalID FROM UserAccounts WHERE FirstName = ? AND LastName = ?",
 		avatarFirstName, avatarLastName).Scan(&principalID) // if there is one, this will be nil
 	if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
-		if *config["ginMode"] == "debug" {
-			log.Println("[DEBUG]: user", username, "not in database")
-		}
+		config.LogDebug("user", username, "not in database")
 		return true // true means: username is available!
 	}
 	// no errors, username already exists in the database; it's not available, so we return false
@@ -767,17 +720,13 @@ func getLibravatar(email string, username string, size uint) (hashedAvatarURL st
 	if email != "" {
 		var err error
 		if avatarURL, err = avt.FromEmail(email); err != nil {
-			if *config["ginMode"] == "debug" {
-				log.Println("[WARN]: getLibravatar returned error:", err)
-			}
+			config.LogDebug("getLibravatar returned error:", err)
 			// couldn't get an image url from the Libravatar service, so get an Unicorn instead!
 			avatarURL = fmt.Sprintf("https://unicornify.pictures/avatar/%s?s=%d", GetMD5Hash(email), size)
 		}
 	} else {
 		// if we don't have a valid email, get an Unicorn!
-		if *config["ginMode"] == "debug" {
-			log.Println("[WARN]: getLibravatar(): Empty email on database, attempting to get a Unicorn via username")
-		}
+		config.LogDebug("getLibravatar(): Empty email on database, attempting to get a Unicorn via username")
 		avatarURL = fmt.Sprintf("https://unicornify.pictures/avatar/%s?s=%d", GetMD5Hash(username), size)
 		// Note that this may also fail...
 	}
@@ -786,9 +735,7 @@ func getLibravatar(email string, username string, size uint) (hashedAvatarURL st
 
 	if !imageCache.Has(hashedAvatarURL) {
 		// Not in the cache; so we will download it and place it in the KV store if all went well.
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] getLibravatar(): Cache miss on Gravatar/Libravatar URL:", avatarURL, " - attempting to download it...")
-		}
+		config.LogDebug("getLibravatar(): Cache miss on Gravatar/Libravatar URL:", avatarURL, " - attempting to download it...")
 		// Not in the KV store yet, so we dial out to get it from the avatar image provider (whatever it might be).
 		// Note: we want to follow redirects (default policy) and extract the content type of what gets returned
 		resp, err := http.Get(avatarURL)
@@ -797,22 +744,20 @@ func getLibravatar(email string, username string, size uint) (hashedAvatarURL st
 		if err != nil {
 			// handle error, could be a timeout
 			hashedAvatarURL = ""
-			log.Panic("[ERROR] Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
+			log.Panic("Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
 		}
 
 		newImage, err := io.ReadAll(resp.Body) // deprecated
 		if err != nil {
 			hashedAvatarURL = ""
-			log.Panic("[ERROR] Oops — could not get image contents of", avatarURL, "from getLibravatar, error was:", err)
+			config.LogPanic("Oops — could not get image contents of", avatarURL, "from getLibravatar, error was:", err)
 		}
 		if len(newImage) == 0 {
 			hashedAvatarURL = ""
-			log.Panic("[ERROR] Image retrieved from getLibravatar", avatarURL, "has zero bytes.")
+			config.LogPanic("Image retrieved from getLibravatar", avatarURL, "has zero bytes.")
 			// we might have to get out of here
 		} else {
-			if *config["ginMode"] == "debug" {
-				log.Println("[INFO] Image retrieved from getLibravatar", avatarURL, "has", len(newImage), "bytes.")
-			}
+			config.LogDebug("Image retrieved from getLibravatar", avatarURL, "has", len(newImage), "bytes.")
 		}
 		/*
 			// TODO(gwyneth): This needs rethinking... (gwyneth 20200814)
@@ -823,23 +768,17 @@ func getLibravatar(email string, username string, size uint) (hashedAvatarURL st
 				if allPossibleExtensions != nil {	// this means that there are no extensions associated with this content-type
 					imageExtension = allPossibleExtensions[0]	// we just need the first one
 				} else {
-					if *config["ginMode"] == "debug" {
-						log.Printf("[INFO] getLibravatar(): unknown content-type %q for %q\n", rawContentType, avatarURL)
-					}
+					config.LogDebugf("getLibravatar(): unknown content-type %q for %q\n", rawContentType, avatarURL)
 				}
 			} else {
-				if *config["ginMode"] == "debug" {
-					log.Printf("[INFO] getLibravatar(): error retrieving content-type %q for %q\n", rawContentType, avatarURL)
-				}
+				config.LogDebugf("getLibravatar(): error retrieving content-type %q for %q\n", rawContentType, avatarURL)
 			}
 		*/
 		// just a final debugging check before actually writing things to the KV store
-		if *config["ginMode"] == "debug" {
-			log.Println("[DEBUG] getLibravatar(): avatarURL is", avatarURL, "while hash is", hashedAvatarURL)
-		}
+		config.LogDebug("getLibravatar(): avatarURL is", avatarURL, "while hash is", hashedAvatarURL)
 		if err := imageCache.Write(hashedAvatarURL, newImage); err != nil {
 			hashedAvatarURL = ""
-			log.Panic("[ERROR] getLibravatar(): Could not store", avatarURL, "in the cache, error was:", err)
+			config.LogPanic(" getLibravatar(): Could not store", avatarURL, "in the cache, error was:", err)
 		}
 	}
 

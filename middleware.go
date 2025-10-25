@@ -6,7 +6,6 @@ package main
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 )
 
@@ -18,9 +17,7 @@ func ensureLoggedIn() gin.HandlerFunc {
 
 		loggedInInterface := session.Get("Username")
 		if loggedInInterface == nil || loggedInInterface == "" {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureLoggedIn(): No authenticated user")
-			}
+			config.LogDebugf("ensureLoggedIn(): No authenticated user")
 			c.Abort()
 			c.HTML(http.StatusOK, "404.tpl", environment(c,
 				gin.H{
@@ -32,9 +29,7 @@ func ensureLoggedIn() gin.HandlerFunc {
 				}))
 			//c.AbortWithStatus(http.StatusUnauthorized)
 		} else {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureLoggedIn(): Username is %q", loggedInInterface)
-			}
+			config.LogDebugf("ensureLoggedIn(): Username is %q", loggedInInterface)
 		}
 	}
 }
@@ -46,9 +41,7 @@ func ensureNotLoggedIn() gin.HandlerFunc {
 
 		loggedInInterface := session.Get("Username")
 		if loggedInInterface != nil && loggedInInterface != "" {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): Username is %q", loggedInInterface)
-			}
+			config.LogDebugf("ensureNotLoggedIn(): Username is %q", loggedInInterface)
 			c.Abort()
 			c.HTML(http.StatusOK, "404.tpl", environment(c,
 				gin.H{
@@ -60,9 +53,7 @@ func ensureNotLoggedIn() gin.HandlerFunc {
 				}))
 			// c.AbortWithStatus(http.StatusUnauthorized)
 		} else {
-			if *config["ginMode"] == "debug" {
-				log.Printf("[INFO]: ensureNotLoggedIn(): No authenticated user")
-			}
+			config.LogDebugf("ensureNotLoggedIn(): No authenticated user")
 		}
 	}
 }
@@ -81,8 +72,6 @@ func setUserStatus() gin.HandlerFunc {
 		c.Set("RememberMe", session.Get("RememberMe"))
 		c.Set("sidebarCollapsed", session.Get("sidebarCollapsed"))
 
-		if *config["ginMode"] == "debug" {
-			log.Printf("[INFO]: setUserStatus(): Authenticated? %q (username) Cookie token: %q Libravatar: %q", session.Get("Username"), session.Get("Token"), session.Get("Libravatar"))
-		}
+		config.LogDebugf("setUserStatus(): Authenticated? %q (username) Cookie token: %q Libravatar: %q", session.Get("Username"), session.Get("Token"), session.Get("Libravatar"))
 	}
 }

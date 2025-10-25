@@ -73,9 +73,7 @@ func GetStats(c *gin.Context) {
 	} else {
 		checkErr(err)
 	}
-	if *config["ginMode"] == "debug" {
-		log.Println("[DEBUG] Data from viewer:", viewerInfo)
-	}
+	config.LogDebug("Data from viewer:", viewerInfo)
 
 	// open database connection
 	if *config["dsn"] == "" {
@@ -105,7 +103,7 @@ func GetStats(c *gin.Context) {
 		regionsTable = append(regionsTable, simpleRegion)
 	}
 	checkErr(err)
-	//	log.Println("[DEBUG] Data from regionsTable:", regionsTable)
+	config.LogTrace("data from `regionsTable`:", regionsTable)
 
 	rows, err = db.Query("SELECT PrincipalID, FirstName, LastName FROM UserAccounts WHERE PrincipalID IN (SELECT UserID FROM Presence)")
 	checkErr(err)
@@ -117,9 +115,7 @@ func GetStats(c *gin.Context) {
 		userTable = append(userTable, SimpleUser{AvatarName: firstName + " " + lastName})
 	}
 	checkErr(err)
-	if *config["ginMode"] == "debug" {
-		log.Println("[DEBUG] Data from userTable:", userTable)
-	}
+	config.LogDebug("Data from `userTable`:", userTable)
 
 	c.HTML(http.StatusOK, "welcome.tpl", environment(c,
 		gin.H{
@@ -150,9 +146,7 @@ func OSSimpleStats(c *gin.Context) {
 	if err := c.ShouldBindUri(&format); err != nil {
 		checkErr(err)
 	}
-	if *config["ginMode"] == "debug" {
-		log.Printf("[DEBUG] OSSimpleStats(): Format for stats is: %v; current time is %v\n", format, currentTime)
-	}
+	config.LogDebugf("OSSimpleStats(): Format for stats is: %v; current time is %v\n", format, currentTime)
 	url := location.Get(c) // get info about URL scheme & hostname
 	// This may return nil, so we force it to something sensible:
 	if len(url.Scheme) == 0 {
@@ -176,15 +170,13 @@ func OSSimpleStats(c *gin.Context) {
 		if i != -1 {
 			server = server[i+2:]
 		}
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] OSSimpleStats(): Cache expired; retrieving new set of data")
-			log.Printf("[DEBUG] OSSimpleStats(): ROBUST server is at %q\n", server)
-		}
+		config.LogInfo("OSSimpleStats(): Cache expired; retrieving new set of data")
+		config.LogDebugf("OSSimpleStats(): ROBUST server is at %q\n", server)
 
 		conn, err := net.Dial("tcp", server)
 		// TODO(gwyneth): I'll probably put a timeout here somewhere (gwyneth 20200817).
 		if err != nil {
-			log.Printf("[ERROR] OSSimpleStats(): ROBUST server %q unavailable; error was: %q", server, err)
+			config.LogErrorf("OSSimpleStats(): ROBUST server %q unavailable; error was: %q", server, err)
 			gStatus = "OFFLINE"
 		}
 		conn.Close()
@@ -259,9 +251,7 @@ func OSSimpleStats(c *gin.Context) {
 		// save it
 		cachedArr = arr
 	} else {
-		if *config["ginMode"] == "debug" {
-			log.Println("[INFO] OSSimpleStats(): Cache still valid, retrieving last stored value")
-		}
+		config.LogDebug("OSSimpleStats(): Cache still valid, retrieving last stored value")
 		arr = cachedArr // retrieve it
 	}
 

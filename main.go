@@ -38,44 +38,43 @@ var (
 	bluemondaySafeHTML          = bluemonday.UGCPolicy() // Initialise bluemonday: this is the standard, we might do it a little more restrictive (gwyneth 20200815)
 )
 
-// Full configuration, which can be retrieved via flags, configure file, environment (TBD)...
-var config = map[string]*string{
-	"local":              flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000"),
-	"dsn":                flag.String("dsn", "", "DSN for calling MySQL database"),
-	"templatePath":       flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect"),
-	"ginMode":            flag.String("ginMode", "release", "Default is 'release' (production-level logging) but you can set it to 'debug' (more logging)"),
-	"tlsCRT":             flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP"),
-	"tlsKEY":             flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP"),
-	"author":             flag.String("author", "--nobody--", "Author name"),
-	"description":        flag.String("description", "gOSWI", "Description for each page"),
-	"titleCommon":        flag.String("titleCommon", "gOSWI", "Common part of the title for each page (usually the brand)"),
-	"cookieStore":        flag.String("cookieStore", randomBase64String(64), "Secret random string required for the cookie store (will be generated randomly if unset)"),
-	"SMTPhost":           flag.String("SMTPhost", "localhost", "Hostname of the SMTP server (for sending password reset tokens via email)"),
-	"gOSWIemail":         flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
-	"gOSWIpassword":      flag.String("gOSWIpassword", "", "Password for the grid manager (must be valid and accepted by SMTPhost)"),
-	"logo":               flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
-	"logoTitle":          flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
-	"sidebarCollapsed":   flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
-	"slides":             flag.String("slides", "", "Comma-separated list of URLs for slideshow images"),
-	"convertExt":         flag.String("convertExt", ".png", "Filename extension or type for cached resources (depends on the converter actually supporting this particular extension; if not, conversion will fail)"),
-	"cache":              flag.String("cache", "/cache/", "File path to the assets cache"),
-	"assetServer":        flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
-	"ROBUSTserver":       flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
-	"gridstats":          flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
-	"NewRelicAppName":    flag.String("NewRelicAppName", "", "Name of your New Relic application (empty: disabled)"),
-	"NewRelicLicenseKey": flag.String("NewRelicLicenseKey", "", "Your New Relic license key"),
-}
-
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
 
 // main starts here.
 func main() {
+	// Full configuration, which can be retrieved via flags, configure file, environment (TBD)...
+	// Note: this is now a singleton, assigned on configtype.go
+	config = map[string]*string{
+		"local":              flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000"),
+		"dsn":                flag.String("dsn", "", "DSN for calling MySQL database"),
+		"templatePath":       flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect"),
+		"ginMode":            flag.String("ginMode", "release", "Default is 'release' (production-level logging) but you can set it to 'debug' (more logging)"),
+		"tlsCRT":             flag.String("tlsCRT", "", "Absolute path for CRT certificate for TLS; leave empty for HTTP"),
+		"tlsKEY":             flag.String("tlsKEY", "", "Absolute path for private key for TLS; leave empty for HTTP"),
+		"author":             flag.String("author", "--nobody--", "Author name"),
+		"description":        flag.String("description", "gOSWI", "Description for each page"),
+		"titleCommon":        flag.String("titleCommon", "gOSWI", "Common part of the title for each page (usually the brand)"),
+		"cookieStore":        flag.String("cookieStore", randomBase64String(64), "Secret random string required for the cookie store (will be generated randomly if unset)"),
+		"SMTPhost":           flag.String("SMTPhost", "localhost", "Hostname of the SMTP server (for sending password reset tokens via email)"),
+		"gOSWIemail":         flag.String("gOSWIemail", "manager@localhost", "Email address for the grid manager (must be valid and accepted by SMTPhost)"),
+		"gOSWIpassword":      flag.String("gOSWIpassword", "", "Password for the grid manager (must be valid and accepted by SMTPhost)"),
+		"logo":               flag.String("logo", "/assets/logos/gOSWI%20logo.svg", "Logo (SVG preferred); defaults to gOSWI logo"),
+		"logoTitle":          flag.String("logoTitle", "gOSWI", "Title for the URL on the logo"),
+		"sidebarCollapsed":   flag.String("sidebarCollapsed", "false", "true for a collapsed sidebar on startup"),
+		"slides":             flag.String("slides", "", "Comma-separated list of URLs for slideshow images"),
+		"convertExt":         flag.String("convertExt", ".png", "Filename extension or type for cached resources (depends on the converter actually supporting this particular extension; if not, conversion will fail)"),
+		"cache":              flag.String("cache", "/cache/", "File path to the assets cache"),
+		"assetServer":        flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
+		"ROBUSTserver":       flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
+		"gridstats":          flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
+		"NewRelicAppName":    flag.String("NewRelicAppName", "", "Name of your New Relic application (empty: disabled)"),
+		"NewRelicLicenseKey": flag.String("NewRelicLicenseKey", "", "Your New Relic license key"),
+	}
+
 	// figure out where the configuration is
 	_, callerFile, _, _ := runtime.Caller(0)
 	PathToStaticFiles = filepath.Dir(callerFile)
-	if *config["ginMode"] == "debug" {
-		log.Println("[DEBUG] executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
-	}
+	config.LogDebug("executable path is now ", PathToStaticFiles, " while the callerFile is ", callerFile)
 
 	// check if we have a config.ini on the same path as the binary; if not, try to get it to wherever PathToStaticFiles is pointing to
 	iniflags.SetConfigFile(filepath.Join(PathToStaticFiles, "/config.ini"))
@@ -90,9 +89,7 @@ func main() {
 			slideshow[i] = strings.TrimSpace(slideshow[i]) // this will respect the order
 		}
 	}
-	if *config["ginMode"] == "debug" {
-		log.Printf("List of %d slide(s) has been set to: %+v", len(slideshow), slideshow)
-	}
+	config.LogDebugf("of %d slide(s) has been set to: %+v", len(slideshow), slideshow)
 
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
 	// we might also check for weak security strings on the configuration
@@ -138,7 +135,7 @@ func main() {
 			// NO LOGGING, duh! (gwyneth 20210901)
 		)
 		if nil != err {
-			log.Println("Failed to init New Relic", err)
+			config.LogErrorf("Failed to init New Relic", err)
 			// os.Exit(1)
 		} else {
 			router.Use(nrgin.Middleware(app))
@@ -162,14 +159,14 @@ func main() {
 	cacheDir := filepath.Join(PathToStaticFiles, *config["cache"])
 	err := os.MkdirAll(cacheDir, os.ModePerm)
 	if err != nil {
-		log.Println("[WARN] Creating/accessing cache directory", cacheDir, "returned error:", err)
+		config.LogWarn("Creating/accessing cache directory", cacheDir, "returned error:", err)
 		// we might not be able to use a cache if this doesn't work
 		// so we'll try to create a temporary cache instead
 
 		cacheDir = filepath.Join(os.TempDir(), *config["cache"])
 		err = os.MkdirAll(cacheDir, os.ModePerm)
 		if err != nil {
-			log.Println("[WARN] Creating temporary cache directory", cacheDir, "also returned error:", err)
+			config.LogWarn("Creating temporary cache directory", cacheDir, "also returned error:", err)
 		}
 	}
 
@@ -179,9 +176,9 @@ func main() {
 	router.Static("/assets", filepath.Join(PathToStaticFiles, "/assets"))
 	if *config["cache"] != "" {
 		router.Static("/cache", cacheDir)
-		log.Println("[INFO] Cache directory set up at", cacheDir)
+		config.LogInfo("Cache directory set up at", cacheDir)
 	} else {
-		log.Println("[ERROR] Could not access or create cache directory with", cacheDir, "— this means there will be trouble ahead... error was (possibly)", err)
+		config.LogError("Could not access or create cache directory with", cacheDir, "— this means there will be trouble ahead... error was (possibly)", err)
 	}
 	router.StaticFile("/favicon.ico", filepath.Join(PathToStaticFiles, "/assets/favicons/favicon.ico"))
 	router.StaticFile("/browserconfig.xml", filepath.Join(PathToStaticFiles, "/assets/favicons/browserconfig.xml"))
@@ -310,12 +307,12 @@ func main() {
 		if *config["tlsCRT"] != "" && *config["tlsKEY"] != "" {
 			err := router.RunTLS(":8033", *config["tlsCRT"], *config["tlsKEY"]) // if it works, it will never return
 			if err != nil {
-				log.Printf("[WARN] Could not run with TLS; either the certificate %q was not found, or the private key %q was not found, or either [maybe even both] are invalid.\n", *config["tlsCRT"], *config["tlsKEY"])
-				log.Println("[INFO] Running _without_ TLS on the usual port")
+				config.LogWarnf("Could not run with TLS; either the certificate %q was not found, or the private key %q was not found, or either [maybe even both] are invalid.\n", *config["tlsCRT"], *config["tlsKEY"])
+				config.LogInfo("Running _without_ TLS on the usual port")
 				log.Fatal(router.Run(":8033"))
 			}
 		} else {
-			log.Println("[INFO] Running with standard HTTP on the usual port, no TLS configuration detected")
+			config.LogInfo("Running with standard HTTP on the usual port, no TLS configuration detected")
 			log.Fatal(router.Run(":8033"))
 		}
 	} else {

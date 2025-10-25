@@ -53,7 +53,7 @@ func Libravatar(c *gin.Context) {
 		size, err = strconv.ParseUint(c.DefaultQuery("size", "80"), 10, 0)
 	}
 	if err != nil {
-		log.Println("[WARN] Libravatar: size is not an integer, 80 assumed")
+		config.LogWarn("Libravatar: size is not an integer, 80 assumed")
 		size = 80
 	}
 	var defaultParam = c.DefaultQuery("d", "")
@@ -63,36 +63,28 @@ func Libravatar(c *gin.Context) {
 	// create filename. (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
 	profileImageFilename := strings.TrimPrefix(c.Request.URL.RequestURI(), "/avatar/")
 
-	if *config["ginMode"] == "debug" {
-		log.Println("[DEBUG] PathToStaticFiles is", PathToStaticFiles, "and profileImageFilename is now", profileImageFilename)
-	}
+	config.LogDebug("PathToStaticFiles is", PathToStaticFiles, "and profileImageFilename is now", profileImageFilename)
 	// check if image exists on the diskv cache; code shares similarities with profile.go (gwyneth 20200908)
 	profileImage := filepath.Join( /* PathToStaticFiles, */ *config["cache"], profileImageFilename)
 
 	if imageCache.Has(profileImage) {
-		if *config["ginMode"] == "debug" {
-			log.Println("[DEBUG] Libravatar: returning file", profileImage)
-		}
+		config.LogDebug("Libravatar: returning file", profileImage)
 		// c.Header("Content-Transfer-Encoding", "binary")
 		// c.Header("Content-Type", "image/png")
 		// c.File(profileImage)
 
 		// assemble path to static file on disk, because, path complications (gwyneth 20200908).
 		pathToProfileImage := filepath.Clean(filepath.Join(PathToStaticFiles, profileImage))
-		if *config["ginMode"] == "debug" {
-			log.Printf("[DEBUG] Libravatar: pathToProfileImage is now %q\n", pathToProfileImage)
-		}
+		config.LogDebugf("Libravatar: pathToProfileImage is now %q\n", pathToProfileImage)
 
 		if fileContent, err := os.ReadFile(pathToProfileImage); err == nil {
 			mime := mimetype.Detect(fileContent)
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Libravatar: file %q for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", pathToProfileImage, profileImage, mime.String(), len(fileContent))
-			}
+			config.LogDebugf("Libravatar: file %q for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", pathToProfileImage, profileImage, mime.String(), len(fileContent))
 			c.Data(http.StatusOK, mime.String(), fileContent) // note: mime.String() will return "application/octet-stream" if the image type was not detected
 			return
 		} else {
 			c.String(http.StatusNotFound, fmt.Sprintf("Libravatar: file not found for received hash: %q; desired size is: %d and default param is %q\n", params.Hash, size, defaultParam))
-			log.Printf("[ERROR] Libravatar: imageCache error; file %q is in hash table but %q is not on filesystem! Error was: %v\n",
+			config.LogErrorf("Libravatar: imageCache error; file %q is in hash table but %q is not on filesystem! Error was: %v\n",
 				profileImage, pathToProfileImage, err)
 			// this probably means that the imageCache is corrupted, e.g. it has keys for non-existing files
 			return
@@ -133,59 +125,49 @@ func Libravatar(c *gin.Context) {
 		)
 
 		if err != nil { // db.QueryRow() will return ErrNoRows, which will be passed to Scan()
-			if *config["ginMode"] == "debug" {
-				log.Printf("[ERROR] Libravatar: retrieving profile for hash %q failed; database error was %v\n", params.Hash, err)
-			}
+			config.LogDebugf("Libravatar: retrieving profile for hash %q failed; database error was %v\n", params.Hash, err)
 			// no rows found, so we can assume that either the email is NULL or possibly there isn't a profileImage
 			// First we will attempt to do some hashing on the 'fake' email:
 
 		} else {
 			// match found for email on database!
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Libravatar: retrieving profile for hash %q: %+v\n", params.Hash, oneLibravatarProfile)
-			}
+			config.LogDebugf("Libravatar: retrieving profile for hash %q: %+v\n", params.Hash, oneLibravatarProfile)
 
 			// get the image from OpenSimulator!
 			profileImageAssetURL := *config["assetServer"] + path.Join("/assets/", oneLibravatarProfile.ProfileImage, "/data")
 			resp, err := http.Get(profileImageAssetURL)
 			if err != nil {
 				// handle error
-				log.Println("[ERROR] Libravatar: Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
+				config.LogError("Libravatar: Oops — OpenSimulator cannot find", profileImageAssetURL, "error was:", err)
 			}
 			defer resp.Body.Close()
 			newImage, err := io.ReadAll(resp.Body)
 			if err != nil {
-				log.Println("[ERROR] Libravatar: Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
+				config.LogError("Libravatar: Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
 			}
 			if len(newImage) == 0 {
-				log.Println("[ERROR] Libravatar: Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
+				config.LogError("Libravatar: Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
 				// we might have to get out of here
 			} else {
-				if *config["ginMode"] == "debug" {
-					log.Println("[INFO] Libravatar: Image retrieved from OpenSimulator", profileImageAssetURL, "has", len(newImage), "bytes.")
-				}
+				config.LogDebug("Libravatar: Image retrieved from OpenSimulator", profileImageAssetURL, "has", len(newImage), "bytes.")
 			}
 			// Now use ImageMagick to convert this image!
 			// Unlike what happened on GetProfile(), here we're ignoring the Retina version (gwyneth 20200910)
 			convertedImage, _, err := ImageConvert(newImage, uint(size), uint(size), 100)
 			if err != nil {
-				log.Println("[ERROR] Libravatar: Could not convert", profileImageAssetURL, " - error was:", err)
+				config.LogError("Libravatar: Could not convert", profileImageAssetURL, " - error was:", err)
 			}
 			if len(convertedImage) == 0 {
-				log.Println("[ERROR] Libravatar: Converted image is empty")
+				config.LogError("Libravatar: Converted image is empty")
 			}
-			if *config["ginMode"] == "debug" {
-				log.Println("[INFO] Libravatar: Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes.")
-			}
+			config.LogDebug("Libravatar: Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes.")
 			// put it into KV cache:
 			if err := imageCache.Write(profileImage, convertedImage); err != nil {
-				log.Println("[ERROR] Libravatar: Could not store converted", profileImage, "in the cache, error was:", err)
+				config.LogError("Libravatar: Could not store converted", profileImage, "in the cache, error was:", err)
 			}
 
 			mime := mimetype.Detect(convertedImage)
-			if *config["ginMode"] == "debug" {
-				log.Printf("[DEBUG] Libravatar: file for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(convertedImage))
-			}
+			config.LogDebugf("Libravatar: file for profileImage %q is about to be returned, MIME type is %q, file size is %d\n", profileImage, mime.String(), len(convertedImage))
 			c.Data(http.StatusOK, mime.String(), convertedImage)
 			return
 		}

@@ -8,7 +8,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"html/template"
-	"log"
 	"strconv"
 )
 
@@ -37,11 +36,11 @@ func GetTopOfflineMessages(c *gin.Context) {
 	uuid := session.Get("UUID")
 
 	if uuid == "" {
-		log.Println("[WARN]: GetTopOfflineMessages(): No UUID stored; messages for this user cannot get retrieved")
+		config.LogWarn("GetTopOfflineMessages(): No UUID stored; messages for this user cannot get retrieved")
 	}
 
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]+"?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
 	checkErrFatal(err)
@@ -89,17 +88,13 @@ func GetTopOfflineMessages(c *gin.Context) {
 			} else {
 				oneMessage.TMStamp = ""
 			}
-
-			// if *config["ginMode"] == "debug" {
-			// 	log.Printf("[DEBUG]: message # %d from user %q <%s> to %q is: %q\n", i, oneMessage.Username, email, username, oneMessage.Message)
-			// }
+			config.LogTracef("message from user %q <%s> to %q is: %q\n",
+				oneMessage.Username, email, username, oneMessage.Message)
 			messages = append(messages, oneMessage)
 		}
 		checkErr(err)
 
-		// if *config["ginMode"] == "debug" {
-		// 	log.Printf("[DEBUG]: GetTopOfflineMessages(): All messages for user %q: %+v\n", username, messages)
-		// }
+		config.LogTracef("GetTopOfflineMessages(): All messages for user %q: %+v\n", username, messages)
 
 		session.Set("Messages", messages)
 		session.Set("numberMessages", numberMessages)
@@ -107,10 +102,10 @@ func GetTopOfflineMessages(c *gin.Context) {
 		session.Set("Messages", nil)
 		session.Set("numberMessages", numberMessages)
 	}
-	log.Printf("[DEBUG]: GetTopOfflineMessages(): user %q(%s) has %d message(s).\n",
+	config.LogDebugf(": GetTopOfflineMessages(): user %q(%s) has %d message(s).\n",
 		username, uuid, numberMessages)
 
 	if err := session.Save(); err != nil {
-		log.Printf("[WARN]: GetTopOfflineMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
+		config.LogWarnf("GetTopOfflineMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
 	}
 }
