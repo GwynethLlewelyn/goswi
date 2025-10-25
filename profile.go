@@ -44,6 +44,14 @@ type UserProfile struct {
 	ProfileFirstText     string   `form:"ProfileFirstText" json:"profileFirstText"`
 }
 
+// Flagged by SonarCube as being constanly used, so we'll use a `const` for it now.
+// (gwyneth 20251025)
+const (
+	strImageFromOpenSimulator = "Image retrieved from OpenSimulator"
+	strUnitBytes              = "bytes."
+	strInTheCacheErrorWas     = "in the cache, error was:"
+)
+
 // GetProfile connects to the database, does its magic, and spews out a profile. That's the theory at least.
 func GetProfile(c *gin.Context) {
 	session := sessions.Default(c)
@@ -136,10 +144,10 @@ func GetProfile(c *gin.Context) {
 			config.LogError("Oops — could not get contents of", profileImageAssetURL, "from OpenSimulator, error was:", err)
 		}
 		if len(newImage) == 0 {
-			config.LogError("Image retrieved from OpenSimulator", profileImageAssetURL, "has zero bytes.")
+			config.LogError(strImageFromOpenSimulator, profileImageAssetURL, "has zero bytes.")
 			// we might have to get out of here
 		} else {
-			config.LogDebug("Image retrieved from OpenSimulator", profileImageAssetURL, "has", len(newImage), "bytes.")
+			config.LogDebug(strImageFromOpenSimulator, profileImageAssetURL, "has", len(newImage), strUnitBytes)
 		}
 		// Now use ImageMagick to convert this image!
 		// Note: I've avoided using ImageMagick because it's compiled with Cgo, but I can't do better
@@ -154,14 +162,14 @@ func GetProfile(c *gin.Context) {
 		if /* retinaImage == nil || */ len(retinaImage) == 0 {
 			config.LogError("Converted Retina image is empty")
 		}
-		config.LogDebug("Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
+		config.LogDebug("Regular image from", profileImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), strUnitBytes)
 		// put it into KV cache:
 		if err := imageCache.Write(profileImage, convertedImage); err != nil {
-			config.LogError("Could not store converted", profileImage, "in the cache, error was:", err)
+			config.LogError("Could not store converted", profileImage, strInTheCacheErrorWas, err)
 		}
 		// put Retina image into KV cache as well:
 		if err := imageCache.Write(profileRetinaImage, retinaImage); err != nil {
-			config.LogError("Could not store retina image", string(retinaImage), "in the cache, error was:", err)
+			config.LogError("Could not store retina image", string(retinaImage), strInTheCacheErrorWas, err)
 		}
 	}
 	// note that the code will now assume that profileImage does, indeed, have a valid
@@ -186,9 +194,9 @@ func GetProfile(c *gin.Context) {
 			config.LogError("Oops — could not get contents of", profileFirstImageAssetURL, "from OpenSimulator, error was:", err)
 		}
 		if len(newImage) == 0 {
-			config.LogError("Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has zero bytes.")
+			config.LogError(strImageFromOpenSimulator, profileFirstImageAssetURL, "has zero bytes.")
 		} else {
-			config.LogDebug("Image retrieved from OpenSimulator", profileFirstImageAssetURL, "has", len(newImage), "bytes.")
+			config.LogDebug(strImageFromOpenSimulator, profileFirstImageAssetURL, "has", len(newImage), strUnitBytes)
 		}
 		convertedImage, retinaImage, err := ImageConvert(newImage, 128, 128, 100)
 		if err != nil {
@@ -200,13 +208,13 @@ func GetProfile(c *gin.Context) {
 		if /* retinaImage == nil || */ len(retinaImage) == 0 {
 			config.LogError("Converted Retina image is empty")
 		}
-		config.LogDebug("Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), "bytes.")
+		config.LogDebug("Image from", profileFirstImageAssetURL, "has", len(convertedImage), "bytes; retina image has", len(retinaImage), strUnitBytes)
 		if err := imageCache.Write(profileFirstImage, convertedImage); err != nil {
-			config.LogError("Could not store converted", profileFirstImage, "in the cache, error was:", err)
+			config.LogError("Could not store converted", profileFirstImage, strInTheCacheErrorWas, err)
 		}
 		// put Retina image into KV cache as well:
 		if err := imageCache.Write(profileRetinaFirstImage, retinaImage); err != nil {
-			config.LogError("Could not store retina image", string(retinaImage), "in the cache, error was:", err)
+			config.LogError("Could not store retina image", string(retinaImage), strInTheCacheErrorWas, err)
 		}
 	}
 

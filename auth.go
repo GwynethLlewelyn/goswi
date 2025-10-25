@@ -328,9 +328,7 @@ func changePassword(c *gin.Context) {
 		selector := token[:15]
 		verifier := token[15:]
 		sha256 := sha256.Sum256([]byte(verifier))
-		if *config["ginMode"] == "debug" {
-			fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
-		}
+		config.LogDebugf("Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
 		found, err := GOSWIstore.Get(selector, &someTokens)
 		if err == nil {
 			if found {
@@ -517,7 +515,7 @@ func resetPassword(c *gin.Context) {
 		// Now send email!
 		// using example from https://riptutorial.com/go/example/20761/sending-email-with-smtp-sendmail-- (gwyneth 20200706)
 		if email != "" {
-			config.LogDebugf("Request: %+v\n", c.Request)
+			config.LogDebug(bluemondaySafeHTML.Sanitize(fmt.Sprintf("Request: %+v\n", c.Request)))
 			// Build the actual URL for token
 			scheme := "https:"
 			if c.Request.TLS == nil {
@@ -545,16 +543,13 @@ Someone asked for your password to be reset.
 
 If it was you, use the following link: ` + tokenURL + `
 		`
-			if *config["ginMode"] == "debug" {
-				fmt.Printf("[DEBUG] Message to be sent: %q\n", message)
-			}
+			config.LogDebugf("Message to be sent: %q\n", message)
+
 			if err := smtp.SendMail(*config["SMTPhost"]+":25", auth, *config["gOSWIemail"], []string{email}, []byte(message)); err != nil {
-				fmt.Printf("[ERROR] Sending reset link email to <%s> via SMTP host %q failed: %v\n", email, *config["SMTPhost"], err)
+				config.LogErrorf("Sending reset link email to <%s> via SMTP host %q failed: %v\n", email, *config["SMTPhost"], err)
 				//os.Exit(1)
 			}
-			if *config["ginMode"] == "debug" {
-				fmt.Println("[INFO] Success in sending reset link to", email)
-			}
+			config.LogInfo("Success in sending reset link to", email)
 		}
 	}
 	c.HTML(http.StatusOK, "reset-password-confirmation.tpl", environment(c, gin.H{
@@ -597,9 +592,7 @@ func checkTokenForPasswordReset(c *gin.Context) {
 	selector := token[:15]
 	verifier := token[15:]
 	sha256 := sha256.Sum256([]byte(verifier))
-	if *config["ginMode"] == "debug" {
-		fmt.Printf("[DEBUG] Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
-	}
+	config.LogDebugf("Got token %q, this is selector %q and verifier %q and SHA256 %q\n", token, selector, verifier, sha256)
 
 	var someTokens ResetPasswordTokens
 	found, err := GOSWIstore.Get(selector, &someTokens)

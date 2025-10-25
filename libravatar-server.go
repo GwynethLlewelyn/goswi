@@ -60,8 +60,10 @@ func Libravatar(c *gin.Context) {
 	if defaultParam == "" {
 		defaultParam = c.DefaultQuery("default", "")
 	}
-	// create filename. (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
-	profileImageFilename := strings.TrimPrefix(c.Request.URL.RequestURI(), "/avatar/")
+
+	// Create filename. (it's horrible, but that's how both Gravatar + Libravatar work) (gwyneth 20200908)
+	// Note that we get this through Blue Monday's sanitiser, to make sure the requests are valid.
+	profileImageFilename := bluemondaySafeHTML.Sanitize(strings.TrimPrefix(c.Request.URL.RequestURI(), "/avatar/"))
 
 	config.LogDebug("PathToStaticFiles is", PathToStaticFiles, "and profileImageFilename is now", profileImageFilename)
 	// check if image exists on the diskv cache; code shares similarities with profile.go (gwyneth 20200908)
