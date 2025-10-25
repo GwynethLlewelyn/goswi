@@ -35,8 +35,9 @@ node_modules
 package.json
 package-lock.json
 .eslintrc.yml
+.env
 
-# Binaries for programs and plugins
+#- Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
