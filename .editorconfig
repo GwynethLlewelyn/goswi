@@ -14,15 +14,21 @@ trim_trailing_whitespace = true
 [*.md]
 max_line_length = 108
 word_wrap = true
+# Markdown sometimes uses two spaces at the end to
+#  mark soft line breaks
+trim_trailing_whitespace = false
 
-# apparently ESLint dislikes tabs and wants indents of 2 spaces
-[*js]
+[*.css]
+indent_style = space
+indent_size = 2
+
+[*.{yml,yaml}]
 indent_style = space
 indent_size = 2
 tab_width = 2
 
-# YAML cannot have tabs, ever!
-[*.yml]
+# apparently ESLint dislikes tabs and wants indents of 2 spaces
+[*js]
 indent_style = space
 indent_size = 2
 tab_width = 2
