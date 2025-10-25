@@ -116,17 +116,17 @@ It makes more sense to switch to [OpenTelemetry](https://opentelemetry.io) than 
 
 ## Disclaimers and Licenses
 
-Second Life® is a registered trademark of Linden Lab.
+**Second Life®** is a registered trademark of **Linden Lab**.
 
-OpenSimulator is a trademark of the The OpenSimulator Project.
+**OpenSimulator** is a trademark of the **The OpenSimulator Project**.
 
-Redis, memcached, New Relic, Go are trademarks of their respective owners.
+**Redis**, **memcached**, **New Relic**, **Go** are trademarks of their respective owners.
 
-JPEG2000 is a registered trademark of the Joint Photographic Experts Group ([JPEG](https://jpeg.org)) committee.
+**JPEG2000** is a registered trademark of the **Joint Photographic Experts Group** ([JPEG](https://jpeg.org)) committee.
 
-The _gopher_ (the Go mascot) is an [original design](https://blog.golang.org/gopher) created by renowned illustrator [Renne French](https://www.instagram.com/reneefrench/) and released with a [Creative Commons Attribution 3.0 (Unported) License](https://creativecommons.org/licenses/by/3.0/), to be used on Go-related projects, but is _not_ the official logo.
+The _gopher_ (the Go mascot) is an [original design](https://go.dev/blog/gopher) created by renowned illustrator [Renne French](https://www.instagram.com/reneefrench/) and released with a [Creative Commons Attribution 3.0 (Unported) License](https://creativecommons.org/licenses/by/3.0/), to be used on Go-related projects (but it's _not_ the Go official _logo_).
 
-Parts of the [OpenSimulator logo](http://opensimulator.org/wiki/File:Opensimulator.svg), released under a [Creative Commons Attribution 2.5 Australia (CC BY 2.5 AU)](https://creativecommons.org/licenses/by/2.5/au/) were shamelessly scavenged and ravaged by yours truly.
+Parts of the [OpenSimulator logo](http://opensimulator.org/wiki/File:Opensimulator.svg), released under a [Creative Commons Attribution 2.5 Australia (CC BY 2.5 AU)](https://creativecommons.org/licenses/by/2.5/au/), were shamelessly scavenged and ravaged by yours truly.
 
 The fonts used are, per [Google's v.1.9.5 guidelines for Go-related things](https://storage.googleapis.com/golang-assets/Go-brand-book-v1.9.5.pdf), [Work Sans](https://fonts.google.com/specimen/Work%20Sans), licensed under [Open Font License](https://openfontlicense.org/open-font-license-official-text/), and [Roboto](https://fonts.google.com/specimen/Roboto), licensed under an [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0).
 
@@ -138,13 +138,13 @@ Most colours come from the awesome [Nord colour palette](https://www.nordtheme.c
 
 Some code was _inspired_ on [OpenSim Web Interface Redux](https://github.com/BigManzai/opensimwiredux) (OpenSimWIRedux) as well as the connection to the Remote Admin XML-RPC as provided by [Marcel Edward](https://github.com/MarcelEdward/OpenSim-RemoteAdmin). At the time of writing this, OpenSimWIRedux is currently going through a code rewrite and not fully operational, but you can still look at its files.
 
-The grid map also requires mentioning its own licensing. It uses various sources: the actual component that displays map tiles is [Leaflet](https://leafletjs.com/). The overall inspiration also comes from OpenSimWIRedux, but they never adopted Leaflet — but stick to the Google Maps API. Because the Google Maps API has been so widely abused, Google has placed very harsh restrictions on its usage. You need to register for a key (or your tiles will have watermarks — even if they are _your_ tiles...). You cannot include the Google APIs in anything remotely 'commercial' (not even if you have, say, a website for a non-profit which 'sells' a product for a fee to raise funds) — to do so, you need to purchase a commercial license. Even though 'personal use' is allowed and even encouraged, it requires publishing your key to anyone who downloads your software (this is exactly what OpenSimWIRedux does — who knows which key they're using...), which, IMHO, is not a good idea.
+The grid map also requires mentioning its own licensing. It uses various sources: the actual component that displays map tiles is [Leaflet](https://leafletjs.com/). The overall inspiration also comes from OpenSimWIRedux, but they never adopted Leaflet — but stick to the Google Maps API. Because the Google Maps API has been so widely abused, Google has placed very harsh restrictions on its usage. You need to register for a key (or your tiles will have watermarks — even if they are _your_ tiles...). You cannot include the Google APIs in anything remotely 'commercial' (not even if you have, say, a website for a non-profit which 'sells' a product for a fee to raise funds) — to do so, you need to purchase a commercial license. Even though 'personal use' is allowed and even encouraged, it requires publishing your key to anyone who downloads your software (this is exactly what OpenSimWIRedux does — who knows which key they're using...), which, <abbr title="In My Humble Opinion">IMHO</abbr>, is **not** a good idea.
 
-Other OpenSimulator Web Interfaces, such as [MWI by Myopengrid](https://github.com/Myopengrid/mwi) — which I used profusely for many years — have their own solution for tile visualisation (MWI has not been updated since 2014 and uses a version of [Laravel](https://laravel.com/) which is so ancient that it's not even referred to on the official website). By contrast, Linden Lab switched from their own in-house solution, which worked reasonably well in the olden times, then to the Google Maps API, and finally to Leaflet, which works _far_ better. After much digging around, you can see that the page for <https://maps.secondlife.com/> includes a full version of Leaflet (1.4.0 at the time of writing), to which, after line 8600 or so, Linden Lab has added their own code to use Leaflet. This code is preceded by a MIT-like license, which means that I'm able to reuse it and modify it, so long as I retain their copyright notice from 2016. There have been many changes and simplifications to LL's original code. I'm happy to report that it works flawlessly :-)
+Other OpenSimulator Web Interfaces, such as [MWI by Myopengrid](https://github.com/Myopengrid/mwi) — which I used profusely for many years — have their own solution for tile visualisation (MWI has not been updated since 2014 and uses a version of [Laravel](https://laravel.com/) which is so ancient that it's not even referred to on the official website). By contrast, Linden Lab switched from their own in-house solution, which worked reasonably well in the olden times, then to the Google Maps API, and finally to Leaflet, which works _far_ better. After much digging around, you can see that the page for <https://maps.secondlife.com/> includes a full version of Leaflet (1.4.0 at the time of writing), to which, after line 8600 or so, Linden Lab has added their own code to use Leaflet. This code is preceded by a MIT-like license, which means that I'm able to reuse it and modify it, so long as I retain their copyright notice from 2016. There have been many changes and simplifications to <abbr title="Linden Lab">LL</abbr>'s original code. I'm happy to report that it works flawlessly 😄
 
 The [Libravatar](https://libravatar.org/) code is partially inspired on [Surrogator](https://sourceforge.net/p/surrogator/wiki/Home/), written in PHP by Christian Weiske (<cweiske@cweiske.de>) and licensed under the [AGPL v3](https://www.gnu.org/licenses/agpl-3.0.html) or later.
 
-All favicons were generated by [RealFaviconGenerator](https://realfavicongenerator.net/).
+All favicons were generated by [RealFaviconGenerator](https://realfavicongenerator.net/); the results are [fully licensed](https://realfavicongenerator.net/terms-of-service) back to the original image/logo owner.
 
 ### Licensing of specific packages
 
