@@ -39,7 +39,7 @@ func checkErrPanic(err error) {
 
 // checkErr checks if there is an error, and if yes, it logs it out and continues.
 //
-//	this is for 'normal' situations when we want to get a log if something goes wrong but do not need to terminate execution.
+// This is for 'normal' situations when we want to get a log if something goes wrong but do not need to terminate execution.
 func checkErr(err error) {
 	if err != nil {
 		pc, file, line, ok := runtime.Caller(1)
@@ -49,7 +49,7 @@ func checkErr(err error) {
 
 // expandPath expands the tilde as the user's home directory.
 //
-//	found at http://stackoverflow.com/a/43578461/1035977
+// Found at http://stackoverflow.com/a/43578461/1035977
 func expandPath(path string) (string, error) {
 	if len(path) == 0 || path[0] != '~' {
 		return path, nil
@@ -104,7 +104,7 @@ func isValidExtension(lookup string) bool {
 		".jpg",
 		".mp4",
 		".png",
-		".avif",	// new popular file format
+		".avif", // new popular file format
 		".svg",
 		".webp":
 		return true
@@ -178,7 +178,7 @@ func environment(c *gin.Context, env gin.H) gin.H {
 		"Token":              session.Get("Token"),
 		"Email":              session.Get("Email"),
 		"RememberMe":         session.Get("RememberMe"),
-		"Messages":           session.Get("Messages"),		// these are offline IMs
+		"Messages":           session.Get("Messages"), // these are offline IMs
 		"numberMessages":     session.Get("numberMessages"),
 		"FeedMessages":       session.Get("FeedMessages"),
 		"numberFeedMessages": session.Get("numberFeedMessages"),
