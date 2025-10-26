@@ -21,6 +21,8 @@ on:
 jobs:
 
   build:
+    env:
+      IMAGEMAGICK_VERSION: 7.1.2-7
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -36,18 +38,18 @@ jobs:
     - name: Download ImageMagick source files to /tmp
       run: |
         cd /tmp
-        wget https://github.com/ImageMagick/ImageMagick/archive/refs/tags/7.1.2-7.tar.gz
-        tar xzf 7.1.2-7.tar.gz
-        rm 7.1.2-7.tar.gz
+        wget https://github.com/ImageMagick/ImageMagick/archive/refs/tags/$IMAGEMAGICK_VERSION.tar.gz
+        tar xzf $IMAGEMAGICK_VERSION.tar.gz
+        rm $IMAGEMAGICK_VERSION.tar.gz
 
     - name: Configure the ImageMagick build
       run: |
-        cd /tmp/ImageMagick-7.1.2-7
+        cd /tmp/ImageMagick-$IMAGEMAGICK_VERSION
         sh ./configure --prefix=/usr/local --with-bzlib --with-fontconfig --with-freetype --with-gslib --with-gvc --with-jpeg --with-png --with-tiff --with-xml --with-gs-font-dir
 
     - name: Compile ImageMagick
       run: |
-        cd /tmp/ImageMagick-7.1.2-7
+        cd /tmp/ImageMagick-$IMAGEMAGICK_VERSION
         make -j
 
     - name: Install ImageMagick
@@ -55,7 +57,7 @@ jobs:
       # for dynamically linked binaries via `ld.so`. This may not be necessary for Go, but who knows...
       # (gwyneth 20251023)
       run: |
-        cd /tmp/ImageMagick-7.1.2-7
+        cd /tmp/ImageMagick-$IMAGEMAGICK_VERSION
         sudo make install
         sudo ldconfig /usr/local/lib/
 
