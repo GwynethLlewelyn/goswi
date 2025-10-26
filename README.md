@@ -170,6 +170,7 @@ Some packages imported by this application include different licenses, which may
 
 In case you need it to send me encrypted emails:
 ![Keybase PGP](https://img.shields.io/keybase/pgp/:gwynethllewelyn?logo=Keybase&logoColor=white)
+https://img.shields.io/keybase/pgp/:gwynethllewelyn?logo=Keybase&logoColor=white
 
 ---
 
