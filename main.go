@@ -24,8 +24,6 @@ import (
 	_ "github.com/philippgille/gokv"
 	"github.com/philippgille/gokv/syncmap"
 	"github.com/vharitonsky/iniflags"
-	"gopkg.in/gographics/imagick.v3/imagick"
-	//	syslog "github.com/RackSec/srslog"
 )
 
 // Global variables
@@ -85,7 +83,7 @@ func main() {
 	if len(slideshow) == 0 {
 		slideshow = append(slideshow, "https://source.unsplash.com/K4mSJ7kc0As/700x300", "https://source.unsplash.com/Mv9hjnEUHR4/700x300", "https://source.unsplash.com/oWTW-jNGl9I/700x300")
 	} else {
-		for i := 0; i < len(slideshow); i++ {
+		for i := range len(slideshow) {
 			slideshow[i] = strings.TrimSpace(slideshow[i]) // this will respect the order
 		}
 	}
@@ -298,9 +296,8 @@ func main() {
 	GOSWIstore = syncmap.NewStore(syncmap.DefaultOptions)
 	defer GOSWIstore.Close() // according to the developer, stores should be closed when not in usage, since certain store implementations may require an explicit close to deallocate memory, free database resources, etc. (20200705)
 
-	// Initialise ImageMagick, which we use to convert JPEG2000 to PNG
-	imagick.Initialize()
-	defer imagick.Terminate()
+	// NOTE: ImageMagick is now initialised separately, with the build tag `imagick`.
+	// See imagick_compiled.go and the README.md. (gwyneth 20251027)
 
 	// Deal with the way gOSWI was called, namely if it uses a default port, uses TLS (=HTTPS), etc.
 	if *config["local"] == "" {
