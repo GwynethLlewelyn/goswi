@@ -169,8 +169,7 @@ Some packages imported by this application include different licenses, which may
 ## GPG Fingerprint
 
 In case you need it to send me encrypted emails:
-![Keybase PGP](https://img.shields.io/keybase/pgp/:gwynethllewelyn?logo=Keybase&logoColor=white)
-https://img.shields.io/keybase/pgp/:gwynethllewelyn?logo=Keybase&logoColor=white
+[![Keybase PGP](https://img.shields.io/keybase/pgp/gwynethllewelyn?style=plastic&logo=Keybase&logoColor=white&label=PGP&labelColor=%2333A0FF)](https://keybase.io/gwynethllewelyn)
 
 ---
 
