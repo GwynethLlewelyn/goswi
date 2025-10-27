@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/smtp"
 	"path/filepath"
@@ -64,7 +63,7 @@ func isUserValid(username, password string) (bool, string, string) {
 
 	// check if user exists
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
@@ -382,7 +381,7 @@ func changePassword(c *gin.Context) {
 		}
 		// ok, we ought to have a valid UUID, at last we can update the password!
 		if *config["dsn"] == "" {
-			log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+			config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 		}
 		db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 		checkErrFatal(err)
@@ -469,7 +468,7 @@ func resetPassword(c *gin.Context) {
 
 	// check if this email address is in the database
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
@@ -676,7 +675,7 @@ func isUsernameAvailable(username string) bool {
 	// We might need to do a bit more than this.
 
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
@@ -732,13 +731,13 @@ func getLibravatar(email string, username string, size uint) (hashedAvatarURL st
 		// Not in the KV store yet, so we dial out to get it from the avatar image provider (whatever it might be).
 		// Note: we want to follow redirects (default policy) and extract the content type of what gets returned
 		resp, err := http.Get(avatarURL)
-		defer resp.Body.Close()
 
 		if err != nil {
 			// handle error, could be a timeout
 			hashedAvatarURL = ""
-			log.Panic("Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
+			config.LogPanic("Oops — getLibravatar cannot find", avatarURL, " - error was:", err)
 		}
+		defer resp.Body.Close()
 
 		newImage, err := io.ReadAll(resp.Body) // deprecated
 		if err != nil {
