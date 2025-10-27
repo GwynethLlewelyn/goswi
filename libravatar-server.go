@@ -23,7 +23,6 @@ import (
 	"github.com/gabriel-vasile/mimetype"
 	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	//	"gopkg.in/gographics/imagick.v3/imagick"	// not needed since we call the conversion function (gwyneth 20200910)
 )
 
 // Database fields that we will retrieve later for checking email, names, profile image, etc.
