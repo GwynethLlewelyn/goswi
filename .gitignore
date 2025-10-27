@@ -50,6 +50,7 @@ goswi
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
+testdata/
 
 # Files that may have sensitive information and should be kept out of GitHub
 config.ini

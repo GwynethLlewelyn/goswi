@@ -42,7 +42,7 @@ var (
 func main() {
 	// Full configuration, which can be retrieved via flags, configure file, environment (TBD)...
 	// Note: this is now a singleton, assigned on configtype.go
-	config = map[string]*string{
+	config = Config{
 		"local":              flag.String("local", "", "serve as webserver, example: 0.0.0.0:8000"),
 		"dsn":                flag.String("dsn", "", "DSN for calling MySQL database"),
 		"templatePath":       flag.String("templatePath", "", "Path to where the templates are stored (with trailing slash) - leave empty for autodetect"),

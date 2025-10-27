@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io"
 	"os/exec"
 )
 
@@ -58,51 +57,36 @@ func spawnImageMagick(aImage []byte, height, width, compression uint) ([]byte, e
 	var dimensions = fmt.Sprintf("%dx%d", width, height)
 
 	// Format to convert to, based on the extension given, minus the dot at the beginning.
-	var formatType = *config["convertExt"]
-	config.LogDebug("Setting format type to", formatType[1:])
+	// The default will be .png, but we'll read it from the configuration, *if* available.
+	var formatType string = ".png"
 
-	// spawn imagick process, preparing it to accept from stdin and write to stdout.
+	// Note that this is required, since some tests will **not** properly instantiate *config[].
+	if len(config) != 0 && config["convertExt"] != nil && len(*config["convertExt"]) >= 2 {
+		formatType = *config["convertExt"]
+	}
+
+	config.LogTrace("spawnImageMagick called with `aImage` length ", len(aImage), "resize to:", dimensions, "compression quality:", compression)
+	config.LogDebug("Setting format type to", formatType[1:])
 	cmd := exec.Command("magick", "-", "-filter", "Lanczos2Sharp", "-resize", dimensions,
 		"-quality", fmt.Sprintf("%d", compression),
 		"-alpha", "off", "-format", formatType[1:], "-")
-	stdout, err := cmd.StdoutPipe()
-	if err != nil {
+
+	var stdinbuf, stdoutbuf, stderrbuf bytes.Buffer
+	cmd.Stdin = &stdinbuf
+	cmd.Stdout = &stdoutbuf
+	cmd.Stderr = &stderrbuf
+
+	bytesWritten, copyErr := stdinbuf.Write(aImage)
+	if copyErr != nil {
+		config.LogFatal("could not pipe image with", dimensions, "to spawned `magick` process, error was", copyErr)
+	}
+	config.LogDebug("image with", dimensions, "successfully sent to spawned `magick` process, wrote", bytesWritten, "bytes")
+	if err := cmd.Run(); err != nil {
 		return nil, err
 	}
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return nil, err
+	if stderrbuf.Len() != 0 {
+		config.LogDebug("`ìmagick` returned:", stderrbuf.String())
 	}
 
-	stdinImage := bytes.NewBuffer(aImage)
-	if stdinImage == nil {
-		return nil, errors.New("failed to allocate memory for image buffer with size: " + dimensions)
-	}
-
-	// TODO: I have to think a bit to see if it makes sense running a gooutine here, or not.
-	go func() {
-		bytesWritten, copyErr := io.Copy(stdin, stdinImage)
-		if copyErr != nil {
-			config.LogFatalf("could not pipe image with %s to spawned `magick` process, error was %q", dimensions, copyErr)
-		}
-		config.LogDebugf("image with %s successfully sent to spawned `magick` process, wrote %d bytes", dimensions, bytesWritten)
-	}()
-
-	if err := cmd.Start(); err != nil {
-		return nil, err
-	}
-
-	stdoutImage, outputErr := io.ReadAll(stdout)
-	if outputErr != nil {
-		config.LogErrorf("could not capture result of converting image to %s, error was %q", dimensions, outputErr)
-		stdoutImage = nil // should be nil by default...
-	}
-
-	// clean exit, even if the saving to a buffer failed. If that's the case,
-	// we'll return the error for outputErr; otherwise, it will be nil.
-	if err := cmd.Wait(); err != nil {
-		return nil, err
-	}
-
-	return stdoutImage, outputErr
+	return stdoutbuf.Bytes(), nil
 }
