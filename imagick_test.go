@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 	}
 	// we also need the debugging value
 	if config["ginMode"] == nil {
-		fmt.Println("`config` exists, but `ginMode` is not one of its members")
+		fmt.Println("`ginMode` is not a member of `config`")
 		config["ginMode"] = new(string)
 	}
 
@@ -53,7 +53,7 @@ func TestMain(m *testing.M) {
 	}
 	// and having the path to ImageMagick
 	if config["ImageMagickCommand"] == nil {
-		fmt.Println("`config` exists, but `ImageMagickCommand` is not one of its members")
+		fmt.Println("`ImageMagickCommand` is not a member of `config`")
 		config["ImageMagickCommand"] = new(string)
 		*config["ImageMagickCommand"] = ""
 	}

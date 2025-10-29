@@ -135,7 +135,7 @@ func main() {
 			// NO LOGGING, duh! (gwyneth 20210901)
 		)
 		if nil != err {
-			config.LogErrorf("Failed to init New Relic", err)
+			config.LogError("Failed to init New Relic", err)
 			// os.Exit(1)
 		} else {
 			router.Use(nrgin.Middleware(app))

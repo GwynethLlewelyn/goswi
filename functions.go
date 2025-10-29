@@ -111,12 +111,12 @@ func isValidExtension(lookup string) bool {
 	return false
 }
 
-// MergeMaps adds lots of map[string]interface{} together, returning the merged map[string]interface{}.
+// MergeMaps adds lots of map[string]any together, returning the merged map[string]any.
 // It overwrites duplicate keys, maps to the right overwriting whatever keys are on the left.
 // This allows for setting 'default' arguments later below, which can be overridden.
 // See https://play.golang.org/p/8a9cXdSL_o3 as well as https://stackoverflow.com/a/39406305/1035977.
-func MergeMaps(maps ...map[string]interface{}) map[string]interface{} {
-	result := make(map[string]interface{})
+func MergeMaps(maps ...map[string]any) map[string]any {
+	result := make(map[string]any)
 	for _, m := range maps {
 		for k, v := range m {
 			result[k] = v

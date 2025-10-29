@@ -11,10 +11,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"os"
+	//	"os"
 	"os/exec"
 
-	"gitlab.com/StellarpowerGroupedProjects/tidbits/go"
 	tidbits "gitlab.com/StellarpowerGroupedProjects/tidbits/go"
 )
 
@@ -58,17 +57,18 @@ func ImageConvert(aImage []byte, height, width, compression uint) (normalSize []
 var imagickCommand = "magick"
 
 func init() {
-	// Do we have set up `agick` from an absolute path, or simply fall back to the system $PATH?
-	if len(*config["ImageMagickCommand"]) != 0 {
+	// Do we have set up `magick` from an absolute path, or simply fall back to the system $PATH?
+	if config["ImageMagickCommand"] != nil && len(*config["ImageMagickCommand"]) != 0 {
 		// Check if the absoliute path of this command exists and is properly set to executable.
 		if err := tidbits.CheckFileExecutable(*config["ImageMagickCommand"], false); err != nil {
-			config.LogErrorf("ImageMagick executable not found at %q; please check the path (or set `ImageMagickCommand` to blank), otherwise images won't work", *config["ImageMagickCommand"])
+			config.LogErrorf("ImageMagick `imagick` executable not found in %q; please check the path (or set `ImageMagickCommand` to blank), otherwise images won't work", *config["ImageMagickCommand"])
 			return
 		}
+		imagickCommand = *config["ImageMagickCommand"]
 	}
 	// Right, we fall back to using th pah...
 	if err := tidbits.CheckFileExecutable(imagickCommand, true); err != nil {
-		config.LogError("ImageMagick `imagick`executable not found in path; please check if it's in the path, otherwise images won't work")
+		config.LogError("ImageMagick `imagick` executable not found in path; please check if it's in the path, otherwise images won't work")
 	}
 
 	return
