@@ -55,6 +55,7 @@ testdata/
 # Files that may have sensitive information and should be kept out of GitHub
 config.ini
 goswi.service
+.goreleaser.yaml
 
 # Dependency directories (remove the comment below to include it)
 lib/

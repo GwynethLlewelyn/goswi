@@ -6,12 +6,10 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
-	//	"fmt"
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"html/template"
-	"log"
 	"strconv"
 )
 
@@ -49,7 +47,7 @@ func GetTopFeedMessages(c *gin.Context) {
 	}
 
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]+"?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
 	checkErrFatal(err)

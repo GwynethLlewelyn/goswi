@@ -28,6 +28,21 @@
 - Note that you _can_ run it from the console, but it's much more likely that you wish to set it up as a proper service (running in the background); also note that `goswi` will need some directories to be present
 - Now skip the next chapter and go straight to the [Configuration](#configuration) section!
 
+## Changelog
+
+### v0.9.X
+
+- Now you can use ImageMagick as an external executable!
+- Short test routine to make sure ImageMagick is being spawned correctly
+- New logging system, using a splash of colour (may need extra tweaking)
+- (Limited) `systemd` support available for those systems that run under
+
+## Test battery
+
+Currently, the tests are only useful to check if ImageMagick is working correctly, when spawned as an external process.
+
+Use `go test -timeout 1m -v -- --remove-all` to run the tests; the `--remove-all` parameter will clean up the generated images (you won't really need them).
+
 ## Purpose of this project
 
 While OpenSimulator adds a _lot_ of base functionality to pretty much run everything 'out of the box', historically, a handful of functions were _deliberately_ left out of the 'core' system, and left to third-party modules in C#, or, through a few APIs (mostly using XML-RPC, but not all), delegated to external systems (thus allowing a distributed approach in terms of deployment of a 'whole' grid). Relatively simple things (such as the 'splash screen' — what is shown when you select a grid on Firestorm and other OpenSimulator-compatible viewers) as well as much complex ones (such as running the economy system) have been pushed out of the core code, for several reasons, including ideological/theological ones (i.e. the concept that OpenSimulator-based grids should _not_ have an economy because [the love of money is the root of all evil](https://www.kingjamesbibleonline.org/1-Timothy-6-10/) — defended both by extreme-left, atheist, progressive activists, as well as right-wing, conservative Christians), legal ones (running a virtual economy might be illegal in several jurisdictions, or at least require a special license to do so), and practical ones (the 'splash screen' is often used to convey information about the grid which may rely upon statistics processed 'outside' the core OpenSimulator code).
@@ -84,8 +99,7 @@ Note that the `go` tool relies upon `pkg-config` to tell it where to find the li
 
 (_Caveat:_ If you start compiling via CGO using ImageMagick 6 and it fails, the `go` tool will **not** automagically change the command line to invoke the C compiler; unfortunately, the only solution is to recompile everything from scratch, using `go clean -x -r -cache`.)
 
-Similar configurations may be required for Homebrew as well (I haven't tested)
-
+Similar configurations may be required for Homebrew as well (I haven't tested); change paths as appropriate.
 #### Note
 
 Go purists will tell you that you can add such flags in the

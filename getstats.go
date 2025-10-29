@@ -12,7 +12,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	//	jsoniter "github.com/json-iterator/go"
 	"html/template"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -77,7 +76,7 @@ func GetStats(c *gin.Context) {
 
 	// open database connection
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)
@@ -185,7 +184,7 @@ func OSSimpleStats(c *gin.Context) {
 
 		// open database connection
 		if *config["dsn"] == "" {
-			log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+			config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 		}
 		db, err := sql.Open("mysql", *config["dsn"]+"?parseTime=true")
 		checkErrFatal(err)

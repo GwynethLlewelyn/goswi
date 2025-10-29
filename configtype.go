@@ -15,6 +15,11 @@ import (
 // Shamelessly copied from zerolog,
 // The idea is to make a switch *easy*
 
+// Set some flags to the logging system.
+func init() {
+	log.SetFlags(log.Lshortfile | log.LstdFlags | log.Lmsgprefix)
+}
+
 // Level defines log levels.
 type Level int8
 
@@ -217,43 +222,50 @@ var config Config
 
 func (config Config) LogTrace(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= TraceLevel {
-		log.Println("["+colorize(FormattedLevels[TraceLevel], LevelColors[TraceLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[TraceLevel], LevelColors[TraceLevel], false) + "] ")
+		log.Println(thingies...)
 	}
 }
 
 func (config Config) LogDebug(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= DebugLevel {
-		log.Println("["+colorize(FormattedLevels[DebugLevel], LevelColors[DebugLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[DebugLevel], LevelColors[DebugLevel], false) + "] ")
+		log.Println(thingies...)
 	}
 }
 
 func (config Config) LogInfo(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= InfoLevel {
-		log.Println("["+colorize(FormattedLevels[InfoLevel], LevelColors[InfoLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[InfoLevel], LevelColors[InfoLevel], false) + "] ")
+		log.Println(thingies...)
 	}
 }
 
 func (config Config) LogWarn(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= WarnLevel {
-		log.Println("["+colorize(FormattedLevels[WarnLevel], LevelColors[WarnLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[WarnLevel], LevelColors[WarnLevel], false) + "] ")
+		log.Println(thingies...)
 	}
 }
 
 func (config Config) LogError(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= ErrorLevel {
-		log.Println("["+colorize(FormattedLevels[ErrorLevel], LevelColors[ErrorLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[ErrorLevel], LevelColors[ErrorLevel], false) + "] ")
+		log.Println(thingies...)
 	}
 }
 
 func (config Config) LogFatal(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= FatalLevel {
-		log.Fatal("["+colorize(FormattedLevels[FatalLevel], LevelColors[FatalLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[FatalLevel], LevelColors[FatalLevel], false) + "] ")
+		log.Fatalln(thingies...)
 	}
 }
 
 func (config Config) LogPanic(thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= PanicLevel {
-		log.Panic("["+colorize(FormattedLevels[PanicLevel], LevelColors[PanicLevel], false)+"]", thingies)
+		log.SetPrefix("[" + colorize(FormattedLevels[PanicLevel], LevelColors[PanicLevel], false) + "] ")
+		log.Panicln(thingies...)
 	}
 }
 
@@ -261,42 +273,49 @@ func (config Config) LogPanic(thingies ...any) {
 
 func (config Config) LogTracef(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= TraceLevel {
-		log.Printf("["+colorize(FormattedLevels[TraceLevel], LevelColors[TraceLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[TraceLevel], LevelColors[TraceLevel], false) + "] ")
+		log.Printf(format, thingies...)
 	}
 }
 
 func (config Config) LogDebugf(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= DebugLevel {
-		log.Printf("["+colorize(FormattedLevels[DebugLevel], LevelColors[DebugLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[DebugLevel], LevelColors[DebugLevel], false) + "] ")
+		log.Printf(format, thingies...)
 	}
 }
 
 func (config Config) LogInfof(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= InfoLevel {
-		log.Printf("["+colorize(FormattedLevels[InfoLevel], LevelColors[InfoLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[InfoLevel], LevelColors[InfoLevel], false) + "] ")
+		log.Printf(format, thingies...)
 	}
 }
 
 func (config Config) LogWarnf(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= WarnLevel {
-		log.Printf("["+colorize(FormattedLevels[WarnLevel], LevelColors[WarnLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[WarnLevel], LevelColors[WarnLevel], false) + "] ")
+		log.Printf(format, thingies...)
 	}
 }
 
 func (config Config) LogErrorf(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= ErrorLevel {
-		log.Printf("["+colorize(FormattedLevels[ErrorLevel], LevelColors[ErrorLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[ErrorLevel], LevelColors[ErrorLevel], false) + "] ")
+		log.Printf(format, thingies...)
 	}
 }
 
 func (config Config) LogFatalf(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= FatalLevel {
-		log.Fatalf("["+colorize(FormattedLevels[FatalLevel], LevelColors[FatalLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[FatalLevel], LevelColors[FatalLevel], false) + "] ")
+		log.Fatalf(format, thingies...)
 	}
 }
 
 func (config Config) LogPanicf(format string, thingies ...any) {
 	if levelLookupMap[*config["ginMode"]] <= PanicLevel {
-		log.Panicf("["+colorize(FormattedLevels[PanicLevel], LevelColors[PanicLevel], false)+"] "+format, thingies...)
+		log.SetPrefix("[" + colorize(FormattedLevels[PanicLevel], LevelColors[PanicLevel], false) + "] ")
+		log.Panicf(format, thingies...)
 	}
 }

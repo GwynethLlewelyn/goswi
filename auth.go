@@ -101,7 +101,7 @@ func isUserValid(username, password string) (bool, string, string) {
 	// compare and see if it matches
 	if passwordHash == hashed {
 		// authenticated! now set session cookie and do all the magic
-		config.LogInfo("User %q authenticated.", username)
+		config.LogInfof("User %q authenticated.", username)
 		return true, email, principalID
 	} else {
 		config.LogWarnf("Invalid authentication for %q — either user not found or password is wrong", username)

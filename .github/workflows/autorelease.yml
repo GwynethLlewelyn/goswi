@@ -1,13 +1,33 @@
 name: goreleaser
 
 on:
+  pull_request:
   push:
+    # run only against tags
     tags:
-      - "v[0-9]+.[0-9]+.[0-9]+"
+      - "*"
+
+#  on:
+#    push:
+#      tags:
+#        - "v[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+  # packages: write
+  # issues: write
+  # id-token: write
 
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+
+    metadata:
+      # Set the modified timestamp on the metadata files.
+      #
+      # Templates: allowed.
+      mod_timestamp: "{{ .CommitTimestamp }}"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,3 +45,5 @@ jobs:
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GPG_FINGERPRINT: ${{ steps.import_gpg.outputs.fingerprint }}
+

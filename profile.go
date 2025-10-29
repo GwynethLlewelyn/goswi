@@ -13,7 +13,6 @@ import (
 	"html/template"
 	"io"
 	//	jsoniter "github.com/json-iterator/go"
-	"log"
 	"net/http"
 	// "os"
 	// "os/exec"
@@ -59,7 +58,7 @@ func GetProfile(c *gin.Context) {
 
 	// open database connection
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)

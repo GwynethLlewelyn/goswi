@@ -51,8 +51,22 @@ func TestMain(m *testing.M) {
 		fmt.Printf("`*config[\"ginMode\"]` exists, but it's too small to be valid: %q\n", *config["ginMode"])
 		*config["ginMode"] = LevelTraceValue
 	}
+	// and having the path to ImageMagick
+	if config["ImageMagickCommand"] == nil {
+		fmt.Println("`config` exists, but `ImageMagickCommand` is not one of its members")
+		config["ImageMagickCommand"] = new(string)
+		*config["ImageMagickCommand"] = ""
+	}
 
-	fmt.Println("Configuration ok! ✅\nRunning other tests...")
+	fmt.Println("Configuration ok! ✅")
+
+	// Make sure that the output dirs are available.
+	// This is mostly because they will *not* be created automagically... unless we create them here!
+	if err := os.MkdirAll(outputFolder, 0755); err != nil {
+		fmt.Printf("Cannot create output directories under %s! Please check what's wrong. Error was: %q", outputFolder, err)
+	}
+
+	fmt.Println("Running main tests...")
 
 	code := m.Run()
 

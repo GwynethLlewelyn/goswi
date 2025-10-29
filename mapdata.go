@@ -2,11 +2,9 @@ package main
 
 import (
 	"database/sql"
-	//	"fmt"
 	"github.com/gin-gonic/gin"
 	//	. "github.com/siongui/godom"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
 	"net/http"
 )
 
@@ -66,14 +64,14 @@ func GetMapData(c *gin.Context) {
 		// save XML as string or file
 		$test1 = $dom->saveXML(); // put string in test1
 		//echo $test1;
-		header("Content-type: text/xml");
+		header("Content-type: text/xml");config.LogFatal
 		echo $test1;
 
 		?>
 	*/
 	// open database connection
 	if *config["dsn"] == "" {
-		log.Fatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
 	}
 	db, err := sql.Open("mysql", *config["dsn"]) // presumes mysql for now
 	checkErrFatal(err)

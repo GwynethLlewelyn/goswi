@@ -6,13 +6,13 @@ package main
 import (
 	"flag"
 	"html/template"
-	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 
+	//	"github.com/coreos/go-systemd/daemon"
 	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
@@ -65,6 +65,7 @@ func main() {
 		"assetServer":        flag.String("assetServer", "http://localhost:8003", "URL to OpenSimulator asset server (no trailing slash)"),
 		"ROBUSTserver":       flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
 		"gridstats":          flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
+		"ImageMagickCommand": flag.String("ImageMagickCommand", "", "Absolute path to ImageMagick command `imagick`; empty means search $PATH"),
 		"NewRelicAppName":    flag.String("NewRelicAppName", "", "Name of your New Relic application (empty: disabled)"),
 		"NewRelicLicenseKey": flag.String("NewRelicLicenseKey", "", "Your New Relic license key"),
 	}
@@ -87,15 +88,16 @@ func main() {
 			slideshow[i] = strings.TrimSpace(slideshow[i]) // this will respect the order
 		}
 	}
-	config.LogDebugf("of %d slide(s) has been set to: %+v", len(slideshow), slideshow)
+	config.LogDebugf("%d slide(s) have been set to: %+v", len(slideshow), slideshow)
 
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
 	// we might also check for weak security strings on the configuration
 	if *config["cookieStore"] == "" {
-		log.Fatal("[ERROR] Empty random string for 'cookieStore'; please set it either on the .INI file or pass it via a flag!\nAborting for security reasons.")
+		config.LogFatal("[ERROR] Empty random string for 'cookieStore'; please set it either on the .INI file or pass it via a flag!\nAborting for security reasons.")
 	}
 
-	// prepare Gin router/render — first, set it to debug or release (release is default)
+	// prepare Gin router/render — first, set it to debug or release (release is default).
+	// Note: incidentally, this will actually also set the logging level.
 	if *config["ginMode"] == "debug" {
 		gin.SetMode(gin.DebugMode)
 	} else {
@@ -306,17 +308,17 @@ func main() {
 			if err != nil {
 				config.LogWarnf("Could not run with TLS; either the certificate %q was not found, or the private key %q was not found, or either [maybe even both] are invalid.\n", *config["tlsCRT"], *config["tlsKEY"])
 				config.LogInfo("Running _without_ TLS on the usual port")
-				log.Fatal(router.Run(":8033"))
+				config.LogFatal(router.Run(":8033"))
 			}
 		} else {
 			config.LogInfo("Running with standard HTTP on the usual port, no TLS configuration detected")
-			log.Fatal(router.Run(":8033"))
+			config.LogFatal(router.Run(":8033"))
 		}
 	} else {
-		log.Fatal(router.Run(*config["local"]))
+		config.LogFatal(router.Run(*config["local"]))
 	}
 	// if we are here, router.Run() failed with an error
-	log.Fatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know)")
+	config.LogFatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know)")
 }
 
 /*
@@ -368,7 +370,7 @@ func main() {
 		l, err := net.Listen("unix", "/var/run/fcgiwrap.socket")
 		if err != nil {
 			wLog.Crit(err.Error())
-			log.Fatal(err)
+			config.LogFatal(err)
 		}
 		defer l.Close()
 
@@ -378,7 +380,7 @@ func main() {
 	}
 	if err != nil {
 		wLog.Crit(err.Error())
-		log.Fatal(err)
+		config.LogFatal(err)
 	}
 }
 */
