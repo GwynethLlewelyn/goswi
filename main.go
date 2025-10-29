@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"strings"
 
-	//	"github.com/coreos/go-systemd/daemon"
 	"github.com/gin-contrib/location"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memstore"
@@ -36,6 +35,22 @@ var (
 	bluemondaySafeHTML          = bluemonday.UGCPolicy() // Initialise bluemonday: this is the standard, we might do it a little more restrictive (gwyneth 20200815)
 )
 
+// Notification methods (optional, build with `systemd` to include the notification system).
+// Since v0.9.3
+
+// Is a valid `systemd` running?
+var activeSystemd bool
+
+// Enum of possible notification types sent by app to systemd.
+type notificationType int8
+
+const (
+	// Sent when app is launching and loading configuration, not yet ready
+	appReloading notificationType = iota
+	appStarting
+)
+
+// Configure the complex flagging system, which will also require loading from `config.ini`
 // Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
 
 // main starts here.
@@ -69,6 +84,8 @@ func main() {
 		"NewRelicAppName":    flag.String("NewRelicAppName", "", "Name of your New Relic application (empty: disabled)"),
 		"NewRelicLicenseKey": flag.String("NewRelicLicenseKey", "", "Your New Relic license key"),
 	}
+
+	notify(appReloading)
 
 	// figure out where the configuration is
 	_, callerFile, _, _ := runtime.Caller(0)
