@@ -14,7 +14,7 @@
 
 - Make sure you have a fairly recent version of the Go environment installed for your system; use your operating system's favourite package manager or [follow the instructions](https://go.dev/doc/install)
 - Install the _developer_ version of ImageMagick, preferably version 7, according to [the GoGraphics `imagick` instructions](https://github.com/gographics/imagick)
-- Make sure you have a working, command-line C/C++ compiler installed on your system (e.g., `clang`, GCC, Roslyn, mingw, Xcode for macOS...); if you're on Unix or any of its variants, you should be good to go
+- Make sure you have a working, command-line C/C++ compiler installed on your system (e.g., `clang`, GCC, Roslyn, mingw, Xcode for macOS...); if you're on Unix or any of its variants, you should be good to go!
 - Run (under an unprivileged user) the following command on your local shell:
 
     ```bash
@@ -32,10 +32,10 @@
 
 ### v0.9.X
 
-- Now you can use ImageMagick as an external executable!
+- Now you can use ImageMagick as an external executable! (with absolute or relative path)
 - Short test routine to make sure ImageMagick is being spawned correctly
 - New logging system, using a splash of colour (may need extra tweaking)
-- (Limited) `systemd` support available for those systems that run under
+- (Limited) `systemd` support available for those systems that run under a Unix version supporting it
 
 ## Test battery
 

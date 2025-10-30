@@ -46,8 +46,10 @@ type notificationType int8
 
 const (
 	// Sent when app is launching and loading configuration, not yet ready
-	appReloading notificationType = iota
-	appStarting
+	appReloading     notificationType = iota // Configuration being loaded, initialisation being done...)
+	appReady                                 // Application is now ready to accept requests.
+	appStopping                              // Application had a (planned) shutdown.
+	appStoppingError                         // Emergency shutdown, emits fatal error, possibly exiting with code 126.
 )
 
 // Configure the complex flagging system, which will also require loading from `config.ini`
@@ -318,6 +320,10 @@ func main() {
 	// NOTE: ImageMagick is now initialised separately, with the build tag `imagick`.
 	// See imagick_compiled.go and the README.md. (gwyneth 20251027)
 
+	// Inform systemd (if running from systemd) that we've finished initialisation
+	// and configuration. and are now ready to start accepting requests.
+	notify(appReady)
+
 	// Deal with the way gOSWI was called, namely if it uses a default port, uses TLS (=HTTPS), etc.
 	if *config["local"] == "" {
 		if *config["tlsCRT"] != "" && *config["tlsKEY"] != "" {
@@ -336,68 +342,5 @@ func main() {
 	}
 	// if we are here, router.Run() failed with an error
 	config.LogFatal("Boom, something went wrong! (or maybe this was merely stopped, I don't know)")
+	notify(appStoppingError)
 }
-
-/*
-
-func homeView(w http.ResponseWriter, r *http.Request) {
-	wLog.Info("homeView called")
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-
-	io.WriteString(w, "<html><head><title>It works!</title></head><body><p>FastCGI under Go works!</p></body></html>")
-}
-
-func balView(w http.ResponseWriter, r *http.Request) {
-	wLog.Info("balView called")
-	w.Header().Set("Content-Type", "text/html")
-	w.WriteHeader(http.StatusOK)
-
-	fastCGIenv := fcgi.ProcessEnv(r)
-
-	io.WriteString(w, "<html><head><title>Balurdio!</title></head><body><p>Returning:</p><p><pre>")
-	if fastCGIenv != nil {
-		n, err := fmt.Fprintln(w, fastCGIenv)
-
-		// The n and err return values from Fprintln are
-		// those returned by the underlying io.Writer.
-		if err != nil {
-			wLog.Crit(fmt.Sprintf("Fprintln: %v\n", err))
-		}
-		wLog.Info(fmt.Sprintln(n, "bytes written."))
-	}
-	io.WriteString(w, "</pre></p></body></html>")
-}
-
-func main() {
-	var err error
-
-	r := mux.NewRouter()
-
-	r.HandleFunc("/balurdio/", balView)
-	r.HandleFunc("/", homeView)
-
-	flag.Parse()
-
-	if *config["local"] != "" { // Run as a local web server
-		wLog.Info("Run as local web server")
-		err = http.ListenAndServe(*config["local"], r)
-	} else { // Run as FCGI via standard I/O
-
-		l, err := net.Listen("unix", "/var/run/fcgiwrap.socket")
-		if err != nil {
-			wLog.Crit(err.Error())
-			config.LogFatal(err)
-		}
-		defer l.Close()
-
-
-		wLog.Info("Run as FCGI via standard I/O")
-		err = fcgi.Serve(nil, r)
-	}
-	if err != nil {
-		wLog.Crit(err.Error())
-		config.LogFatal(err)
-	}
-}
-*/

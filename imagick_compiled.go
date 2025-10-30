@@ -1,4 +1,4 @@
-//go:build cgo && imagick
+//go:build cgo && imagick && !spawn
 
 // This is the variant that uses the ImageMagick wrapper around the CGo-compiled library.
 // To use this, make sure your environment has a working CGo installation, and then build using:
