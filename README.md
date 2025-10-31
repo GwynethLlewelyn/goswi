@@ -35,7 +35,8 @@
 - Now you can use ImageMagick as an external executable! (with absolute or relative path)
 - Short test routine to make sure ImageMagick is being spawned correctly
 - New logging system, using a splash of colour (may need extra tweaking)
-- (Limited) `systemd` support available for those systems that run under a Unix version supporting it
+- `systemd` support available for those systems that run under a Linux/Unix variant using it
+- Telemetry is now optional; choices are **none** (default!), [New Relic](https://newrelic.com/) and/or [OpenTelemetry](https://opentelemetry.io/); this is chosen using compiler flags as well
 
 ## Test battery
 

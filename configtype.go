@@ -215,7 +215,7 @@ var levelLookupMap = map[string]Level{
 // Probably this will be placed in a separate package for good measure!
 type Config map[string]*string
 
-// Singleton for config:
+// Global singleton for config:
 var config Config
 
 // Our first sequence of methods will be just to deal with pretty-printing errors to the log!

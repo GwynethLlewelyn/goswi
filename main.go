@@ -17,8 +17,6 @@ import (
 	"github.com/gin-contrib/sessions/memstore"
 	"github.com/gin-gonic/gin"
 	"github.com/microcosm-cc/bluemonday"
-	nrgin "github.com/newrelic/go-agent/v3/integrations/nrgin"
-	"github.com/newrelic/go-agent/v3/newrelic"
 	"github.com/peterbourgon/diskv/v3"
 	_ "github.com/philippgille/gokv"
 	"github.com/philippgille/gokv/syncmap"
@@ -26,13 +24,15 @@ import (
 )
 
 // Global variables
+
 var (
 	//	wLog, _	= syslog.Dial("", "", syslog.LOG_ERR | syslog.LOG_LOCAL0, "gOSWI")	// write to syslog.
 	PathToStaticFiles, cacheDir string
-	GOSWIstore                  syncmap.Store            // this stores tokens for password reset links
-	imageCache                  *diskv.Diskv             // and this is the cache for images (gwyneth 20200726)
-	slideshow                   []string                 // slideshow is a slice of strings representing all images for the splash-screen slideshow.
+	GOSWIstore                  syncmap.Store            // Stores tokens for password reset links.
+	imageCache                  *diskv.Diskv             // As the name says: this is the image cache (gwyneth 20200726)
+	slideshow                   []string                 // Slideshow is a slice of strings representing all images for the splash-screen slideshow.
 	bluemondaySafeHTML          = bluemonday.UGCPolicy() // Initialise bluemonday: this is the standard, we might do it a little more restrictive (gwyneth 20200815)
+	router                      *gin.Engine              // Declared as global because it's supposed to be a singleton Gin router, available on all files here.
 )
 
 // Notification methods (optional, build with `systemd` to include the notification system).
@@ -83,8 +83,12 @@ func main() {
 		"ROBUSTserver":       flag.String("ROBUSTserver", "http://localhost:8002", "URL to OpenSimulator ROBUST server (no trailing slash)"),
 		"gridstats":          flag.String("gridstats", "/stats", "Relative path to where the Grid statistics are stored (default: /stats)"),
 		"ImageMagickCommand": flag.String("ImageMagickCommand", "", "Absolute path to ImageMagick command `imagick`; empty means search $PATH"),
+		"ImageMagickParams":  flag.String("ImageMagickParams", "", "Parameters to be sent to ImageMagick command (EXPERIMENTAL!)"),
 		"NewRelicAppName":    flag.String("NewRelicAppName", "", "Name of your New Relic application (empty: disabled)"),
 		"NewRelicLicenseKey": flag.String("NewRelicLicenseKey", "", "Your New Relic license key"),
+		"OTelServiceName":    flag.String("OTelServiceName", "", "Name of your OpenTelemetry service (empty: disabled)"),
+		"OTelCollectorURL":   flag.String("OTelCollectorURL", "", "URL for OpenTelemetry Collector (default: none)"),
+		"OTelInsecureMode":   flag.String("OTelInsecureMode", "", "OpenTelemetry Insecure Mode (default: empty, i.e. secure mode)"),
 	}
 
 	notify(appReloading)
@@ -101,13 +105,18 @@ func main() {
 	// initialise slideshow (all the URLs should be at the end of the commandline)
 	slideshow = strings.Split(*config["slides"], ",")
 	if len(slideshow) == 0 {
-		slideshow = append(slideshow, "https://source.unsplash.com/K4mSJ7kc0As/700x300", "https://source.unsplash.com/Mv9hjnEUHR4/700x300", "https://source.unsplash.com/oWTW-jNGl9I/700x300")
+		slideshow = append(
+			slideshow,
+			"https://source.unsplash.com/K4mSJ7kc0As/700x300",
+			"https://source.unsplash.com/Mv9hjnEUHR4/700x300",
+			"https://source.unsplash.com/oWTW-jNGl9I/700x300",
+		)
 	} else {
 		for i := range len(slideshow) {
 			slideshow[i] = strings.TrimSpace(slideshow[i]) // this will respect the order
 		}
 	}
-	config.LogDebugf("%d slide(s) have been set to: %+v", len(slideshow), slideshow)
+	config.LogTracef("%d slide(s) have been set to: %+v", len(slideshow), slideshow)
 
 	// cookieStore MUST be set to a random string! (gwyneth 20200628)
 	// we might also check for weak security strings on the configuration
@@ -117,13 +126,13 @@ func main() {
 
 	// prepare Gin router/render — first, set it to debug or release (release is default).
 	// Note: incidentally, this will actually also set the logging level.
-	if *config["ginMode"] == "debug" {
+	if *config["ginMode"] == "debug" || *config["ginMode"] == "trace" {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	router := gin.Default()
+	router = gin.Default()
 	router.Delims("{{", "}}") // stick to default delims for Go templates
 	router.SetFuncMap(template.FuncMap{
 		"bitTest": bitTest,
@@ -141,25 +150,11 @@ func main() {
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
 
-	// If we have a valid New Relic configuration, add it to the middleware list first (gwyneth 20210422)
-	// @see https://github.com/newrelic/go-agent/blob/v3.11.0/_integrations/nrgin/v1/example/main.go
-	// TODO(gwyneth): get New Relic license key from the environment for extra security (gwyneth 20210422)
-	if *config["NewRelicAppName"] != "" && *config["NewRelicLicenseKey"] != "" {
-		app, err := newrelic.NewApplication(
-			newrelic.ConfigAppName(*config["NewRelicAppName"]),
-			newrelic.ConfigLicense(*config["NewRelicLicenseKey"]),
-			// TODO(gwyneth): figure out how to funnel the logs from New Relic to Gin! (20211111)
-			//			newrelic.ConfigDebugLogger(os.Stdout),			// this was sending debug logs to syslog!
-			//			newrelic.ConfigInfoLogger(gin.DefaultWriter),	// now sending only info to the gin logger.
-			// NO LOGGING, duh! (gwyneth 20210901)
-		)
-		if nil != err {
-			config.LogError("Failed to init New Relic", err)
-			// os.Exit(1)
-		} else {
-			router.Use(nrgin.Middleware(app))
-		}
-	}
+	// If we have a telemetry option compiled in (New Relic, Open Telemetry...) we call it hre.
+	// Note that this is *not* a requirement, the default is a no-op.
+	// But if set, it will add some middleware to Gin.
+	initTelemetry()
+
 	store := memstore.NewStore([]byte(*config["cookieStore"])) // now using sessions (Gorilla sessions via Gin extension) stored in memory (gwyneth 20200812)
 	router.Use(sessions.Sessions("goswisession", store))
 

@@ -11,8 +11,8 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	//	"os"
 	"os/exec"
+	"text/template"
 
 	tidbits "gitlab.com/StellarpowerGroupedProjects/tidbits/go"
 )
@@ -56,6 +56,25 @@ func ImageConvert(aImage []byte, height, width, compression uint) (normalSize []
 // Either the full path was set via `config.ini` or the CLI flags, or we 'assume' this is in the path.
 var imagickCommand = "magick"
 
+/* string of parameters to be passed to spawned ImageMagick. This is a (reasonable) default.
+ * Note that the placeholders are Go text templates:
+ *   {{.width}} — Image width;
+ *   {{.height}} - Image height;
+ *   {{.compression}} - Compression level (usually 0–100, 75–80 recommended);
+ *   {{.fileFormat}} - Image file format type, e.g. "webp", "png", etc.
+ *
+ * The assumption is that the values will be replaced dynamically at runtime.
+ */
+var imagickParams = `- -filter Lanczos2Sharp -resize {{.width}}x{{.height}} -quality {{.compression}} -alpha off -format {{.fileFormat}} -`
+
+// struct to be passed to the text templating engine, because Go developers
+// *love* structs! (gwyneth )20251030
+type paramsType struct {
+	width, height, compression uint
+	fileFormat                 string // e.g. "webp", "png", etc.
+}
+
+// Initialication of this submodule.
 func init() {
 	// Do we have set up `magick` from an absolute path, or simply fall back to the system $PATH?
 	if config["ImageMagickCommand"] != nil && len(*config["ImageMagickCommand"]) != 0 {
@@ -71,11 +90,28 @@ func init() {
 		config.LogError("ImageMagick `imagick` executable not found in path; please check if it's in the path, otherwise images won't work")
 	}
 
+	if config["ImageMagickParams"] != nil && len(*config["ImageMagickParams"]) != 0 {
+		// If ImageMagickParams is configured, then assign it instead (otherwise, keep the defaults). (gwyneth 20251030)
+		imagickParams = *config["ImageMagickParams"]
+	}
+
 	return
 }
 
+// Returns all parsed ImageMagick parameters.
+func parseParams(paramList string, height, width, compression uint) ([]string, error) {
+	var params = paramsType{
+		width:       width,
+		height:      height,
+		compression: compression,
+		fileFormat:  "png",
+	}
+
+	t, err := template.Must(template.New(imagickParams).Parse(params))
+}
+
 // Internal function to spawn an ImageMagick process and feed everything to it.
-// Since the image resizing operation will be called *twice*, this means
+// This image resizing operation will be called *twice*, once for normal size, another for Retina size.
 func spawnImageMagick(aImage []byte, height, width, compression uint) ([]byte, error) {
 	// Call 'expensive' Sprintf() to create a `widthxheight` string only once.
 	var dimensions = fmt.Sprintf("%dx%d", width, height)

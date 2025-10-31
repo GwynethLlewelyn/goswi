@@ -18,12 +18,19 @@ const (
 
 func TestMain(m *testing.M) {
 	fmt.Println("Entering test battery main configuration...")
+	imagickParams := ""
 
 	// deal with -removeall flag
 	removeAll := false
-	for _, flag := range os.Args {
+	for i, flag := range os.Args {
 		if flag == "--remove-all" {
 			removeAll = true
+		}
+		if flag == "--params" {
+			if i < len(os.Args)-2 && len(os.Args[i+1]) != 0 {
+				fmt.Println("found parameters for `imagick` command:", imagickParams)
+				imagickParams = os.Args[1]
+			}
 		}
 	}
 
@@ -58,6 +65,13 @@ func TestMain(m *testing.M) {
 		*config["ImageMagickCommand"] = ""
 	}
 
+	// and testing if there are any paramters!
+	if config["ImageMagickParams"] == nil {
+		fmt.Println("`ImageMagickParams` is not a member of `config`")
+		config["ImageMagickParams"] = new(string)
+		*config["ImageMagickParams"] = imagickParams
+	}
+
 	fmt.Println("Configuration ok! ✅")
 
 	// Make sure that the output dirs are available.
@@ -75,7 +89,7 @@ func TestMain(m *testing.M) {
 		cleanup := filepath.Join(outputFolder, "*")
 		fmt.Printf("Removing test images from %q...", cleanup)
 		if err := removeGlob(cleanup); err != nil {
-			fmt.Println("failed! Remove them manually from", outputFolder)
+			fmt.Println("❌ failed! Remove them manually from", outputFolder)
 			if code == 0 { // use a different exit code just for this.
 				code = 2
 			}
