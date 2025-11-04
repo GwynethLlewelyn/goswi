@@ -17,16 +17,16 @@ func init() {
 }
 
 // ImageConvert will take sequence of bytes of an image and convert it into another image with minimal compression, possibly resizing it.
-// Parameters are []byte of original image, height, width, compression quality
+// Parameters are []byte of original image, width, height, compression quality
 // Returns []byte of converted image
 // See https://golangcode.com/convert-pdf-to-jpg/ (gwyneth 20200726)
-func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byte, error) {
+func ImageConvert(aImage []byte, width, height, compression uint) ([]byte, []byte, error) {
 	// some minor error checking on params
-	if height == 0 {
-		height = 256
-	}
 	if width == 0 {
-		width = height
+		width = 256
+	}
+	if height == 0 {
+		height = width
 	}
 	if compression == 0 {
 		compression = 75
@@ -53,7 +53,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 		config.LogDebugf("ImageConvert now attempting to convert image with filename %q and format %q and size %d (%.f ppi), %d (%.f ppi), Generic profile: %q, size in bytes: %d\n", filename, format, x, resX, y, resY, imageProfile, length)
 	}
 
-	if err := mw.ResizeImage(height, width, imagick.FILTER_LANCZOS2_SHARP); err != nil {
+	if err := mw.ResizeImage(width, height, imagick.FILTER_LANCZOS2_SHARP); err != nil {
 		return nil, nil, err
 	}
 
@@ -87,7 +87,7 @@ func ImageConvert(aImage []byte, height, width, compression uint) ([]byte, []byt
 	}
 
 	// now do the same for the Retina size
-	if err := mw.ResizeImage(height*2, width*2, imagick.FILTER_LANCZOS_SHARP); err != nil {
+	if err := mw.ResizeImage(width*2, height*2, imagick.FILTER_LANCZOS_SHARP); err != nil {
 		// this probably doesn't make sense, but we return the valid image, while
 		// sending back nil for the Retina image *and* the error about why this didn't work.
 		// (gwyneth 20240620)

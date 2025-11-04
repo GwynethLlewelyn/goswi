@@ -19,34 +19,38 @@ import (
 )
 
 // ImageConvert will take sequence of bytes of an image and convert it into another image with minimal compression, possibly resizing it.
-// Parameters are []byte of original image, height, width, compression quality
+// Parameters are []byte of original image, width, height, compression quality
 // Returns []byte of converted image
 // This spawns an external ImageMagick process and reads the results — twice, once for the normalSize, the second time
 // for the Retina size.
-func ImageConvert(aImage []byte, height, width, compression uint) (normalSize []byte, retinaSize []byte, err error) {
-	// some minor error checking on params.
-	if height == 0 {
-		height = 256
+func ImageConvert(aImage []byte, width, height, compression uint) (normalSize []byte, retinaSize []byte, err error) {
+	// ImageMagick's convention is that you can just give one of either height or width,
+	// and the resize will keep the aspect ration. For that to work, our helper function
+	// will 'assume' that setting either of them to 'zero' (an otherwise illogical value)
+	// means 'blank'. Of course, *both* cannot be simultaneously 0!
+	// Also note these are unsigned integers, so, no need to check for negative numbers.
+	if height == 0 && width == 0 {
+		height = 0
+		width = 256
 	}
-	if width == 0 {
-		width = height
-	}
-	if compression == 0 {
-		compression = 75
-	}
+	// Also note that *some* compression functions for some file formats assume 0 = no compression,
+	// but this varies from conversion format to conversion format, so we don't check anything
+	// regarding the compression level.
+
+	// Obviously, we *have* to have at least a few bytes on the image!
 	if len(aImage) == 0 {
 		return nil, nil, errors.New("empty image passed to ImageConvert")
 	}
 
 	// Now spawn one process for the original size.
-	normalSize, err = spawnImageMagick(aImage, height, width, compression)
+	normalSize, err = spawnImageMagick(aImage, width, height, compression)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// If all went well, do the same for the Retina version. Note that we attempt to return at least
 	// the original size, if it was valid. Otherwise, we just send back nil.
-	retinaSize, err = spawnImageMagick(aImage, height*2, width*2, compression)
+	retinaSize, err = spawnImageMagick(aImage, width*2, height*2, compression)
 	if err != nil {
 		return normalSize, nil, err // returning normalSize makes no difference.
 	}
@@ -66,18 +70,19 @@ var imagickCommand = "magick"
  *
  * The assumption is that the values will be replaced dynamically at runtime.
  */
-const imagickParamsDefault = `- -filter Lanczos2Sharp -resize {{- if .width ne 0 -}}{{- .width -}}{{- end -}}x{{- if .height ne 0 -}}{{- .height -}}{{- end -}} -quality {{.compression}} -alpha off -format {{.fileFormat}} -`
+const imagickParamsDefault = `- -filter Lanczos2Sharp -resize {{ if ne .Width 0 -}}{{- .Width -}}{{- end -}}x{{- if ne .Height 0 -}}{{- .Height -}}{{- end }} -quality {{.Compression}} -alpha off -format {{.FileFormat}} -`
 
 // Global: parameters sent to `imagickCommand`, set to default for good measure.
 // Note that this is a *template* (string), *not* an array of parameters to pass,
 // which *must* be constructed firs by our code! (gwyneth 20251031)
 var imagickParams string = imagickParamsDefault
 
-// struct to be passed to the text templating engine, because Go developers
-// *love* structs! (gwyneth )20251030
-type paramsType struct {
-	width, height, compression uint
-	fileFormat                 string // e.g. "webp", "png", etc.
+// Struct to be passed to the text templating engine, because Go developers
+// *love* structs! (gwyneth 20251030)
+// Note: these fields must be *exported* or the template parser can't 'see' them. (20251031)
+type ParamsType struct {
+	Width, Height, Compression uint
+	FileFormat                 string // e.g. "webp", "png", etc.
 }
 
 // Initialisation of this submodule.
@@ -105,7 +110,7 @@ func init() {
 }
 
 // Returns all parsed ImageMagick parameters as an array of strings.
-func parseParams(paramList string, height, width, compression uint, fileFormat string) ([]string, error) {
+func parseParams(paramList string, width, height, compression uint, fileFormat string) ([]string, error) {
 	// Some trivial initial checks.
 	if len(paramList) == 0 {
 		// empty string? use the default!
@@ -130,6 +135,10 @@ func parseParams(paramList string, height, width, compression uint, fileFormat s
 	var buf bytes.Buffer // result of applying template to parameters.
 
 	// Instanciate a new template, giving it a name.
+	// TODO(gwyneth): Ideally, we should do the template parsing step *outside* this call (like
+	//	if we were preparing a regexp, pre-compiling it).
+	// However, this is *not* trivial, because we *may* change parameter lists between
+	// invocations...
 	t := template.New("params")
 	t, err = t.Parse(paramList)
 	if err != nil {
@@ -145,11 +154,11 @@ func parseParams(paramList string, height, width, compression uint, fileFormat s
 	// To parse the CLI parameters, we're using Go's native templating system, which,
 	// for text, requires all components to be applied by the template to come from
 	// either a map or a struct.
-	var params = paramsType{
-		width:       width,
-		height:      height,
-		compression: compression,
-		fileFormat:  fileFormat,
+	var params = ParamsType{
+		Width:       width,
+		Height:      height,
+		Compression: compression,
+		FileFormat:  fileFormat,
 	}
 
 	// Now execute the parsed template with the params we pushed into the struct above.
@@ -168,7 +177,7 @@ func parseParams(paramList string, height, width, compression uint, fileFormat s
 
 // Internal function to spawn an ImageMagick process and feed everything to it.
 // This image resizing operation will be called *twice*, once for normal size, another for Retina size.
-func spawnImageMagick(aImage []byte, height, width, compression uint) ([]byte, error) {
+func spawnImageMagick(aImage []byte, width, height, compression uint) ([]byte, error) {
 	// Auxiliary result for avoiding all 'expensive' Sprintf(), by creating a `widthxheight` string only once.
 	var dimensions = fmt.Sprintf("%dx%d", width, height)
 
@@ -188,7 +197,7 @@ func spawnImageMagick(aImage []byte, height, width, compression uint) ([]byte, e
 	// Default params are: "-", "-filter", "Lanczos2Sharp", "-resize", dimensions,
 	// "-quality", fmt.Sprintf("%d", compression),
 	// "-alpha", "off", "-format", formatType[1:], "-"
-	params, err := parseParams(imagickParams, height, width, compression, formatType)
+	params, err := parseParams(imagickParams, width, height, compression, formatType)
 	if err != nil {
 		config.LogErrorf("Could not parse command parameters as an array of strings, error was: %q, reverting to default parameters", err)
 		// In this case, we supercede the automatic parsing, and just do it manually.
@@ -198,21 +207,11 @@ func spawnImageMagick(aImage []byte, height, width, compression uint) ([]byte, e
 			"-alpha", "off", "-format", formatType[1:], "-"}
 	}
 
+	config.LogTracef("ImageMagick will be called with %q, params are: %#v", imagickCommand, params)
+
 	// We got the command path to execute and have all the parameters correcly parsed,
 	// so let the games begin!
 	cmd := exec.Command(imagickCommand, params...)
-
-	// I'm not 100% sure if things need to be done this way.
-	// var stdinbuf bytes.Buffer
-	// cmd.Stdin = &stdinbuf
-
-	// bytesWritten, copyErr := stdinbuf.Write(aImage)
-	// bytesWritten, copyErr := cmd.Stdin.Read(aImage)
-	// if copyErr != nil {
-	// 	config.LogFatal("could not pipe image with", dimensions, "to spawned `magick` process, error was", copyErr, "bytes written:", bytesWritten)
-	// }
-
-	// Attempt #2: Pipe aImage ([]byte) directly into cmd's stdin.
 
 	var bytesWritten int // number of bytes actually written to the spawned process.
 	var writeErr error   // error returned by the pipe to the spawned process.
@@ -228,29 +227,24 @@ func spawnImageMagick(aImage []byte, height, width, compression uint) ([]byte, e
 	go func() {
 		defer stdin.Close()
 		bytesWritten, writeErr = stdin.Write(aImage)
+		if writeErr != nil {
+			config.LogErrorf("could not write image file to convert to %q, error was %q, bytes written %d", imagickCommand, writeErr, bytesWritten)
+		}
+		if bytesWritten == 0 {
+			config.LogErrorf("could not write image file to convert to %q, error was %q, bytes written %d", imagickCommand, writeErr, bytesWritten)
+		}
 	}()
 	// What happens at this stage is a bit muddy.
 	// The Go 'official' examples never check for errors or count the bytes sent.
 	// So, probably we'll only see the result when calling cmd.Output(), which allegedly handles
 	// all waiting and goroutine synchronisation for us:
 	outImage, outErr := cmd.Output()
-	// At this stage, the goroutine ought to be synced, and we
-	// *might* be able to read the errors from the *writing* operation on the pipe:
-	if writeErr != nil {
-		return nil, fmt.Errorf("could not write image file to convert to %q, error was %q, bytes written %d", imagickCommand, writeErr, bytesWritten)
-	}
-	// Note: a value of zero *may* be possible, under race conditions, and might not be an actual error.
-	// TODO(gwyneth): check if that's the case using the test battery. (gwyneth 20251031)
-	if bytesWritten == 0 {
-		return nil, fmt.Errorf("could not write image file to convert to %q, error was %q, bytes written %d", imagickCommand, writeErr, bytesWritten)
-	}
-
 	// We should also be able to have an idea of how many bytes were originally sent to the
 	// pipe, purely for debugging purposes.
 	config.LogDebugf("image with size %s was successfully sent to spawned %q process, wrote %d bytes", dimensions, imagickCommand, bytesWritten)
 
 	if outErr != nil {
-		config.LogDebugf("%q returned error %q", imagickCommand, outErr)
+		config.LogDebugf("spwaning %q returned error %q", imagickCommand, outErr)
 		return nil, outErr
 	}
 	if len(outImage) == 0 {

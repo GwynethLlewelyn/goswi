@@ -6,6 +6,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"testing"
@@ -33,6 +34,9 @@ func TestMain(m *testing.M) {
 			}
 		}
 	}
+
+	// Note: at this stage, we really should read all configurations from the `config.ini`
+	// and use them here
 
 	if len(config) == 0 {
 		fmt.Println("`config` is essentially empty")
@@ -160,6 +164,52 @@ func TestImageConvert_Spawn(t *testing.T) {
 				t.Fatal("error saving 512x512 (Retina) version:", err)
 			}
 			t.Log(testname + "(Retina): ✅")
+		})
+	}
+}
+
+// This function tests that ImageMagick is dealing well with different sizes for the
+// format we're actually testing.
+func TestImageConvertEdgeSizes_Spawn(t *testing.T) {
+	if config["convertExt"] == nil || len(*config["convertExt"]) < 2 {
+		t.Fatal("could not find valid configuration for the conversion file extension")
+	}
+
+	// Find the paths of all input files in the data directory.
+	paths, err := filepath.Glob(filepath.Join(inputFolder, "*"+*config["convertExt"]))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var width, height uint
+	// Each image will be convertd to a different, random size.
+	for _, path := range paths {
+		_, filename := filepath.Split(path)
+
+		// Set a random size. Note that math/rand.Intn() always returns values >= 0.
+		width = 128 + uint(rand.Intn(256))
+		height = 128 + uint(rand.Intn(256))
+
+		testname := fmt.Sprintf("%s-%dx%d.png", filename[:len(filename)-len(filepath.Ext(path))], width, height)
+
+		t.Run(testname, func(t *testing.T) {
+			source, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal("error reading source file:", err)
+			}
+
+			t.Logf("Opening %q...", path)
+
+			testImage, err := spawnImageMagick(source, width, height, 75)
+			if err != nil {
+				t.Fatal("error calling spawnImageMagick:", err)
+			}
+
+			// now write the image out:
+			if err := os.WriteFile(filepath.Join(outputFolder, testname), testImage, os.FileMode(int(0644))); err != nil {
+				t.Fatalf("error saving %dx%d file: %q", width, height, err)
+			}
+			t.Logf("saved %q (%dx%d) file ✅", testname, width, height)
 		})
 	}
 }
