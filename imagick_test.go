@@ -1,4 +1,4 @@
-//go:build !cgo || !imagick
+//go:build !cgo || !imagick || spawn
 
 // Test battery for ImageMagick's spawn version.
 
