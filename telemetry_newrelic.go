@@ -1,4 +1,4 @@
-//go:build opentelemetry
+//go:build newrelic
 
 // Note: this requires some external tool to capture the telemetry data.
 

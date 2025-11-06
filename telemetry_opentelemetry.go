@@ -1,4 +1,4 @@
-//go:build newrelic
+//go:build opentelemetry
 
 package main
 
