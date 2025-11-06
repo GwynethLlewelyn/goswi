@@ -30,7 +30,7 @@
 											<th>TMStamp</th>
 											<th>FirstName</th>
 											<th>LastName</th>
-											<th>Email</th>th>
+											<th>Email</th>
 										</tr>
 									</thead>
 									<tfoot>
@@ -42,7 +42,7 @@
 											<th>TMStamp</th>
 											<th>FirstName</th>
 											<th>LastName</th>
-											<th>Email</th>th>
+											<th>Email</th>
 										</tr>
 									</tfoot>
 								</table>

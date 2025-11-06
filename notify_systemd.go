@@ -39,7 +39,7 @@ func systemdNotify(state string) error {
 
 	switch {
 	case !b && err == nil:
-		config.LogWarn("❌ systemd not available")
+		config.LogWarn("❌ systemd not available, NOTIFY_SOCKET is unset")
 		activeSystemd = false
 	case !b && err != nil:
 		config.LogWarn("💣 systemd answered with error:", err)
