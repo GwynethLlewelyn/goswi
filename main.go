@@ -146,10 +146,12 @@ func main() {
 		*config["templatePath"] = "/templates/"
 	}
 
+	systemdNotify("STATUS=loading templates")
 	router.LoadHTMLGlob(filepath.Join(PathToStaticFiles, *config["templatePath"], "*.tpl"))
 	//router.HTMLRender = createMyRender()
 	//	router.Use(setUserStatus())	// this will allow us to 'see' if the user is authenticated or not
 
+	systemdNotify("STATUS=starting telemetry")
 	// If we have a telemetry option compiled in (New Relic, Open Telemetry...) we call it hre.
 	// Note that this is *not* a requirement, the default is a no-op.
 	// But if set, it will add some middleware to Gin.
@@ -158,6 +160,7 @@ func main() {
 	store := memstore.NewStore([]byte(*config["cookieStore"])) // now using sessions (Gorilla sessions via Gin extension) stored in memory (gwyneth 20200812)
 	router.Use(sessions.Sessions("goswisession", store))
 
+	systemdNotify("STATUS=initialising various caches")
 	// Initialise the diskv storage on the cache directory (gwyneth 20200724)
 	imageCache = diskv.New(diskv.Options{
 		// BasePath:		  *config["cache"],
@@ -184,6 +187,7 @@ func main() {
 		}
 	}
 
+	systemdNotify("STATUS=setting up routing paths")
 	// Gin router configuration starts here
 	// Static stuff (will probably do it via nginx)
 	router.Static("/lib", filepath.Join(PathToStaticFiles, "/lib"))

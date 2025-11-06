@@ -20,3 +20,9 @@ func notify(notification notificationType) {
 		os.Exit(126)
 	}
 }
+
+// Auxiliary function to communicate with the systemd daemon and spew out the appropriate messages.
+func systemdNotify(state string) error {
+	config.LogInfo(state)
+	return nil
+}
