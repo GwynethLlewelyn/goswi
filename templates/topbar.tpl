@@ -78,7 +78,7 @@
 						</div>
 					</a>
 					{{ end }}
-					<!-- Note: apparently this requires class "dropdown-item" as well -->t
+					<!-- Note: apparently this requires class "dropdown-item" as well -->
 					{{- if gt .numberFeedMessages 0 -}}<a class="text-center small text-gray-500" href="/user/feed-messages">Show All Notifications</a>{{- end -}}
 				</div>
 				{{ end }}
@@ -119,7 +119,7 @@
 						</div>
 					</a>
 					{{ end }}
-					<!-- Note: apparently this requires class "dropdown-item" as well -->t
+					<!-- Note: apparently this requires class "dropdown-item" as well -->
 					{{- if gt .numberMessages 0 -}}<a class="text-center small text-gray-500" href="/user/offline-messages">Read More Messages</a>{{- end -}}
 				</div>
 				{{ end }}
