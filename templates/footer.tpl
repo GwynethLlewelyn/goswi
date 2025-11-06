@@ -101,11 +101,12 @@
 				"info":			false,
 				"data": {{ .offlineMessages -}},
 				"columnDefs": [
-				{
-					target: 0,
-					visible: false,
-					searchable: false
-				},
+					{
+						target: 0,
+						visible: false,
+						searchable: false
+					}
+				],
 				"columns": [
 					{ "data": "ID" },
 					{ "data": "im_offline" },

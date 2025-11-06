@@ -20,7 +20,8 @@
 						</div>
 						<div class="card-body">
 							<div class="table-responsive">
-								<table class="table table-bordered table-compact table-striped table-squeezed"  id="offline-messages" data-order="[]" data-page-length="25" width="100%" cellspacing="0">
+								<table class="table table-bordered table-compact table-striped table-squeezed"  id="{{- if .offlineMessages -}}offline-messages{{- else if .feedMessages -}}feed-messages{{- else -}}broken{{- end -}}" data-order="[]" data-page-length="25" width="100%" cellspacing="0">
+									<!--
 									<thead>
 										<tr>
 											<th>ID</th>
@@ -45,6 +46,7 @@
 											<th>Email</th>
 										</tr>
 									</tfoot>
+									-->
 								</table>
 							</div>
 						</div>
