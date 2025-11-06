@@ -13,7 +13,7 @@
 				<div class="col">
 					<!-- Title -->
 					<div class="text-center">
-						<h1>{{ .description -}}</h1>
+						<h1>{{ .title -}}</h1>
 					</div>
 				</div>
 			</div> <!-- /.row -->
