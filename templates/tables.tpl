@@ -53,7 +53,7 @@
 					<div class="row">
 						<div class="col">
 							<h2>Debug info:</h2>
-							<p><b>messageTotal:</b>&nbsp;{{ .messageTotal -}}</p>
+							<p><b>Number of messages:</b>&nbsp;{{ .numberMessages -}}</p>
 						</div>
 					</div>
 					{{ end }}
@@ -62,63 +62,5 @@
 				<!-- /.container-fluid -->
 			</div>
 			<!-- End of Main Content -->
-			<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js"></script>
-			<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js"></script>
-			<script>
-			// Call the dataTables jQuery plugin
-				$(document).ready(function() {
-					{{ if .offlineMessages -}}
-					$('#offline-messages').dataTable( {
-						"searching":	true,
-						"ordering":		true,
-						"paging":		false,
-						"scrollCollapse": true,
-						"info":			false,
-						"data": {{ .offlineMessages -}},
-						"columnDefs": [
-						{
-							target: 0,
-							visible: false,
-							searchable: false
-						},
-						"columns": [
-							{ "data": "ID" },
-							{ "data": "im_offline" },
-							{ "data": "FromID" },
-							{ "data": "Message" },
-							{ "data": "TMStamp" },
-							{ "data": "FirstName" },
-							{ "data": "LastName" },
-							{ "data": "Email" }
-						]
-					});
-					{{ end }}
-					{{ if .feedMessages -}}
-					$('#feed-messages').dataTable( {
-						"searching":	true,
-						"ordering":		true,
-						"paging":		false,
-						"scrollCollapse": true,
-						"info":			false,
-						"data": {{ .feedMessages -}},
-						"columns": [
-							{ "data": "PostParentID" },
-							{ "data": "PosterID" },
-							{ "data": "PostID" },
-							{ "data": "PostMarkup" },
-							{ "data": "Chronostamp" },
-							{ "data": "Visibility" },
-							{ "data": "Comment" },
-							{ "data": "Commentlock" },
-							{ "data": "Editlock" },
-							{ "data": "Feedgroup" },
-							{ "data": "FirstName" },
-							{ "data": "LastName" },
-							{ "data": "Email" }
-						]
-					});
-					{{ end }}
-				}
-			</script>
 {{ template "footer.tpl" . -}}
 {{- end -}}

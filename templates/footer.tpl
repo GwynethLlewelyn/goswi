@@ -92,6 +92,57 @@
 				]
 			});
 			{{ end}}
+			{{ if .offlineMessages -}}
+			$('#offline-messages').dataTable( {
+				"searching":	true,
+				"ordering":		true,
+				"paging":		false,
+				"scrollCollapse": true,
+				"info":			false,
+				"data": {{ .offlineMessages -}},
+				"columnDefs": [
+				{
+					target: 0,
+					visible: false,
+					searchable: false
+				},
+				"columns": [
+					{ "data": "ID" },
+					{ "data": "im_offline" },
+					{ "data": "FromID" },
+					{ "data": "Message" },
+					{ "data": "TMStamp" },
+					{ "data": "FirstName" },
+					{ "data": "LastName" },
+					{ "data": "Email" }
+				]
+			});
+			{{ end }}
+			{{ if .feedMessages -}}
+			$('#feed-messages').dataTable( {
+				"searching":	true,
+				"ordering":		true,
+				"paging":		false,
+				"scrollCollapse": true,
+				"info":			false,
+				"data": {{ .feedMessages -}},
+				"columns": [
+					{ "data": "PostParentID" },
+					{ "data": "PosterID" },
+					{ "data": "PostID" },
+					{ "data": "PostMarkup" },
+					{ "data": "Chronostamp" },
+					{ "data": "Visibility" },
+					{ "data": "Comment" },
+					{ "data": "Commentlock" },
+					{ "data": "Editlock" },
+					{ "data": "Feedgroup" },
+					{ "data": "FirstName" },
+					{ "data": "LastName" },
+					{ "data": "Email" }
+				]
+			});
+			{{ end }}
 		});
 		// Deal with redirecting to a grid; shamelessly copied from https://discoverygrid.net/viewersplash.php
 		function goInWorld(uri) {

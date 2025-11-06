@@ -197,12 +197,13 @@ func getFeedMessages(c *gin.Context) {
 		config.LogTracef("getFeedMessages(): All messages for user %q: %+v\n", username, messages)
 		// now call the template
 		c.HTML(http.StatusOK, "tables.tpl", environment(c, gin.H{
-			"needsTables":    false,
+			"needsTables":    true,
 			"needsMap":       false,
 			"moreValidation": true,
-			"Debug":          false, // we will probably need two versions of 'debug mode'... (gwyneth 20200622)
+			"Debug":          *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
 			"titleCommon":    *config["titleCommon"] + "Feed Messages for: " + username,
 			"feedMessages":   messages,
+			"numberMessages": numberFeedMessages, // for debug
 		}))
 		return
 	}
@@ -211,10 +212,9 @@ func getFeedMessages(c *gin.Context) {
 			"needsTables":    false,
 			"needsMap":       false,
 			"moreValidation": true,
-			"Debug":          false,
-
-			"titleCommon": *config["titleCommon"] + "Feed Messages for: " + username,
-			"title":       "Offline Messages",
-			"content":     "Good news! You have no pending offline messages to read!",
+			"Debug":          *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
+			"titleCommon":    *config["titleCommon"] + "Feed Messages for: " + username,
+			"title":          "Offline Messages",
+			"content":        "Good news! You have no pending offline messages to read!",
 		}))
 }

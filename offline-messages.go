@@ -184,13 +184,13 @@ func getOfflineMessages(c *gin.Context) {
 			username, uuid, numberMessages)
 
 		c.HTML(http.StatusOK, "tables.tpl", environment(c, gin.H{
-			"needsTables":    false,
-			"needsMap":       false,
-			"moreValidation": true,
-			"Debug":          false,
-
+			"needsTables":     true,
+			"needsMap":        false,
+			"moreValidation":  true,
+			"Debug":           *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
 			"titleCommon":     *config["titleCommon"] + "Offline Messages for: " + username,
 			"offlineMessages": messages,
+			"numberMessages":  numberMessages, // for debug
 		}))
 		return
 	}
@@ -199,10 +199,9 @@ func getOfflineMessages(c *gin.Context) {
 			"needsTables":    false,
 			"needsMap":       false,
 			"moreValidation": true,
-			"Debug":          false,
-
-			"titleCommon": *config["titleCommon"] + "Offline Messages for: " + username,
-			"title":       "Offline Messages",
-			"content":     "Good news! You have no pending offline messages to read!",
+			"Debug":          *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
+			"titleCommon":    *config["titleCommon"] + "Offline Messages for: " + username,
+			"title":          "Offline Messages",
+			"content":        "Good news! You have no pending offline messages to read!",
 		}))
 }
