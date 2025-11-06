@@ -285,6 +285,8 @@ func main() {
 		userRoutes.GET("/logout", ensureLoggedIn(), logout)
 		userRoutes.GET("/profile", ensureLoggedIn(), GetProfile)
 		userRoutes.POST("/profile", ensureLoggedIn(), saveProfile)
+		userRoutes.GET("/offline-messages", ensureLoggedIn(), getOfflineMessages)
+		userRoutes.GET("/feed-messages", ensureLoggedIn(), getFeedMessages)
 	}
 	router.GET("/mapdata", GetMapData)
 	router.GET("/avatar/:hash", Libravatar) // note that there might be further parameters beyond the hash (gwyneth 20200908)

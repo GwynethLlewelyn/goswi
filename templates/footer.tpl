@@ -49,9 +49,10 @@
 {{ if .needsTables }}
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/jquery.dataTables.min.js"></script>
 	<script src="../lib/startbootstrap-sb-admin-2/vendor/datatables/dataTables.bootstrap4.min.js"></script>
-	<script type="text/javascript">
+	<script>
 	// Call the dataTables jQuery plugin
 		$(document).ready(function() {
+			{{- if .viewerInfo -}}
 			$('#viewerInfo').dataTable( {
 				"searching":	false,
 				"ordering":		false,
@@ -69,6 +70,8 @@
 					{ "data": "version" }
 				]
 			});
+			{{ end }}
+			{{ if .regionsTable }}
 			$('#regionsTable').dataTable( {
 				"searching":	false,
 				"paging": 		false,
@@ -80,12 +83,15 @@
 					{ "data": "locY" }
 				]
 			});
+			{{ end }}
+			{{ if .usersOnline }}
 			$('#usersOnline').dataTable( {
 				"data": {{ .usersOnline -}},
 				"columns": [
 					{ "data": "Avatar Name" }
 				]
 			});
+			{{ end}}
 		});
 		// Deal with redirecting to a grid; shamelessly copied from https://discoverygrid.net/viewersplash.php
 		function goInWorld(uri) {

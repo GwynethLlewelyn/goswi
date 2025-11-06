@@ -3,8 +3,9 @@
 package main
 
 import (
-	"github.com/coreos/go-systemd/daemon"
 	"os"
+
+	"github.com/coreos/go-systemd/daemon"
 )
 
 // talk to systemd, inform that we're reloading

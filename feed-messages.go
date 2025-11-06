@@ -6,11 +6,13 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
+	"html/template"
+	"net/http"
+	"strconv"
+
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"html/template"
-	"strconv"
 )
 
 type FeedMessage struct {
@@ -75,7 +77,7 @@ func GetTopFeedMessages(c *gin.Context) {
 			messageTimeStamp                          sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
 		)
 
-		for /* i := 1; */ rows.Next() /* ; i++ */ { // uncomment for special
+		for rows.Next() {
 			err = rows.Scan(
 				&oneMessage.PostParentID,
 				&oneMessage.PosterID,
@@ -118,4 +120,101 @@ func GetTopFeedMessages(c *gin.Context) {
 	if err := session.Save(); err != nil {
 		config.LogWarnf("GetTopFeedMessages(): Could not save messages to user %q on the session, error was: %q\n", username, err)
 	}
+}
+
+// getFeedMessages opens the template for feed messages and fills it with all data.
+// It's conceptually similar to the above code, only using DataTables and its wn template instead.
+func getFeedMessages(c *gin.Context) {
+	session := sessions.Default(c)
+	username := session.Get("Username").(string)
+	uuid := session.Get("UUID").(string)
+
+	if uuid == "" {
+		config.LogWarn("getFeedMessages(): No UUID stored; messages for this user cannot get retrieved")
+	}
+
+	if *config["dsn"] == "" {
+		config.LogFatal("Please configure the DSN for accessing your OpenSimulator database; this application won't work without that")
+	}
+	db, err := sql.Open("mysql", *config["dsn"]+"?parseTime=true") // this will allow parsing MySQL timestamps into Time vars; see https://stackoverflow.com/a/46613451/1035977
+	checkErrFatal(err)
+
+	defer db.Close()
+
+	// first count how many messages we have, we will need this later.
+	// According to the Internet, current versions of MariaDB/MySQL are actually much faster doing _two_ queries, one just for counting rows, since it's allegedly optimised; in this case, we can simplify the whole query as well.
+
+	var numberFeedMessages int
+
+	err = db.QueryRow("SELECT COUNT(*) FROM feeds").Scan(&numberFeedMessages)
+	checkErr(err)
+
+	if numberFeedMessages > 0 {
+		rows, err := db.Query("SELECT PostParentID, PosterID, PostID, PostMarkup, Chronostamp, Visibility, Comment, Commentlock, Editlock, Feedgroup, FirstName, LastName, Email FROM feeds, UserAccounts WHERE UserAccounts.PrincipalID = PosterID ORDER BY Chronostamp ASC")
+		checkErr(err)
+
+		defer rows.Close()
+
+		var (
+			oneMessage                                FeedMessage
+			messages                                  FeedMessageList
+			firstName, lastName, email, unsafeMessage string
+			messageTimeStamp                          sql.NullTime // sql.NullTime will match timestamps with NULLs without crashing; see https://stackoverflow.com/a/60293251/1035977
+		)
+
+		for rows.Next() {
+			err = rows.Scan(
+				&oneMessage.PostParentID,
+				&oneMessage.PosterID,
+				&oneMessage.PostID,
+				&unsafeMessage,
+				&messageTimeStamp,
+				&oneMessage.Visibility,
+				&oneMessage.Comment,
+				&oneMessage.Commentlock,
+				&oneMessage.Editlock,
+				&oneMessage.Feedgroup,
+				&firstName,
+				&lastName,
+				&email,
+			)
+			oneMessage.PostMarkup = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
+			oneMessage.Username = firstName + " " + lastName
+			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
+			// do something to the time
+			if messageTimeStamp.Valid {
+				oneMessage.Chronostamp = humanize.Time(messageTimeStamp.Time)
+			} else {
+				oneMessage.Chronostamp = ""
+			}
+
+			config.LogTracef("message from user %q <%s> to %q is: %q\n", oneMessage.Username, email, username, oneMessage.PostMarkup)
+
+			messages = append(messages, oneMessage)
+		} // end loop
+		checkErr(err)
+
+		config.LogTracef("getFeedMessages(): All messages for user %q: %+v\n", username, messages)
+		// now call the template
+		c.HTML(http.StatusOK, "tables.tpl", environment(c, gin.H{
+			"needsTables":    false,
+			"needsMap":       false,
+			"moreValidation": true,
+			"Debug":          false, // we will probably need two versions of 'debug mode'... (gwyneth 20200622)
+			"titleCommon":    *config["titleCommon"] + "Feed Messages for: " + username,
+			"feedMessages":   messages,
+		}))
+		return
+	}
+	c.HTML(http.StatusOK, "generic.tpl", environment(c,
+		gin.H{
+			"needsTables":    false,
+			"needsMap":       false,
+			"moreValidation": true,
+			"Debug":          false,
+
+			"titleCommon": *config["titleCommon"] + "Feed Messages for: " + username,
+			"title":       "Offline Messages",
+			"content":     "Good news! You have no pending offline messages to read!",
+		}))
 }

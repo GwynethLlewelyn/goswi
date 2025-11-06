@@ -78,7 +78,7 @@
 						</div>
 					</a>
 					{{ end }}
-					{{- if gt .numberFeedMessages 0 -}}<a class="dropdown-item text-center small text-gray-500" href="#">Show All Notifications</a>{{- end -}}
+					{{- if gt .numberFeedMessages 0 -}}<a class="dropdown-item text-center small text-gray-500" href="/user/feed-messages">Show All Notifications</a>{{- end -}}
 				</div>
 				{{ end }}
 			</li>
@@ -118,7 +118,7 @@
 						</div>
 					</a>
 					{{ end }}
-					{{- if gt .numberMessages 0 -}}<a class="dropdown-item text-center small text-gray-500" href="#">Read More Messages</a>{{- end -}}
+					{{- if gt .numberMessages 0 -}}<a class="dropdown-item text-center small text-gray-500" href="/user/offline-messages">Read More Messages</a>{{- end -}}
 				</div>
 				{{ end }}
 			</li>

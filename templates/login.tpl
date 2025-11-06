@@ -32,7 +32,7 @@
     											</div>
 										    </div>
 										</div>
-										<script type="text/javascript">
+										<script>
 											$(document).ready(function() {
 													$("#show_hide_password a").on('click', function(event) {
 														event.preventDefault();

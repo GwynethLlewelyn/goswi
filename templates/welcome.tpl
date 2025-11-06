@@ -112,7 +112,7 @@
 							<div class="collapse show" id="onlineUsersCard">
 								<div class="card-body">
 									<div class="table-responsive">
-										<table class="table table-bordered table-compact table-striped table-squeezed" id="usersOnline" data-order='[]' data-page-length='25'>
+										<table class="table table-bordered table-compact table-striped table-squeezed" id="usersOnline" data-order="[]" data-page-length="25">
 											<thead>
 												<tr>
 													<th>Avatar Name</th>

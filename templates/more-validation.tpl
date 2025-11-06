@@ -1,7 +1,7 @@
 {{- define "more-validation.tpl" -}}
 <!-- this should be called at the end of the page -->
 <!--
-<script type="text/javascript">
+<script>
 $(document).ready(function () {
 	$("#contact_form")
 		.bootstrapValidator({

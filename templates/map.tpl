@@ -49,7 +49,7 @@ should be sent to the mailing list opensource-dev@list.secondlife.com
 ==============================================================================
 
 								-->
-								<script type="text/javascript" src="../assets/js/leaflet-gridmap.js"></script>
+								<script src="../assets/js/leaflet-gridmap.js"></script>
 							</div>
 							<!-- /.card-body -->
 						</div>

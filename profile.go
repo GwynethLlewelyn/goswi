@@ -6,10 +6,6 @@ import (
 	//	 "encoding/json"
 	// "errors"
 	"fmt"
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/peterbourgon/diskv/v3"
 	"html/template"
 	"io"
 	//	jsoniter "github.com/json-iterator/go"
@@ -20,6 +16,10 @@ import (
 	"path/filepath"
 	"strings"
 	// "time"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-gonic/gin"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/peterbourgon/diskv/v3"
 )
 
 type UserProfile struct {
