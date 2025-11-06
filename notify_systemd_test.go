@@ -1,6 +1,8 @@
 //go:build systemd
 
-// testing messages to systemd
+// Testing messages to systemd.
+// For this test to work, use `NOTIFY_SOCKET=/run/systemd/notify go test -tags systemd -test.run 'TestSystemdNotify(.*)' -v`
+// Note that the socket path is for Ubuntu Linux; other systems may use different specifications.
 
 package main
 
