@@ -1,4 +1,4 @@
-//go:build !cgo || !imagick || spawn
+//go:build !imagick || spawn
 
 // This is the new default, that launches an external process called `magick`.
 // The version is irrelevant, so long as it understands the same parameters of IM 6.9/7+
