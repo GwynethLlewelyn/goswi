@@ -185,7 +185,9 @@ func environment(c *gin.Context, env gin.H) gin.H {
 
 	retMap := MergeMaps(data, env)
 
-	config.LogTracef("environment(): All messages for user %q: %+v\n", retMap["Username"], retMap["Messages"])
-
+	// Messages will only exist if there is a user online.
+	if retMap["Username"] != nil && retMap["Messages"] != nil {
+		config.LogTracef("environment(): All messages for user %q: %+v\n", retMap["Username"], retMap["Messages"])
+	}
 	return retMap
 }
