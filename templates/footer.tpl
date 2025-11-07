@@ -76,6 +76,7 @@
 				"searching":	false,
 				"paging": 		false,
 				"info":			false,
+				"scrollCollapse": true,
 				"data": {{ .regionsTable -}},
 				"columns": [
 					{ "data": "regionName" },
@@ -109,13 +110,15 @@
 				],
 				"columns": [
 					{ "data": "ID" },
-					{ "data": "im_offline" },
 					{ "data": "FromID" },
+					{ "data": "Username" },
+					{
+						"data": "Avatar",
+						render: function (data, type, row, meta) {
+						return '<img class="rounded-circle" src="' + data + '" alt="' + target[2] + '">';
+					},
 					{ "data": "Message" },
 					{ "data": "TMStamp" },
-					{ "data": "FirstName" },
-					{ "data": "LastName" },
-					{ "data": "Email" }
 				]
 			});
 			{{ end }}
@@ -131,6 +134,12 @@
 					{ "data": "PostParentID" },
 					{ "data": "PosterID" },
 					{ "data": "PostID" },
+					{ "data": "Username" },
+					{
+						"data": "Libravatar",
+						render: function (data, type, row, meta) {
+						return '<img class="rounded-circle" src="' + data + '" alt="' + target[2] + '">';
+				    },
 					{ "data": "PostMarkup" },
 					{ "data": "Chronostamp" },
 					{ "data": "Visibility" },
@@ -138,9 +147,6 @@
 					{ "data": "Commentlock" },
 					{ "data": "Editlock" },
 					{ "data": "Feedgroup" },
-					{ "data": "FirstName" },
-					{ "data": "LastName" },
-					{ "data": "Email" }
 				]
 			});
 			{{ end }}

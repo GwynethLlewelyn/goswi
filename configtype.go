@@ -46,6 +46,7 @@ const (
 	// Values less than TraceLevel are handled as numbers.
 )
 
+// Returns a string for the logging level.
 func (l Level) String() string {
 	switch l {
 	case TraceLevel:
@@ -103,7 +104,7 @@ func ParseLevel(levelStr string) (Level, error) {
 	return Level(i), nil
 }
 
-// UnmarshalText implements encoding.TextUnmarshaler to allow for easy reading from toml/yaml/json formats
+// UnmarshalText implements encoding.TextUnmarshaler to allow for easy reading from toml/yaml/json formats.
 func (l *Level) UnmarshalText(text []byte) error {
 	if l == nil {
 		return errors.New("can't unmarshal a nil *Level")
@@ -113,7 +114,7 @@ func (l *Level) UnmarshalText(text []byte) error {
 	return err
 }
 
-// MarshalText implements encoding.TextMarshaler to allow for easy writing into toml/yaml/json formats
+// MarshalText implements encoding.TextMarshaler to allow for easy writing into toml/yaml/json formats.
 func (l Level) MarshalText() ([]byte, error) {
 	return []byte(LevelFieldMarshalFunc(l)), nil
 }

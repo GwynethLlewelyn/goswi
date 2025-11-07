@@ -20,32 +20,30 @@
 						</div>
 						<div class="card-body">
 							<div class="table-responsive">
-								<table class="table table-bordered table-compact table-striped table-squeezed"  id="{{- if .offlineMessages -}}offline-messages{{- else if .feedMessages -}}feed-messages{{- else -}}broken{{- end -}}" data-order="[]" data-page-length="25" width="100%" cellspacing="0">
+								<table class="table table-bordered table-striped"  id="{{- if .offlineMessages -}}offline-messages{{- else if .feedMessages -}}feed-messages{{- else -}}broken{{- end -}}" data-order="[]" data-page-length="25" width="100%" cellspacing="0">
 								{{- if .offlineMessages -}}
 									<thead>
 										<tr>
 											<th>ID</th>
-											<th>im_offline</th>
 											<th>FromID</th>
+											<th>Username</th>
+											<th>Avatar</th>
 											<th>Message</th>
 											<th>TMStamp</th>
-											<th>FirstName</th>
-											<th>LastName</th>
-											<th>Email</th>
 										</tr>
 									</thead>
+									{{- if gt .offlineMessages 20 -}}
 									<tfoot>
 										<tr>
 											<th>ID</th>
-											<th>im_offline</th>
 											<th>FromID</th>
+											<th>Username</th>
+											<th>Avatar</th>
 											<th>Message</th>
 											<th>TMStamp</th>
-											<th>FirstName</th>
-											<th>LastName</th>
-											<th>Email</th>
 										</tr>
 									</tfoot>
+									{{- end -}}
 								{{- end -}}
 								{{- if .feedMessages -}}
 									<thead>
@@ -53,6 +51,7 @@
 											<th>PostParentID</th>
 											<th>PosterID</th>
 											<th>PostID</th>
+											<th>Username</th>
 											<th>PostMarkup</th>
 											<th>Chronostamp</th>
 											<th>Visibility</th>
@@ -60,16 +59,15 @@
 											<th>Commentlock</th>
 											<th>Editlock</th>
 											<th>Feedgroup</th>
-											<th>FirstName</th>
-											<th>LastName</th>
-											<th>Email</th>
 										</tr>
 									</thead>
+									{{- if gt .feedMessages 20 -}}
 									<tfoot>
 										<tr>
 											<th>PostParentID</th>
 											<th>PosterID</th>
 											<th>PostID</th>
+											<th>Username</th>
 											<th>PostMarkup</th>
 											<th>Chronostamp</th>
 											<th>Visibility</th>
@@ -77,18 +75,16 @@
 											<th>Commentlock</th>
 											<th>Editlock</th>
 											<th>Feedgroup</th>
-											<th>FirstName</th>
-											<th>LastName</th>
-											<th>Email</th>
 										</tr>
 									</tfoot>
+									{{- end -}}
 								{{- end -}}
 								</table>
 							</div>
 						</div>
 					</div>
 					{{ if .Debug }}
-					{{ template infobox.tpl .}}
+					{{ template "infobox.tpl" . }}
 					{{ end }}
 					{{ template "back.tpl"}}
 				</div>
