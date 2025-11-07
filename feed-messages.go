@@ -9,6 +9,7 @@ import (
 	"html/template"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
@@ -183,7 +184,9 @@ func getFeedMessages(c *gin.Context) {
 			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time
 			if messageTimeStamp.Valid {
-				oneMessage.Chronostamp = humanize.Time(messageTimeStamp.Time)
+				// No need to humanize timestamps here.
+				// oneMessage.Chronostamp = humanize.Time(messageTimeStamp.Time)
+				oneMessage.Chronostamp = messageTimeStamp.Time.Format(time.RFC1123)
 			} else {
 				oneMessage.Chronostamp = ""
 			}

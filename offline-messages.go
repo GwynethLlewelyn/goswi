@@ -4,11 +4,10 @@ import (
 	"database/sql"
 	"encoding/gob"
 	"fmt"
-
-	//	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/dustin/go-humanize"
 	"github.com/gin-contrib/sessions"
@@ -170,7 +169,9 @@ func getOfflineMessages(c *gin.Context) {
 			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
 			// do something to the time
 			if messageTimeStamp.Valid {
-				oneMessage.TMStamp = humanize.Time(messageTimeStamp.Time)
+				// No need to humanize timestamps here.
+				// oneMessage.TMStamp = humanize.Time(messageTimeStamp.Time)
+				oneMessage.TMStamp = messageTimeStamp.Time.Format(time.RFC1123)
 			} else {
 				oneMessage.TMStamp = ""
 			}
