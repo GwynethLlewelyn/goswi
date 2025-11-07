@@ -3,6 +3,8 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
+	"fmt"
+
 	//	"fmt"
 	"html/template"
 	"net/http"
@@ -187,10 +189,11 @@ func getOfflineMessages(c *gin.Context) {
 			"needsTables":     true,
 			"needsMap":        false,
 			"moreValidation":  true,
-			"Debug":           *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
 			"titleCommon":     *config["titleCommon"] + "Offline Messages for: " + username,
 			"offlineMessages": messages,
-			"numberMessages":  numberMessages, // for debug
+			"Debug":           *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
+			"BoxTitle":        "Debug info:",
+			"BoxContent":      fmt.Sprintf("<p><b>Number of messages:</b>&nbsp;%d</p>", numberMessages), // for debug
 		}))
 		return
 	}
@@ -199,9 +202,9 @@ func getOfflineMessages(c *gin.Context) {
 			"needsTables":    false,
 			"needsMap":       false,
 			"moreValidation": true,
-			"Debug":          *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
 			"titleCommon":    *config["titleCommon"] + "Offline Messages for: " + username,
 			"title":          "Offline Messages",
 			"content":        "Good news! You have no pending offline messages to read!",
+			"Debug":          *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
 		}))
 }

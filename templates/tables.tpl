@@ -21,7 +21,7 @@
 						<div class="card-body">
 							<div class="table-responsive">
 								<table class="table table-bordered table-compact table-striped table-squeezed"  id="{{- if .offlineMessages -}}offline-messages{{- else if .feedMessages -}}feed-messages{{- else -}}broken{{- end -}}" data-order="[]" data-page-length="25" width="100%" cellspacing="0">
-									<!--
+								{{- if .offlineMessages -}}
 									<thead>
 										<tr>
 											<th>ID</th>
@@ -46,18 +46,49 @@
 											<th>Email</th>
 										</tr>
 									</tfoot>
-									-->
+								{{- end -}}
+								{{- if .feedMessages -}}
+									<thead>
+										<tr>
+											<th>PostParentID</th>
+											<th>PosterID</th>
+											<th>PostID</th>
+											<th>PostMarkup</th>
+											<th>Chronostamp</th>
+											<th>Visibility</th>
+											<th>Comment</th>
+											<th>Commentlock</th>
+											<th>Editlock</th>
+											<th>Feedgroup</th>
+											<th>FirstName</th>
+											<th>LastName</th>
+											<th>Email</th>
+										</tr>
+									</thead>
+									<tfoot>
+										<tr>
+											<th>PostParentID</th>
+											<th>PosterID</th>
+											<th>PostID</th>
+											<th>PostMarkup</th>
+											<th>Chronostamp</th>
+											<th>Visibility</th>
+											<th>Comment</th>
+											<th>Commentlock</th>
+											<th>Editlock</th>
+											<th>Feedgroup</th>
+											<th>FirstName</th>
+											<th>LastName</th>
+											<th>Email</th>
+										</tr>
+									</tfoot>
+								{{- end -}}
 								</table>
 							</div>
 						</div>
 					</div>
 					{{ if .Debug }}
-					<div class="row">
-						<div class="col">
-							<h2>Debug info:</h2>
-							<p><b>Number of messages:</b>&nbsp;{{ .numberMessages -}}</p>
-						</div>
-					</div>
+					{{ template infobox.tpl .}}
 					{{ end }}
 					{{ template "back.tpl"}}
 				</div>
