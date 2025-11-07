@@ -110,12 +110,12 @@
 				],
 				"columns": [
 					{ "data": "ID" },
-					{ "data": "FromID" },
 					{ "data": "Username" },
 					{
-						"data": "Avatar",
-						render: function (data, type, row, meta) {
-						return '<img class="rounded-circle" src="' + data + '" alt="' + target[2] + '">';
+						"data": "Libravatar",
+						"render": function (data, type, row, meta) {
+							return '<img class="rounded-circle" src="' + data + '" alt="">';
+						}
 					},
 					{ "data": "Message" },
 					{ "data": "TMStamp" },
@@ -137,8 +137,9 @@
 					{ "data": "Username" },
 					{
 						"data": "Libravatar",
-						render: function (data, type, row, meta) {
-						return '<img class="rounded-circle" src="' + data + '" alt="' + target[2] + '">';
+						"render": function (data, type, row, meta) {
+							return '<img class="rounded-circle" src="' + data + '" alt="">';
+						}
 				    },
 					{ "data": "PostMarkup" },
 					{ "data": "Chronostamp" },

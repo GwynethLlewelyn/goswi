@@ -6,6 +6,7 @@ package main
 import (
 	"database/sql"
 	"encoding/gob"
+	"fmt"
 	"html/template"
 	"net/http"
 	"strconv"
@@ -20,7 +21,7 @@ type FeedMessage struct {
 	PostParentID string        `json:"PostParentID"`
 	PosterID     string        `json:"PosterID"` // UUID of poster. Feed messages are seen by everyone.
 	PostID       string        `json:"PostID"`   // primary key
-	Username     string        `json:"Username"` // will be constructed by getting it from the UserAccounts table
+	Username     template.HTML `json:"Username"` // will be constructed by getting it from the UserAccounts table and adding a bit of HTML
 	Libravatar   string        `json:"Libravatar"`
 	PostMarkup   template.HTML `json:"PostMarkup"` // actual message. May contain HTML.
 	Chronostamp  string        `json:"Chronostamp"`
@@ -95,8 +96,9 @@ func GetTopFeedMessages(c *gin.Context) {
 				&email,
 			)
 			oneMessage.PostMarkup = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
-			oneMessage.Username = firstName + " " + lastName
-			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
+			username := firstName + " " + lastName
+			oneMessage.Username = template.HTML(bluemondaySafeHTML.Sanitize(fmt.Sprintf("<span title=\"%s\"  data-toggle=\"tooltip\">%s</span>", oneMessage.PosterID, username)))
+			oneMessage.Libravatar = getLibravatar(email, username, 60)
 			// do something to the time
 			if messageTimeStamp.Valid {
 				oneMessage.Chronostamp = humanize.Time(messageTimeStamp.Time)
@@ -180,8 +182,10 @@ func getFeedMessages(c *gin.Context) {
 				&email,
 			)
 			oneMessage.PostMarkup = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
-			oneMessage.Username = firstName + " " + lastName
-			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
+			username := firstName + " " + lastName
+			oneMessage.Username = template.HTML(bluemondaySafeHTML.Sanitize(fmt.Sprintf("<span title=\"%s\"  data-toggle=\"tooltip\">%s</span>", oneMessage.PosterID, username)))
+			oneMessage.Libravatar = getLibravatar(email, username, 60)
+
 			// do something to the time
 			if messageTimeStamp.Valid {
 				// No need to humanize timestamps here.
@@ -200,13 +204,13 @@ func getFeedMessages(c *gin.Context) {
 		config.LogTracef("getFeedMessages(): All messages for user %q: %+v\n", username, messages)
 		// now call the template
 		c.HTML(http.StatusOK, "tables.tpl", environment(c, gin.H{
-			"needsTables":    true,
-			"needsMap":       false,
-			"moreValidation": true,
-			"Debug":          *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
-			"titleCommon":    *config["titleCommon"] + "Feed Messages for: " + username,
-			"feedMessages":   messages,
-			"numberMessages": numberFeedMessages, // for debug
+			"needsTables":        true,
+			"needsMap":           false,
+			"moreValidation":     true,
+			"Debug":              *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
+			"titleCommon":        *config["titleCommon"] + "Feed Messages for: " + username,
+			"feedMessages":       messages,
+			"numberFeedMessages": numberFeedMessages, // for debug
 		}))
 		return
 	}

@@ -17,7 +17,7 @@ import (
 type OfflineIM struct {
 	ID          string        `json:"ID"`
 	PrincipalID string        `json:"PrincipalID"`
-	Username    string        `json:"Username"` // will be constructed by getting it from the UserAccounts table
+	Username    template.HTML `json:"Username"` // will be constructed by getting it from the UserAccounts table with some HTML (so, sanitize first!)
 	Libravatar  string        `json:"Libravatar"`
 	FromID      string        `json:"FromID"`
 	Message     template.HTML `json:"Message"` // may contain HTML, so it will be sanitised later on (gwyneth 20200815)
@@ -83,8 +83,9 @@ func GetTopOfflineMessages(c *gin.Context) {
 				&email,
 			)
 			oneMessage.Message = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
-			oneMessage.Username = firstName + " " + lastName
-			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
+			username := firstName + " " + lastName
+			oneMessage.Username = template.HTML(bluemondaySafeHTML.Sanitize(fmt.Sprintf("<span title=\"%s\"  data-toggle=\"tooltip\">%s</span>", oneMessage.FromID, username)))
+			oneMessage.Libravatar = getLibravatar(email, username, 60)
 			// do something to the time
 			if messageTimeStamp.Valid {
 				oneMessage.TMStamp = humanize.Time(messageTimeStamp.Time)
@@ -165,8 +166,9 @@ func getOfflineMessages(c *gin.Context) {
 				&email,
 			)
 			oneMessage.Message = template.HTML(bluemondaySafeHTML.Sanitize(unsafeMessage))
-			oneMessage.Username = firstName + " " + lastName
-			oneMessage.Libravatar = getLibravatar(email, oneMessage.Username, 60)
+			username := firstName + " " + lastName
+			oneMessage.Username = template.HTML(bluemondaySafeHTML.Sanitize(fmt.Sprintf("<span title=\"%s\"  data-toggle=\"tooltip\">%s</span>", oneMessage.FromID, username)))
+			oneMessage.Libravatar = getLibravatar(email, username, 60)
 			// do something to the time
 			if messageTimeStamp.Valid {
 				// No need to humanize timestamps here.
@@ -192,6 +194,7 @@ func getOfflineMessages(c *gin.Context) {
 			"moreValidation":  true,
 			"titleCommon":     *config["titleCommon"] + "Offline Messages for: " + username,
 			"offlineMessages": messages,
+			"numberMessages":  numberMessages,
 			"Debug":           *config["ginMode"] == "debug" || *config["ginMode"] == "trace",
 			"BoxTitle":        "Debug info:",
 			"BoxContent":      fmt.Sprintf("<p><b>Number of messages:</b>&nbsp;%d</p>", numberMessages), // for debug

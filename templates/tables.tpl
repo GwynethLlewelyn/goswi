@@ -25,22 +25,20 @@
 									<thead>
 										<tr>
 											<th>ID</th>
-											<th>FromID</th>
 											<th>Username</th>
 											<th>Avatar</th>
 											<th>Message</th>
-											<th>TMStamp</th>
+											<th>Date</th>
 										</tr>
 									</thead>
-									{{- if gt .offlineMessages 20 -}}
+									{{- if gt .numberMessages 20 -}}
 									<tfoot>
 										<tr>
 											<th>ID</th>
-											<th>FromID</th>
 											<th>Username</th>
 											<th>Avatar</th>
 											<th>Message</th>
-											<th>TMStamp</th>
+											<th>Date</th>
 										</tr>
 									</tfoot>
 									{{- end -}}
@@ -52,29 +50,31 @@
 											<th>PosterID</th>
 											<th>PostID</th>
 											<th>Username</th>
-											<th>PostMarkup</th>
-											<th>Chronostamp</th>
-											<th>Visibility</th>
-											<th>Comment</th>
-											<th>Commentlock</th>
-											<th>Editlock</th>
-											<th>Feedgroup</th>
+											<th>Avatar</th>
+											<th>Message</th>
+											<th>Date</th>
+											<th class="hidden">Visibility</th>
+											<th class="hidden">Comment</th>
+											<th class="hidden">Commentlock</th>
+											<th class="hidden">Editlock</th>
+											<th class="hidden">Feedgroup</th>
 										</tr>
 									</thead>
-									{{- if gt .feedMessages 20 -}}
+									{{- if gt .numberFeedMessages 20 -}}
 									<tfoot>
 										<tr>
 											<th>PostParentID</th>
 											<th>PosterID</th>
 											<th>PostID</th>
 											<th>Username</th>
-											<th>PostMarkup</th>
-											<th>Chronostamp</th>
-											<th>Visibility</th>
-											<th>Comment</th>
-											<th>Commentlock</th>
-											<th>Editlock</th>
-											<th>Feedgroup</th>
+											<th>Avatar</th>
+											<th>Message</th>
+											<th>Date</th>
+											<th class="hidden">Visibility</th>
+											<th class="hidden">Comment</th>
+											<th class="hidden">Commentlock</th>
+											<th class="hidden">Editlock</th>
+											<th class="hidden">Feedgroup</th>
 										</tr>
 									</tfoot>
 									{{- end -}}
