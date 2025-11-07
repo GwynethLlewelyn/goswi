@@ -53,7 +53,7 @@ const (
 )
 
 // Configure the complex flagging system, which will also require loading from `config.ini`
-// Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot us that using pkg iniflags (gwyneth 20200711).
+// Note: flag.Tail() offers us all parameters at the end of the command line, we will use that to generate a list of images for the slideshow, but we cannot use that using pkg iniflags (gwyneth 20200711).
 
 // main starts here.
 func main() {
