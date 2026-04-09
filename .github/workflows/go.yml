@@ -74,6 +74,7 @@ jobs:
 
     # Make sure that Cgo is enabled
     - name: Build
+    # I need to check the new build tags
       run:  CGO_CFLAGS_ALLOW='-Xpreprocessor' go build -v ./...
 
 # Tests haven't been done yet.
