@@ -21,6 +21,7 @@ on:
     branches: [ "master" ]
   schedule:
     - cron: '15 7 * * 3'
+  workflow_dispatch:
 
 permissions:
   contents: read
