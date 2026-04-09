@@ -1,4 +1,4 @@
-name: goreleaser
+name: 'Automatically make a release with a new tag push'
 
 on:
   pull_request:
