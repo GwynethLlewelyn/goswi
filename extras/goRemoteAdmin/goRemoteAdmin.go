@@ -16,6 +16,7 @@ import (
 	"net/mail"
 	"os"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/earthboundkid/versioninfo/v2" // mostly to get the git version of this build!
@@ -26,6 +27,31 @@ import (
 
 // No harm is done having just one context, which is simoly the background.
 var ctx = context.Background()
+
+func redactXMLRPCPassword(requestBody string) string {
+	const startTag = "<name>password</name>"
+	startIdx := strings.Index(requestBody, startTag)
+	if startIdx == -1 {
+		return requestBody
+	}
+
+	const openValueTag = "<value><string>"
+	const closeValueTag = "</string></value>"
+
+	valueStart := strings.Index(requestBody[startIdx:], openValueTag)
+	if valueStart == -1 {
+		return requestBody
+	}
+	valueStart += startIdx + len(openValueTag)
+
+	valueEnd := strings.Index(requestBody[valueStart:], closeValueTag)
+	if valueEnd == -1 {
+		return requestBody
+	}
+	valueEnd += valueStart
+
+	return requestBody[:valueStart] + "***REDACTED***" + requestBody[valueEnd:]
+}
 
 type XmlRpcParameter struct {
 	Parameter string `xmlrpc:"parameter"`
@@ -285,7 +311,7 @@ known to OpenSimulator. You can get a copy from <https://github.com/MarcelEdward
 						// should do some sanitation here
 
 						if verboseMode {
-							fmt.Printf("Request: %v\n", xmlrpcRequest.String())
+							fmt.Printf("Request: %v\n", redactXMLRPCPassword(xmlrpcRequest.String()))
 						}
 						var client http.Client
 
